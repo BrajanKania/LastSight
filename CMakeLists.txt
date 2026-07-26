@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.23)
 
 project(LastSight LANGUAGES C CXX)
 
@@ -6,10 +6,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-add_executable(LastSight 
-  src/main.cpp
-)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -26,13 +22,19 @@ find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(SDL3 REQUIRED COMPONENTS SDL3-static)
 find_package(glm REQUIRED)
 
+add_subdirectory(src/shader)
+
+add_executable(LastSight 
+  src/main.cpp
+  src/window.cpp
+)
+
 target_link_libraries(
   LastSight
   PRIVATE
+    shader
     OpenGL::OpenGL
-    glad2_lib
     SDL3::SDL3
-    glm::glm
 )
 
 add_custom_command(
