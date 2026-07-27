@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <stdexcept>
 #include <string>
 
@@ -7,7 +8,7 @@ namespace ls {
 
 class CompileError : public std::runtime_error {
 public:
-  CompileError(const std::string& file, const std::string& infoLog);
+  CompileError(const std::filesystem::path& file, const std::string& infoLog);
 
   const char* what() const noexcept override;
 
@@ -17,7 +18,7 @@ private:
 
 class OpenFileError : public std::runtime_error {
 public:
-  OpenFileError(const std::string& file);
+  OpenFileError(const std::filesystem::path& file);
   const char* what() const noexcept override;
 
 private:
@@ -26,7 +27,9 @@ private:
 
 class LinkError : public std::runtime_error {
 public:
-  LinkError(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& infoLog);
+  LinkError(const std::filesystem::path& vertexShaderPath,
+            const std::filesystem::path& fragmentShaderPath,
+            const std::string& infoLog);
   const char* what() const noexcept override;
 
 private:

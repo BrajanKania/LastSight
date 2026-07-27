@@ -9,4 +9,11 @@ AccessModifierOffset: -2
 SpaceBeforeParens: ControlStatements
 BinPackArguments: false
 BinPackParameters: false
+NamespaceIndentation: All
+IncludeBlocks: Regroup
+SortIncludes: CaseSensitive
+PackConstructorInitializers: Never
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+FixNamespaceComments: true
 ...

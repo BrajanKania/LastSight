@@ -39,9 +39,17 @@ add_executable(LastSight
 target_link_libraries(
   LastSight
   PRIVATE
-    shader
+    glad2_lib
+    glm::glm
     OpenGL::OpenGL
     SDL3::SDL3
+    shader
+)
+
+target_include_directories(
+  LastSight 
+  PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
 add_custom_command(

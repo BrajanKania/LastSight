@@ -9,15 +9,16 @@ target_sources(shader
 
   PUBLIC
     FILE_SET HEADERS
-    BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/"
+    BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/../../"
     FILES
-      shader.hpp
+      ../shader.hpp
 
     PRIVATE
     FILE_SET implementation_headers
     TYPE HEADERS
-      FILES
-        shader_exception.hpp
+    BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+    FILES
+      shader_exception.hpp
 )
 
 target_link_libraries(shader 

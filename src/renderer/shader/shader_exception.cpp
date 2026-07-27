@@ -1,10 +1,11 @@
+#include <filesystem>
 #include <format>
 #include <shader_exception.hpp>
 #include <stdexcept>
 
 namespace ls {
 
-CompileError::CompileError(const std::string& file, const std::string& infoLog)
+CompileError::CompileError(const std::filesystem::path& file, const std::string& infoLog)
     : std::runtime_error("Failed to compile shader.") {
   std::string formattedInfoLog{infoLog};
   formatInfoLog(formattedInfoLog, "\n", "\n\t\t\t");
@@ -15,25 +16,25 @@ CompileError::CompileError(const std::string& file, const std::string& infoLog)
       "\n\t\tFile: \"{}\"."
       "\n\t\tInfo log: [ \n\t\t\t{} \n\t\t]"
       "\n\t]",
-      file,
+      file.string(),
       std::move(formattedInfoLog));
 }
 
 const char* CompileError::what() const noexcept { return formattedMessage_.c_str(); }
 
-OpenFileError::OpenFileError(const std::string& file) : std::runtime_error("Failed to load file.") {
+OpenFileError::OpenFileError(const std::filesystem::path& file) : std::runtime_error("Failed to load file.") {
   formattedMessage_ = std::format(
       "\tShader error: ["
       "\n\t\tCause: failed to open file."
       "\n\t\tFile: \"{}\"."
       "\n\t]",
-      file);
+      file.string());
 }
 
 const char* OpenFileError::what() const noexcept { return formattedMessage_.c_str(); }
 
-LinkError::LinkError(const std::string& vertexShaderPath,
-                     const std::string& fragmentShaderPath,
+LinkError::LinkError(const std::filesystem::path& vertexShaderPath,
+                     const std::filesystem::path& fragmentShaderPath,
                      const std::string& infoLog)
     : std::runtime_error("Failed to link program.") {
   std::string formattedInfoLog{infoLog};
@@ -48,8 +49,8 @@ LinkError::LinkError(const std::string& vertexShaderPath,
       "\n\t\t]"
       "\n\t\tInfo log: [ \n\t\t\t{} \n\t\t]"
       "\n\t]",
-      vertexShaderPath,
-      fragmentShaderPath,
+      vertexShaderPath.string(),
+      fragmentShaderPath.string(),
       std::move(formattedInfoLog));
 }
 

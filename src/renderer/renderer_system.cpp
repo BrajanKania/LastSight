@@ -2,33 +2,30 @@
 
 #include "glad/gl.h"
 
-namespace ls {
+namespace ls::renderer_system {
 
-namespace renderer_system {
+  namespace {
+    GLenum toGlPrimitive(Primitive primitive) {
+      switch (primitive) {
+        case Primitive::Triangle:
+          return GL_TRIANGLES;
+        case Primitive::Point:
+          return GL_POINTS;
+      }
+      return 0;
+    }
+  }  // namespace
 
-namespace {
-GLenum toGlPrimitive(Primitive primitive) {
-  switch (primitive) {
-    case Primitive::Triangle:
-      return GL_TRIANGLES;
-    case Primitive::Point:
-      return GL_POINTS;
+  void setClearColor(const glm::vec4& color) { glClearColor(color.r, color.g, color.b, color.a); }
+
+  void clearColorBuffer() { glClear(GL_COLOR_BUFFER_BIT); }
+
+  void drawArrays(unsigned int vao, Primitive primitive, unsigned int first, unsigned int count) {
+    glBindVertexArray(vao);
+    glDrawArrays(toGlPrimitive(primitive), first, count);
+    glBindVertexArray(0);
   }
-  return 0;
-}
-}  // namespace
 
-void setClearColor(const glm::vec4& color) { glClearColor(color.r, color.g, color.b, color.a); }
+  void useFramebuffer(unsigned int fbo) { glBindFramebuffer(GL_FRAMEBUFFER, fbo); }
 
-void clearColorBuffer() { glClear(GL_COLOR_BUFFER_BIT); }
-
-void drawArrays(unsigned int vao, Primitive primitive, unsigned int first, unsigned int count) {
-  glBindVertexArray(vao);
-  glDrawArrays(toGlPrimitive(primitive), first, count);
-  glBindVertexArray(0);
-}
-
-void useFramebuffer(unsigned int fbo) { glBindFramebuffer(GL_FRAMEBUFFER, fbo); }
-
-}  // namespace renderer_system
-}  // namespace ls
+}  // namespace ls::renderer_system
