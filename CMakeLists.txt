@@ -27,6 +27,8 @@ add_subdirectory(src/shader)
 add_executable(LastSight 
   src/main.cpp
   src/window.cpp
+  src/controller_system.cpp
+  src/renderer_system.cpp
 )
 
 target_link_libraries(

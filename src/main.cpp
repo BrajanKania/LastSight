@@ -1,6 +1,9 @@
 #include <SDL3/SDL_log.h>
+#include <SDL3/SDL_scancode.h>
 #include <glad/gl.h>
 
+#include "controller_system.hpp"
+#include "renderer_system.hpp"
 #include "shader.hpp"
 #include "window.hpp"
 
@@ -36,17 +39,20 @@ int main() {
 
     ls::Shader shader("assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
 
-    glClearColor(0.f, 0.f, 0.f, 1.f);
+    ls::renderer_system::setClearColor({0.2f, 0.2f, 0.2f, 1.f});
     while (!window.shouldClose()) {
       window.pollEvents();
 
-      glClear(GL_COLOR_BUFFER_BIT);
+      if (ls::controller_system::isKeyPressed(SDL_SCANCODE_ESCAPE)) {
+        window.close();
+      }
 
+      ls::renderer_system::useFramebuffer(0);
+
+      ls::renderer_system::clearColorBuffer();
       shader.use();
 
-      glBindVertexArray(vao);
-      glDrawArrays(GL_TRIANGLES, 0, 6);
-      glBindVertexArray(0);
+      ls::renderer_system::drawArrays(vao, ls::renderer_system::Primitive::Triangle, 0, 6);
 
       window.swapBuffers();
     }
