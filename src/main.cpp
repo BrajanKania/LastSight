@@ -2,7 +2,11 @@
 #include <SDL3/SDL_scancode.h>
 #include <glad/gl.h>
 
+#include <glm/ext/matrix_transform.hpp>
+
+#include "component.hpp"
 #include "controller_system.hpp"
+#include "ecs.hpp"
 #include "renderer_system.hpp"
 #include "shader.hpp"
 #include "window.hpp"
@@ -39,6 +43,15 @@ int main() {
 
     ls::Shader shader("assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
 
+    ls::ecs::Registry registry;
+    auto background{registry.createEntity()};
+    registry.addComponent(background, ls::component::Transform{.scale = glm::vec3(1.f)});
+    registry.addComponent(background, ls::component::Sprite{.color = {0.2f, 1.f, 0.2f}});
+
+    auto player{registry.createEntity()};
+    registry.addComponent(player, ls::component::Transform{.scale = glm::vec3(0.1f)});
+    registry.addComponent(player, ls::component::Sprite{.color = {0.2f, 0.2f, 1.0f}});
+
     ls::renderer_system::setClearColor({0.2f, 0.2f, 0.2f, 1.f});
     while (!window.shouldClose()) {
       window.pollEvents();
@@ -52,7 +65,17 @@ int main() {
       ls::renderer_system::clearColorBuffer();
       shader.use();
 
-      ls::renderer_system::drawArrays(vao, ls::renderer_system::Primitive::Triangle, 0, 6);
+      for (auto entity : registry.view<ls::component::Transform, ls::component::Sprite>()) {
+        const auto& transform{registry.getComponent<ls::component::Transform>(entity)};
+        const auto& sprite{registry.getComponent<ls::component::Sprite>(entity)};
+
+        glm::mat4 model{1.f};
+        model = glm::translate(model, transform.position);
+        model = glm::scale(model, transform.scale);
+        shader.setMat4("uModel", model);
+        shader.setVec3("uColor", sprite.color);
+        ls::renderer_system::drawArrays(vao, ls::renderer_system::Primitive::Triangle, 0, 6);
+      }
 
       window.swapBuffers();
     }
