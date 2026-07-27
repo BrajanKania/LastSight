@@ -33,7 +33,9 @@ add_executable(LastSight
 
   src/renderer/renderer_system.cpp
 
-  src/scene/world_scene.cpp
+  src/renderer/render_passes/lit_pass.cpp
+
+  src/scenes/world_scene.cpp
 )
 
 target_link_libraries(

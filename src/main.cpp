@@ -3,13 +3,10 @@
 #include <SDL3/SDL_timer.h>
 #include <glad/gl.h>
 
-#include <glm/ext/matrix_transform.hpp>
-
 #include "core/controller_system.hpp"
 #include "core/scene_manager.hpp"
 #include "core/window.hpp"
-#include "renderer/renderer_system.hpp"
-#include "scene/world_scene.hpp"
+#include "scenes/world_scene.hpp"
 
 int main() {
   try {
@@ -17,8 +14,6 @@ int main() {
     ls::SceneManager sceneManager{};
 
     sceneManager.pushScene<ls::WorldScene>();
-
-    ls::renderer_system::setClearColor({0.2f, 0.2f, 0.2f, 1.f});
 
     uint64_t lastTime{SDL_GetTicks()};
     while (!window.shouldClose()) {

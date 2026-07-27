@@ -1,10 +1,8 @@
 #pragma once
 
-#include <optional>
-
 #include "core/ecs.hpp"
 #include "core/scene.hpp"
-#include "renderer/shader.hpp"
+#include "renderer/render_pipeline.hpp"
 
 namespace ls {
 
@@ -21,9 +19,7 @@ namespace ls {
 
   private:
     ecs::Registry registry_;
-    std::optional<Shader> shader_;
-    unsigned int vao_;
-    unsigned int vbo_;
+    RenderPipeline renderPipeline_;
   };
 
 }  // namespace ls

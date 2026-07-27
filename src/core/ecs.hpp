@@ -74,7 +74,7 @@ namespace ls {
         using pointer = const Entity*;
         using reference = Entity;
 
-        Iterator(std::tuple<SparseSet<Components>*...> sets,
+        Iterator(std::tuple<const SparseSet<Components>*...> sets,
                  const std::vector<Entity>* smallestEntities,
                  std::size_t index)
             : sets_{sets},
@@ -116,12 +116,12 @@ namespace ls {
           return std::apply([&](auto*... s) { return (checkEntity(s) && ...); }, sets_);
         }
 
-        std::tuple<SparseSet<Components>*...> sets_;
+        std::tuple<const SparseSet<Components>*...> sets_;
         const std::vector<Entity>* smallestEntities_{nullptr};
         std::size_t index_{0};
       };
 
-      explicit View(SparseSet<Components>*... sets)
+      explicit View(const SparseSet<Components>*... sets)
           : sets_{sets...} {
         if (((sets == nullptr) || ...)) {
           smallestSetEntities_ = nullptr;
@@ -150,7 +150,7 @@ namespace ls {
       }
 
     private:
-      std::tuple<SparseSet<Components>*...> sets_;
+      std::tuple<const SparseSet<Components>*...> sets_;
       const std::vector<Entity>* smallestSetEntities_{nullptr};
     };
 
@@ -176,7 +176,7 @@ namespace ls {
       }
 
       template <typename T>
-      bool hasComponent(Entity entity) {
+      bool hasComponent(Entity entity) const {
         return getSparseSetPointer<T>()->hasComponent(entity);
       }
 
@@ -211,13 +211,13 @@ namespace ls {
       }
 
       template <typename... Components>
-      auto view() {
+      auto view() const {
         return View<Components...>(getSparseSetPointer<Components>()...);
       }
 
     private:
       template <typename T>
-      ComponentType getComponentTypeId() {
+      static ComponentType getComponentTypeId() {
         static ComponentType id{nextComponentType_++};
         return id;
       }
