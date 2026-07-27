@@ -22,13 +22,18 @@ find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(SDL3 REQUIRED COMPONENTS SDL3-static)
 find_package(glm REQUIRED)
 
-add_subdirectory(src/shader)
+add_subdirectory(src/renderer/shader)
 
 add_executable(LastSight 
   src/main.cpp
-  src/window.cpp
-  src/controller_system.cpp
-  src/renderer_system.cpp
+
+  src/core/window.cpp
+  src/core/controller_system.cpp
+  src/core/scene_manager.cpp
+
+  src/renderer/renderer_system.cpp
+
+  src/scene/world_scene.cpp
 )
 
 target_link_libraries(
