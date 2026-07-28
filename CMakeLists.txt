@@ -22,23 +22,22 @@ find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(SDL3 REQUIRED COMPONENTS SDL3-static)
 find_package(glm REQUIRED)
 
-add_subdirectory(src/renderer/shader)
-
 add_executable(LastSight 
   src/main.cpp
 
-  src/controller/controller_system.cpp
-  
-  src/renderer/renderer_system.cpp
-  src/renderer/render_passes/lit_pass.cpp
-  src/renderer/render_passes/compose_pass.cpp
-  src/renderer/render_passes/post_process_pass.cpp
-  src/renderer/framebuffer.cpp
+  src/engine/core/input_system.cpp
+  src/engine/core/window.cpp
+  src/engine/core/scene_manager.cpp
 
-  src/scene/scene_manager.cpp
-  src/scene/scenes/world_scene.cpp
+  src/engine/renderer/renderer_system.cpp
+  src/engine/renderer/passes/lit_pass.cpp
+  src/engine/renderer/passes/compose_pass.cpp
+  src/engine/renderer/passes/post_process_pass.cpp
+  src/engine/renderer/framebuffer.cpp
+  src/engine/renderer/shader.cpp
+  src/engine/renderer/shader_exception.cpp
 
-  src/window/window.cpp
+  src/game/scenes/world_scene.cpp
 )
 
 target_link_libraries(
@@ -48,7 +47,6 @@ target_link_libraries(
     glm::glm
     OpenGL::OpenGL
     SDL3::SDL3
-    shader
 )
 
 target_include_directories(

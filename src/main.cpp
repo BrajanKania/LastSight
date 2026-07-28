@@ -3,10 +3,10 @@
 #include <SDL3/SDL_timer.h>
 #include <glad/gl.h>
 
-#include "controller/controller_system.hpp"
-#include "scene/scene_manager.hpp"
-#include "scene/scenes/world_scene.hpp"
-#include "window/window.hpp"
+#include "engine/core/input_system.hpp"
+#include "engine/core/scene_manager.hpp"
+#include "engine/core/window.hpp"
+#include "game/scenes/world_scene.hpp"
 
 int main() {
   try {
@@ -23,7 +23,7 @@ int main() {
 
       window.pollEvents();
 
-      if (ls::controller_system::isKeyPressed(SDL_SCANCODE_ESCAPE)) {
+      if (ls::input_system::isKeyPressed(SDL_SCANCODE_ESCAPE)) {
         window.close();
       }
 
