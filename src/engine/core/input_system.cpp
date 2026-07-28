@@ -5,9 +5,30 @@
 
 namespace ls::input_system {
 
-  bool isKeyPressed(SDL_Scancode code) {
+  namespace {
+    SDL_Scancode toScancode(Key key) {
+      switch (key) {
+        case Key::W:
+          return SDL_SCANCODE_W;
+        case Key::A:
+          return SDL_SCANCODE_A;
+        case Key::S:
+          return SDL_SCANCODE_S;
+        case Key::D:
+          return SDL_SCANCODE_D;
+        case Key::Escape:
+          return SDL_SCANCODE_ESCAPE;
+        case Key::LShift:
+          return SDL_SCANCODE_LSHIFT;
+      }
+
+      return SDL_SCANCODE_ESCAPE;
+    }
+  }  // namespace
+
+  bool isKeyPressed(Key key) {
     const bool* keys{SDL_GetKeyboardState(nullptr)};
-    return keys[code];
+    return keys[toScancode(key)];
   }
 
 }  // namespace ls::input_system

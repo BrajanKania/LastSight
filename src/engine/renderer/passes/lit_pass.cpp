@@ -1,6 +1,7 @@
 #include "engine/renderer/passes/lit_pass.hpp"
 
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/fwd.hpp>
 #include <memory>
 
 #include "engine/components/sprite.hpp"
@@ -56,8 +57,8 @@ namespace ls {
       const auto& sprite{ctx.registry.getComponent<ls::component::Sprite>(entity)};
 
       glm::mat4 model{1.f};
-      model = glm::translate(model, transform.position);
-      model = glm::scale(model, transform.scale);
+      model = glm::translate(model, glm::vec3(transform.position.x, transform.position.y, 0.f));
+      model = glm::scale(model, glm::vec3(transform.scale.x, transform.scale.y, 1.f));
       shader_->setMat4("uModel", model);
       shader_->setVec3("uColor", sprite.color);
       renderer_system::drawArrays(vao_, ls::renderer_system::Primitive::Triangle, 0, 6);

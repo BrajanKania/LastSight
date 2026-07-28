@@ -1,5 +1,4 @@
 #include <SDL3/SDL_log.h>
-#include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_timer.h>
 #include <glad/gl.h>
 
@@ -23,7 +22,7 @@ int main() {
 
       window.pollEvents();
 
-      if (ls::input_system::isKeyPressed(SDL_SCANCODE_ESCAPE)) {
+      if (ls::input_system::isKeyPressed(ls::input_system::Key::Escape)) {
         window.close();
       }
 

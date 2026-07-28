@@ -37,6 +37,10 @@ add_executable(LastSight
   src/engine/renderer/shader.cpp
   src/engine/renderer/shader_exception.cpp
 
+  src/engine/physics/physics_system.cpp
+
+  src/game/systems/player_system.cpp
+
   src/game/scenes/world_scene.cpp
 )
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <SDL3/SDL_scancode.h>
-
 namespace ls::input_system {
 
-  bool isKeyPressed(SDL_Scancode code);
+  enum class Key { W, A, S, D, LShift, Escape };
+
+  bool isKeyPressed(Key key);
 
 }  // namespace ls::input_system
