@@ -27,15 +27,18 @@ add_subdirectory(src/renderer/shader)
 add_executable(LastSight 
   src/main.cpp
 
-  src/core/window.cpp
-  src/core/controller_system.cpp
-  src/core/scene_manager.cpp
-
+  src/controller/controller_system.cpp
+  
   src/renderer/renderer_system.cpp
-
   src/renderer/render_passes/lit_pass.cpp
+  src/renderer/render_passes/compose_pass.cpp
+  src/renderer/render_passes/post_process_pass.cpp
+  src/renderer/framebuffer.cpp
 
-  src/scenes/world_scene.cpp
+  src/scene/scene_manager.cpp
+  src/scene/scenes/world_scene.cpp
+
+  src/window/window.cpp
 )
 
 target_link_libraries(
@@ -54,10 +57,27 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-add_custom_command(
-  TARGET LastSight POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-  "${CMAKE_CURRENT_BINARY_DIR}/assets"
-)
+option(USE_LINK_TO_ASSETS_DIR "" OFF)
+
+if(USE_LINK_TO_ASSETS_DIR)
+  if(EXISTS "${CMAKE_BINARY_DIR}/assets" AND NOT IS_SYMLINK "${CMAKE_BINARY_DIR}/assets")
+      file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/assets")
+  endif()
+
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/assets")
+      file(CREATE_LINK
+          "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+          "${CMAKE_BINARY_DIR}/assets"
+          SYMBOLIC
+      )
+      message(STATUS "Created symlink to assets: ${CMAKE_BINARY_DIR}/assets")
+  endif()
+else()
+  add_custom_target(copy_assets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+            "${CMAKE_BINARY_DIR}/assets"
+  )
+  add_dependencies(LastSight copy_assets)
+endif()
 

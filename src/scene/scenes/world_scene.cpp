@@ -4,10 +4,14 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <memory>
 
 #include "core/component.hpp"
+#include "renderer/framebuffer.hpp"
 #include "renderer/render_pass.hpp"
+#include "renderer/render_passes/compose_pass.hpp"
 #include "renderer/render_passes/lit_pass.hpp"
+#include "renderer/render_passes/post_process_pass.hpp"
 
 namespace ls {
 
@@ -20,7 +24,12 @@ namespace ls {
     registry_.addComponent(player, ls::component::Transform{.scale = glm::vec3(0.1f)});
     registry_.addComponent(player, ls::component::Sprite{.color = {0.2f, 0.2f, 1.0f}});
 
-    renderPipeline_.addPass<LitPass>();
+    auto worldFBO{std::make_shared<Framebuffer>(1000, 800)};
+    auto processedFBO{std::make_shared<Framebuffer>(1000, 800)};
+
+    renderPipeline_.addPass<LitPass>(worldFBO);
+    renderPipeline_.addPass<PostProcessPass>(processedFBO, worldFBO);
+    renderPipeline_.addPass<ComposePass>(processedFBO);
   }
 
   void WorldScene::onExit() {}

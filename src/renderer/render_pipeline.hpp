@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "render_pass.hpp"
@@ -10,9 +11,9 @@ namespace ls {
 
   class RenderPipeline {
   public:
-    template <typename T>
-    void addPass() {
-      auto newPass{std::make_unique<T>()};
+    template <typename T, typename... Args>
+    void addPass(Args&&... args) {
+      auto newPass{std::make_unique<T>(std::forward<Args>(args)...)};
       newPass->onEnter();
       passes_.push_back(std::move(newPass));
     }

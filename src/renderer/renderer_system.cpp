@@ -26,6 +26,6 @@ namespace ls::renderer_system {
     glBindVertexArray(0);
   }
 
-  void useFramebuffer(unsigned int fbo) { glBindFramebuffer(GL_FRAMEBUFFER, fbo); }
+  void bindFramebuffer(unsigned int fbo) { glBindFramebuffer(GL_FRAMEBUFFER, fbo); }
 
 }  // namespace ls::renderer_system

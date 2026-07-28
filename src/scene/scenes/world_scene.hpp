@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/ecs.hpp"
-#include "core/scene.hpp"
 #include "renderer/render_pipeline.hpp"
+#include "scene/scene.hpp"
 
 namespace ls {
 

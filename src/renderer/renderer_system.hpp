@@ -12,6 +12,6 @@ namespace ls::renderer_system {
 
   void drawArrays(unsigned int vao, Primitive primitive, unsigned int first, unsigned int count);
 
-  void useFramebuffer(unsigned int fbo);
+  void bindFramebuffer(unsigned int fbo);
 
 }  // namespace ls::renderer_system

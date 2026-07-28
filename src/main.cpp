@@ -3,10 +3,10 @@
 #include <SDL3/SDL_timer.h>
 #include <glad/gl.h>
 
-#include "core/controller_system.hpp"
-#include "core/scene_manager.hpp"
-#include "core/window.hpp"
-#include "scenes/world_scene.hpp"
+#include "controller/controller_system.hpp"
+#include "scene/scene_manager.hpp"
+#include "scene/scenes/world_scene.hpp"
+#include "window/window.hpp"
 
 int main() {
   try {

@@ -1,15 +1,20 @@
 #include "lit_pass.hpp"
 
 #include <glm/ext/matrix_transform.hpp>
+#include <memory>
 
 #include "core/asset_system.hpp"
 #include "core/component.hpp"
+#include "renderer/framebuffer.hpp"
 #include "renderer/renderer_system.hpp"
 
 namespace ls {
 
+  LitPass::LitPass(std::shared_ptr<Framebuffer> framebuffer)
+      : worldFBO_{std::move(framebuffer)} {}
+
   void LitPass::onEnter() {
-    shader_.emplace(asset_system::shader("vertex.glsl"), asset_system::shader("fragment.glsl"));
+    shader_.emplace(asset_system::shader("lit_vertex.glsl"), asset_system::shader("lit_fragment.glsl"));
 
     // clang-format off
     float vertex[] {
@@ -38,9 +43,10 @@ namespace ls {
   }
 
   void LitPass::execute(const RenderContext& ctx) {
-    ls::renderer_system::setClearColor({0.2f, 0.2f, 0.2f, 1.f});
-    ls::renderer_system::useFramebuffer(0);
-    ls::renderer_system::clearColorBuffer();
+    worldFBO_->bind();
+
+    renderer_system::setClearColor({0.2f, 0.2f, 0.2f, 1.f});
+    renderer_system::clearColorBuffer();
 
     shader_->use();
 
@@ -53,8 +59,10 @@ namespace ls {
       model = glm::scale(model, transform.scale);
       shader_->setMat4("uModel", model);
       shader_->setVec3("uColor", sprite.color);
-      ls::renderer_system::drawArrays(vao_, ls::renderer_system::Primitive::Triangle, 0, 6);
+      renderer_system::drawArrays(vao_, ls::renderer_system::Primitive::Triangle, 0, 6);
     }
+
+    worldFBO_->unBind();
   }
 
 }  // namespace ls
