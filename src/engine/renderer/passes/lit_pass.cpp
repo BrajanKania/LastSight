@@ -14,7 +14,7 @@
 namespace ls {
 
   LitPass::LitPass(std::shared_ptr<Framebuffer> framebuffer)
-      : worldFBO_{std::move(framebuffer)} {}
+      : worldFBO_{ std::move(framebuffer) } {}
 
   void LitPass::onEnter() {
     shader_.emplace(asset_system::shader("lit_vertex.glsl"), asset_system::shader("lit_fragment.glsl"));
@@ -48,7 +48,7 @@ namespace ls {
   void LitPass::execute(const RenderContext& ctx) {
     worldFBO_->bind();
 
-    renderer_system::setClearColor({0.2f, 0.2f, 0.2f, 1.f});
+    renderer_system::setClearColor({ 0.2f, 0.2f, 0.2f, 1.f });
     renderer_system::clearColorBuffer();
 
     shader_->use();
@@ -56,16 +56,17 @@ namespace ls {
     shader_->setInt("uTexture", 0);
 
     for (auto entity : ctx.registry.view<component::Transform, component::Sprite>()) {
-      const auto& transform{ctx.registry.getComponent<ls::component::Transform>(entity)};
-      const auto& sprite{ctx.registry.getComponent<ls::component::Sprite>(entity)};
+      const auto& transform{ ctx.registry.getComponent<ls::component::Transform>(entity) };
+      const auto& sprite{ ctx.registry.getComponent<ls::component::Sprite>(entity) };
 
-      const Texture2D* texture{ctx.textureManager.get(sprite.textureId)};
+      const Texture2D* texture{ ctx.textureManager.get(sprite.textureId) };
       if (texture) {
         texture->bind(0);
       }
 
-      glm::mat4 model{1.f};
+      glm::mat4 model{ 1.f };
       model = glm::translate(model, glm::vec3(transform.position.x, transform.position.y, 0.f));
+      model = glm::rotate(model, glm::radians(transform.rotation), glm::vec3(0.f, 0.f, 1.f));
       model = glm::scale(model, glm::vec3(transform.scale.x, transform.scale.y, 1.f));
       shader_->setMat4("uModel", model);
       shader_->setVec4("uColor", sprite.color);

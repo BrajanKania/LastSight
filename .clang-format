@@ -16,4 +16,6 @@ PackConstructorInitializers: Never
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 FixNamespaceComments: true
+Cpp11BracedListStyle: false
+AlignAfterOpenBracket: BlockIndent
 ...
