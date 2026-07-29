@@ -9,6 +9,7 @@
 #include "engine/components/sprite.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
+#include "engine/core/asset_system.hpp"
 #include "engine/physics/physics_system.hpp"
 #include "engine/renderer/framebuffer.hpp"
 #include "engine/renderer/i_render_pass.hpp"
@@ -24,14 +25,18 @@
 namespace ls {
 
   void WorldScene::onEnter() {
+    uint32_t playerTextureId{textureManager_.load("player", asset_system::texture("player.png"))};
+    uint32_t backgroundTextureId{textureManager_.load("grass", asset_system::texture("grass.jpg"))};
+
     auto background{registry_.createEntity()};
     registry_.addComponent(background, component::Transform{.scale = glm::vec2(5.f)});
-    registry_.addComponent(background, component::Sprite{.color = {0.2f, 1.f, 0.2f}});
+    registry_.addComponent(background,
+                           component::Sprite{.color = {1.f, 1.f, 1.f, 1.f}, .textureId = backgroundTextureId});
 
     player_ = registry_.createEntity();
     registry_.addComponent(player_, component::Player{});
     registry_.addComponent(player_, component::Transform{.scale = glm::vec2(0.5f)});
-    registry_.addComponent(player_, component::Sprite{.color = {0.2f, 0.2f, 1.0f}});
+    registry_.addComponent(player_, component::Sprite{.color = {1.f, 1.f, 1.f, 1.f}, .textureId = playerTextureId});
     registry_.addComponent(player_, component::Velocity{});
     registry_.addComponent(player_, component::Movement{});
 
@@ -65,10 +70,14 @@ namespace ls {
   }
 
   void WorldScene::render() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     for (auto entity : registry_.view<component::Camera>()) {
       const auto& camera{registry_.getComponent<component::Camera>(entity)};
       glm::mat4 viewProjection{camera.projection * camera.view};
-      renderPipeline_.execute(RenderContext{.registry = registry_, .viewProjection = viewProjection});
+      renderPipeline_.execute(
+          RenderContext{.registry = registry_, .viewProjection = viewProjection, .textureManager = textureManager_});
       break;
     }
   }

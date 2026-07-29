@@ -25,6 +25,7 @@ namespace ls {
     void setInt(const std::string& name, GLint value) const noexcept;
     void setFloat(const std::string& name, GLfloat value) const noexcept;
     void setVec3(const std::string& name, const glm::vec3& value) const noexcept;
+    void setVec4(const std::string& name, const glm::vec4& value) const noexcept;
     void setMat4(const std::string& name, const glm::mat4& value) const noexcept;
 
   private:

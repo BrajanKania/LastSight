@@ -150,6 +150,10 @@ namespace ls {
     glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(value));
   }
 
+  void Shader::setVec4(const std::string& name, const glm::vec4& value) const noexcept {
+    glUniform4fv(getUniformLocation(name), 1, glm::value_ptr(value));
+  }
+
   void Shader::setMat4(const std::string& name, const glm::mat4& value) const noexcept {
     glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
   }

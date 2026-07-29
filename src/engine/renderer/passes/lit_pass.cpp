@@ -9,6 +9,7 @@
 #include "engine/core/asset_system.hpp"
 #include "engine/renderer/framebuffer.hpp"
 #include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/texture_2d.hpp"
 
 namespace ls {
 
@@ -20,13 +21,13 @@ namespace ls {
 
     // clang-format off
     float vertex[] {
-      -0.5f, -0.5f,
-      0.5f, -0.5f,
-      0.5f, 0.5f,
+      0.f, 1.f,
+      0.f, 0.f,
+      1.f, 0.f,
 
-      -0.5f, -0.5f,
-      0.5f, 0.5f,
-      -0.5f, 0.5f
+      0.f, 1.f,
+      1.f, 0.f,
+      1.f, 1.f
     };
     // clang-format on
 
@@ -52,16 +53,22 @@ namespace ls {
 
     shader_->use();
     shader_->setMat4("uViewProjection", ctx.viewProjection);
+    shader_->setInt("uTexture", 0);
 
     for (auto entity : ctx.registry.view<component::Transform, component::Sprite>()) {
       const auto& transform{ctx.registry.getComponent<ls::component::Transform>(entity)};
       const auto& sprite{ctx.registry.getComponent<ls::component::Sprite>(entity)};
 
+      const Texture2D* texture{ctx.textureManager.get(sprite.textureId)};
+      if (texture) {
+        texture->bind(0);
+      }
+
       glm::mat4 model{1.f};
       model = glm::translate(model, glm::vec3(transform.position.x, transform.position.y, 0.f));
       model = glm::scale(model, glm::vec3(transform.scale.x, transform.scale.y, 1.f));
       shader_->setMat4("uModel", model);
-      shader_->setVec3("uColor", sprite.color);
+      shader_->setVec4("uColor", sprite.color);
       renderer_system::drawArrays(vao_, ls::renderer_system::Primitive::Triangle, 0, 6);
     }
 

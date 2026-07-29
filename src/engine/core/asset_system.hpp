@@ -24,4 +24,6 @@ namespace ls::asset_system {
 
   inline fs::path shader(const fs::path& name) { return asset(fs::path("shaders") / name); }
 
+  inline fs::path texture(const fs::path& name) { return asset(fs::path("textures") / name); }
+
 }  // namespace ls::asset_system

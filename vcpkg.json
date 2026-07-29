@@ -2,6 +2,7 @@
   "name": "last-sight",
   "dependencies": [
     "sdl3",
-    "glm"
+    "glm",
+    "stb"
   ]
 }

@@ -11,6 +11,7 @@ int main() {
   try {
     ls::Window window(1000, 800);
     ls::SceneManager sceneManager{};
+    sceneManager.onResize(1000, 800);
 
     sceneManager.pushScene<ls::WorldScene>();
 

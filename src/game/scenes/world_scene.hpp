@@ -7,6 +7,7 @@
 #include "engine/ecs/types.hpp"
 #include "engine/renderer/framebuffer.hpp"
 #include "engine/renderer/render_pipeline.hpp"
+#include "engine/renderer/texture_manager.hpp"
 
 namespace ls {
 
@@ -25,6 +26,7 @@ namespace ls {
   private:
     ecs::Registry registry_;
     RenderPipeline renderPipeline_;
+    TextureManager textureManager_;
 
     std::shared_ptr<Framebuffer> worldFBO_{nullptr};
     std::shared_ptr<Framebuffer> processedFBO_{nullptr};

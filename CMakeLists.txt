@@ -28,6 +28,7 @@ add_executable(LastSight
   src/engine/core/input_system.cpp
   src/engine/core/window.cpp
   src/engine/core/scene_manager.cpp
+  src/engine/core/stb_impl.cpp
 
   src/engine/renderer/renderer_system.cpp
   src/engine/renderer/passes/lit_pass.cpp
@@ -36,6 +37,8 @@ add_executable(LastSight
   src/engine/renderer/framebuffer.cpp
   src/engine/renderer/shader.cpp
   src/engine/renderer/shader_exception.cpp
+  src/engine/renderer/texture_2d.cpp
+  src/engine/renderer/texture_manager.cpp
 
   src/engine/physics/physics_system.cpp
 
