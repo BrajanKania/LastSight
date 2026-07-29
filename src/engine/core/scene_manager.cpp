@@ -44,4 +44,9 @@ namespace ls {
     pendingOperations_.clear();
   }
 
+  void SceneManager::onResize(int width, int height) {
+    for (auto& scene : scenes_)
+      scene->onResize(width, height);
+  }
+
 }  // namespace ls

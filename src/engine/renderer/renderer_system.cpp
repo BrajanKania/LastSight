@@ -14,7 +14,17 @@ namespace ls::renderer_system {
       }
       return 0;
     }
+
+    glm::vec2 viewportSize{0.f, 0.f};
+
   }  // namespace
+
+  void setViewport(int x, int y, int width, int height) {
+    glViewport(x, y, width, height);
+    viewportSize = glm::vec2(width, height);
+  }
+
+  glm::vec2 getViewportSize() { return viewportSize; }
 
   void setClearColor(const glm::vec4& color) { glClearColor(color.r, color.g, color.b, color.a); }
 

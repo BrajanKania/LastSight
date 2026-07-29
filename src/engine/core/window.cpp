@@ -13,7 +13,8 @@
 namespace ls {
 
   Window::Window(int width, int height)
-      : size_{width, height} {
+      : width_{width},
+        height_{height} {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
       throw std::runtime_error(std::format("Failed to initialize SDL3: {}", SDL_GetError()));
     }
@@ -22,7 +23,7 @@ namespace ls {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    window_ = SDL_CreateWindow("Last sight", size_.x, size_.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    window_ = SDL_CreateWindow("Last sight", width_, height_, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window_) {
       SDL_Quit();
       throw std::runtime_error(std::format("Failed to create window: {}", SDL_GetError()));
@@ -65,16 +66,17 @@ namespace ls {
   }
 
   void Window::pollEvents() {
+    wasResized_ = false;
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
         close();
 
       if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-        int w, h;
-        SDL_GetWindowSizeInPixels(window_, &w, &h);
-        size_ = {w, h};
+        SDL_GetWindowSizeInPixels(window_, &width_, &height_);
         resizeViewport();
+        wasResized_ = true;
       }
     }
   }

@@ -6,6 +6,10 @@ namespace ls::renderer_system {
 
   enum class Primitive { Triangle, Point };
 
+  void setViewport(int x, int y, int width, int height);
+
+  glm::vec2 getViewportSize();
+
   void setClearColor(const glm::vec4& color);
 
   void clearColorBuffer();

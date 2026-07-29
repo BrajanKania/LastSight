@@ -4,6 +4,8 @@
 
 #include <glm/glm.hpp>
 
+#include "engine/renderer/renderer_system.hpp"
+
 namespace ls {
 
   class Window {
@@ -16,22 +18,27 @@ namespace ls {
     Window(Window&&) = delete;
     Window& operator=(Window&&) = delete;
 
-    glm::ivec2 size() const { return size_; }
+    int getWidth() const { return width_; }
+    int getHeight() const { return height_; }
     bool shouldClose() const { return shouldClose_; }
     void close() { shouldClose_ = true; }
 
     void swapBuffers() { SDL_GL_SwapWindow(window_); }
     void pollEvents();
 
+    bool wasResized() const { return wasResized_; }
+
   private:
-    void resizeViewport() { glViewport(0, 0, size_.x, size_.y); }
+    void resizeViewport() { renderer_system::setViewport(0, 0, width_, height_); }
 
   private:
     SDL_Window* window_{nullptr};
     SDL_GLContext glContext_{nullptr};
 
-    glm::ivec2 size_{};
+    int width_{0};
+    int height_{0};
     bool shouldClose_{false};
+    bool wasResized_{false};
   };
 
 }  // namespace ls

@@ -1,11 +1,14 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include "engine/ecs/registry.hpp"
 
 namespace ls {
 
   struct RenderContext {
     const ecs::Registry& registry;
+    const glm::mat4& viewProjection{1.f};
   };
 
   class IRenderPass {

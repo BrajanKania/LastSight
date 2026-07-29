@@ -67,4 +67,11 @@ namespace ls {
   void Framebuffer::bind() const { renderer_system::bindFramebuffer(fbo_); }
   void Framebuffer::unBind() const { renderer_system::bindFramebuffer(0); }
 
+  void Framebuffer::resize(int width, int height) {
+    width_ = width;
+    height_ = height;
+    glBindTexture(GL_TEXTURE_2D, colorTexture_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
 }  // namespace ls

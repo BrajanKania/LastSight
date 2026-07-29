@@ -51,6 +51,7 @@ namespace ls {
     renderer_system::clearColorBuffer();
 
     shader_->use();
+    shader_->setMat4("uViewProjection", ctx.viewProjection);
 
     for (auto entity : ctx.registry.view<component::Transform, component::Sprite>()) {
       const auto& transform{ctx.registry.getComponent<ls::component::Transform>(entity)};

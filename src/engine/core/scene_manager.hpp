@@ -38,6 +38,8 @@ namespace ls {
     void update(float dt);
     void render();
 
+    void onResize(int width, int height);
+
   private:
     void processPendingOperations();
 

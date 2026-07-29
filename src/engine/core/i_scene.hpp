@@ -13,6 +13,8 @@ namespace ls {
     virtual void update(float dt) = 0;
     virtual void render() = 0;
 
+    virtual void onResize(int width, int height) = 0;
+
     virtual bool isOpaque() const { return true; }
   };
 

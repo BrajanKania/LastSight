@@ -26,6 +26,10 @@ int main() {
         window.close();
       }
 
+      if (window.wasResized()) {
+        sceneManager.onResize(window.getWidth(), window.getHeight());
+      }
+
       sceneManager.handleInput();
 
       sceneManager.update(dt);

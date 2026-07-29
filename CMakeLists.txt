@@ -40,6 +40,7 @@ add_executable(LastSight
   src/engine/physics/physics_system.cpp
 
   src/game/systems/player_system.cpp
+  src/game/systems/camera_system.cpp
 
   src/game/scenes/world_scene.cpp
 )

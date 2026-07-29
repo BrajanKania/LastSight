@@ -21,6 +21,8 @@ namespace ls {
     void bind() const;
     void unBind() const;
 
+    void resize(int width, int height);
+
   private:
     unsigned int fbo_{0};
     unsigned int colorTexture_{0};
