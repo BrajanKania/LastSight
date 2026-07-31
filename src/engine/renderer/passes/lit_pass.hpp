@@ -11,15 +11,15 @@ namespace ls {
 
   class LitPass : public IRenderPass {
   public:
-    LitPass(std::shared_ptr<Framebuffer> worldFBO);
+    LitPass(std::shared_ptr<Framebuffer> target);
     void onEnter() override;
     void execute(const RenderContext& ctx) override;
 
   private:
-    std::shared_ptr<Framebuffer> worldFBO_;
+    std::shared_ptr<Framebuffer> targetFBO_;
     std::optional<Shader> shader_;
-    unsigned int vao_{0};
-    unsigned int vbo_{0};
+    unsigned int vao_{ 0 };
+    unsigned int vbo_{ 0 };
   };
 
 }  // namespace ls

@@ -28,10 +28,11 @@ namespace ls {
     RenderPipeline renderPipeline_;
     TextureManager textureManager_;
 
-    std::shared_ptr<Framebuffer> worldFBO_{nullptr};
-    std::shared_ptr<Framebuffer> processedFBO_{nullptr};
+    std::shared_ptr<Framebuffer> worldFBO_{ nullptr };
+    std::shared_ptr<Framebuffer> fovFBO_{ nullptr };
+    std::shared_ptr<Framebuffer> processedFBO_{ nullptr };
 
-    ecs::Entity player_{0};
+    ecs::Entity player_{ 0 };
   };
 
 }  // namespace ls

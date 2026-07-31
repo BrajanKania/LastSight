@@ -18,12 +18,14 @@ namespace ls::ecs {
       using pointer = const Entity*;
       using reference = Entity;
 
-      Iterator(std::tuple<const SparseSet<Components>*...> sets,
-               const std::vector<Entity>* smallestEntities,
-               std::size_t index)
-          : sets_{sets},
-            smallestEntities_{smallestEntities},
-            index_{index} {
+      Iterator(
+          std::tuple<const SparseSet<Components>*...> sets,
+          const std::vector<Entity>* smallestEntities,
+          std::size_t index
+      )
+          : sets_{ sets },
+            smallestEntities_{ smallestEntities },
+            index_{ index } {
         advanceToValid();
       }
 
@@ -61,12 +63,12 @@ namespace ls::ecs {
       }
 
       std::tuple<const SparseSet<Components>*...> sets_;
-      const std::vector<Entity>* smallestEntities_{nullptr};
-      std::size_t index_{0};
+      const std::vector<Entity>* smallestEntities_{ nullptr };
+      std::size_t index_{ 0 };
     };
 
     explicit View(const SparseSet<Components>*... sets)
-        : sets_{sets...} {
+        : sets_{ sets... } {
       if (((sets == nullptr) || ...)) {
         smallestSetEntities_ = nullptr;
         return;
@@ -93,9 +95,16 @@ namespace ls::ecs {
       return Iterator(sets_, smallestSetEntities_, endIdx);
     }
 
+    size_t size() const {
+      if (smallestSetEntities_)
+        return smallestSetEntities_->size();
+
+      return 0;
+    }
+
   private:
     std::tuple<const SparseSet<Components>*...> sets_;
-    const std::vector<Entity>* smallestSetEntities_{nullptr};
+    const std::vector<Entity>* smallestSetEntities_{ nullptr };
   };
 
 }  // namespace ls::ecs

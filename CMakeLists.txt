@@ -34,6 +34,7 @@ add_executable(LastSight
   src/engine/renderer/passes/lit_pass.cpp
   src/engine/renderer/passes/compose_pass.cpp
   src/engine/renderer/passes/post_process_pass.cpp
+  src/engine/renderer/passes/fov_pass.cpp
   src/engine/renderer/framebuffer.cpp
   src/engine/renderer/shader.cpp
   src/engine/renderer/shader_exception.cpp

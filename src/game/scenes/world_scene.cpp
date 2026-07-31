@@ -13,10 +13,13 @@
 #include "engine/physics/physics_system.hpp"
 #include "engine/renderer/framebuffer.hpp"
 #include "engine/renderer/i_render_pass.hpp"
+#include "engine/renderer/layer.hpp"
 #include "engine/renderer/passes/compose_pass.hpp"
+#include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
 #include "engine/renderer/passes/post_process_pass.hpp"
 #include "game/components/camera.hpp"
+#include "game/components/field_of_view.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
 #include "game/systems/camera_system.hpp"
@@ -33,8 +36,9 @@ namespace ls {
     registry_.addComponent(
         background,
         component::Sprite{
-            .color = { 1.f, 1.f, 1.f, 1.f },
+            .uvScale = glm::vec2(2.5f),
             .textureId = backgroundTextureId,
+            .zIndex = layer::Background,
         }
     );
 
@@ -49,28 +53,41 @@ namespace ls {
     registry_.addComponent(
         player_,
         component::Sprite{
-            .color = { 1.f, 1.f, 1.f, 1.f },
+            .uvScale = glm::vec2(1.f),
             .textureId = playerTextureId,
+            .zIndex = layer::Ground,
         }
     );
     registry_.addComponent(player_, component::Velocity{});
     registry_.addComponent(player_, component::Movement{});
+    registry_.addComponent(
+        player_,
+        component::FieldOfView{
+            .innerRadius = 1.0f,
+            .outerRadius = 6.f,
+            .fovAngle = 100.f,
+            .smoothnessAngle = 40.f,
+            .smoothnessDistance = 2.f,
+        }
+    );
 
     auto camera{ registry_.createEntity() };
     registry_.addComponent(
         camera,
         component::Camera{
-            .orthographicSize = 10.f,
+            .orthographicSize = 9.f,
             .zoom = 1.f,
         }
     );
     registry_.addComponent(camera, component::Transform{});
 
     worldFBO_ = std::make_shared<Framebuffer>(1000, 800);
+    fovFBO_ = std::make_shared<Framebuffer>(1000, 800);
     processedFBO_ = std::make_shared<Framebuffer>(1000, 800);
 
     renderPipeline_.addPass<LitPass>(worldFBO_);
-    renderPipeline_.addPass<PostProcessPass>(processedFBO_, worldFBO_);
+    renderPipeline_.addPass<FovPass>(fovFBO_, worldFBO_);
+    renderPipeline_.addPass<PostProcessPass>(processedFBO_, fovFBO_);
     renderPipeline_.addPass<ComposePass>(processedFBO_);
   }
 
@@ -79,6 +96,7 @@ namespace ls {
   void WorldScene::onResize(int width, int height) {
     worldFBO_->resize(width, height);
     processedFBO_->resize(width, height);
+    fovFBO_->resize(width, height);
   }
 
   void WorldScene::handleInput() {}
@@ -87,7 +105,7 @@ namespace ls {
     player_system::update(registry_, dt);
     physics_system::update(registry_, dt);
 
-    camera_system::follow(registry_, player_, dt, 10.f);
+    camera_system::follow(registry_, player_, dt, 6.f);
     camera_system::update(registry_);
   }
 

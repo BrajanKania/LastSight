@@ -6,7 +6,7 @@ uniform sampler2D uTexture;
 
 out vec4 fragColor;
 
-const float offset = 1.f / 200.f;
+const float offset = 1.f / 1200.f;
 
 void main(){
   vec2 offsets[9] = vec2[](

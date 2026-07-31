@@ -10,10 +10,11 @@ namespace ls::physics_system {
 
     void applyVelocity(ecs::Registry& registry, float dt) {
       for (auto entity : registry.view<component::Transform, component::Velocity>()) {
-        auto& transform{registry.getComponent<component::Transform>(entity)};
-        const auto& velocity{registry.getComponent<component::Velocity>(entity)};
+        auto& transform{ registry.getComponent<component::Transform>(entity) };
+        const auto& velocity{ registry.getComponent<component::Velocity>(entity) };
 
         transform.position += velocity.linear * dt;
+        transform.rotation += velocity.angular * dt;
       }
     }
 

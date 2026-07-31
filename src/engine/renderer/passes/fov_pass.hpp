@@ -9,18 +9,16 @@
 
 namespace ls {
 
-  class PostProcessPass : public IRenderPass {
+  class FovPass : public IRenderPass {
   public:
-    PostProcessPass(std::shared_ptr<Framebuffer> target, std::shared_ptr<Framebuffer> source);
+    FovPass(std::shared_ptr<Framebuffer> target, std::shared_ptr<Framebuffer> source);
     void onEnter() override;
     void execute(const RenderContext& ctx) override;
 
   private:
     std::shared_ptr<Framebuffer> targetFBO_;
     std::shared_ptr<Framebuffer> sourceFBO_;
-
     std::optional<Shader> shader_;
-
     unsigned int vao_{ 0 };
     unsigned int vbo_{ 0 };
   };

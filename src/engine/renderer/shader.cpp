@@ -16,8 +16,8 @@
 namespace ls {
 
   Shader::Shader(const std::filesystem::path& vertexShaderPath, const std::filesystem::path& fragmentShaderPath) {
-    GLuint vertexShader{createShader(GL_VERTEX_SHADER, vertexShaderPath)};
-    GLuint fragmentShader{createShader(GL_FRAGMENT_SHADER, fragmentShaderPath)};
+    GLuint vertexShader{ createShader(GL_VERTEX_SHADER, vertexShaderPath) };
+    GLuint fragmentShader{ createShader(GL_FRAGMENT_SHADER, fragmentShaderPath) };
 
     createProgram(vertexShader, fragmentShader, vertexShaderPath, fragmentShaderPath);
 
@@ -32,9 +32,9 @@ namespace ls {
   void Shader::use() noexcept { glUseProgram(shaderProgram_); }
 
   GLuint Shader::createShader(GLenum type, const std::filesystem::path& path) {
-    std::string code{loadSource(path)};
-    const char* source{code.c_str()};
-    GLuint shader{compileShader(type, source, path)};
+    std::string code{ loadSource(path) };
+    const char* source{ code.c_str() };
+    GLuint shader{ compileShader(type, source, path) };
     return shader;
   }
 
@@ -56,11 +56,11 @@ namespace ls {
   }
 
   GLuint Shader::compileShader(GLenum type, const char* source, const std::filesystem::path& shaderPath) const {
-    GLuint shader{glCreateShader(type)};
+    GLuint shader{ glCreateShader(type) };
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
 
-    int success{0};
+    int success{ 0 };
     std::array<char, 512> infoLog;
 
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -74,10 +74,12 @@ namespace ls {
     return shader;
   }
 
-  void Shader::createProgram(GLuint vertexShader,
-                             GLuint fragmentShader,
-                             const std::filesystem::path& vertexShaderPath,
-                             const std::filesystem::path& fragmentShaderPath) {
+  void Shader::createProgram(
+      GLuint vertexShader,
+      GLuint fragmentShader,
+      const std::filesystem::path& vertexShaderPath,
+      const std::filesystem::path& fragmentShaderPath
+  ) {
     if (!vertexShader || !fragmentShader)
       return;
 
@@ -87,7 +89,7 @@ namespace ls {
 
     glLinkProgram(shaderProgram_);
 
-    int success{0};
+    int success{ 0 };
     std::array<char, 512> infoLog;
 
     glGetProgramiv(shaderProgram_, GL_LINK_STATUS, &success);
@@ -107,28 +109,28 @@ namespace ls {
   }
 
   void Shader::cacheUniforms() {
-    GLint uniformsCount{0};
+    GLint uniformsCount{ 0 };
     glGetProgramiv(shaderProgram_, GL_ACTIVE_UNIFORMS, &uniformsCount);
 
     if (uniformsCount == 0)
       return;
 
-    GLint maxLength{0};
+    GLint maxLength{ 0 };
     glGetProgramiv(shaderProgram_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxLength);
     std::vector<char> nameBuffer(maxLength);
-    for (GLint i{0}; i < uniformsCount; i++) {
-      GLsizei uniformLength{0};
+    for (GLint i{ 0 }; i < uniformsCount; i++) {
+      GLsizei uniformLength{ 0 };
 
       glGetActiveUniform(shaderProgram_, i, nameBuffer.size(), &uniformLength, nullptr, nullptr, nameBuffer.data());
 
       std::string name(nameBuffer.data(), uniformLength);
-      GLint uniformLocation{glGetUniformLocation(shaderProgram_, name.c_str())};
+      GLint uniformLocation{ glGetUniformLocation(shaderProgram_, name.c_str()) };
       uniformLocations_[name] = uniformLocation;
     }
   }
 
   GLint Shader::getUniformLocation(const std::string& name) const noexcept {
-    if (auto it{uniformLocations_.find(name)}; it != uniformLocations_.end())
+    if (auto it{ uniformLocations_.find(name) }; it != uniformLocations_.end())
       return it->second;
 
     return -1;
@@ -144,6 +146,10 @@ namespace ls {
 
   void Shader::setFloat(const std::string& name, GLfloat value) const noexcept {
     glUniform1f(getUniformLocation(name), value);
+  }
+
+  void Shader::setVec2(const std::string& name, const glm::vec2& value) const noexcept {
+    glUniform2fv(getUniformLocation(name), 1, glm::value_ptr(value));
   }
 
   void Shader::setVec3(const std::string& name, const glm::vec3& value) const noexcept {

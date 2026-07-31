@@ -7,13 +7,14 @@
 
 namespace ls {
 
-  PostProcessPass::PostProcessPass(std::shared_ptr<Framebuffer> processedFBO, std::shared_ptr<Framebuffer> worldFBO)
-      : processedFBO_{processedFBO},
-        worldFBO_{worldFBO} {}
+  PostProcessPass::PostProcessPass(std::shared_ptr<Framebuffer> target, std::shared_ptr<Framebuffer> source)
+      : targetFBO_{ target },
+        sourceFBO_{ source } {}
 
   void PostProcessPass::onEnter() {
-    shader_.emplace(asset_system::shader("post_process_vertex.glsl"),
-                    asset_system::shader("post_process_fragment.glsl"));
+    shader_.emplace(
+        asset_system::shader("post_process_vertex.glsl"), asset_system::shader("post_process_fragment.glsl")
+    );
 
     // clang-format off
     float vertex[] {
@@ -43,18 +44,18 @@ namespace ls {
   }
 
   void PostProcessPass::execute(const RenderContext& ctx) {
-    processedFBO_->bind();
+    targetFBO_->bind();
 
     renderer_system::clearColorBuffer();
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, worldFBO_->getColorBufferID());
+    glBindTexture(GL_TEXTURE_2D, sourceFBO_->getColorBufferID());
 
     shader_->use();
     shader_->setInt("uTexture", 0);
 
     renderer_system::drawArrays(vao_, renderer_system::Primitive::Triangle, 0, 6);
 
-    processedFBO_->unBind();
+    targetFBO_->unBind();
   }
 }  // namespace ls

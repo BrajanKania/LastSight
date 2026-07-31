@@ -5,6 +5,7 @@
 #include <cmath>
 #include <glm/geometric.hpp>
 #include <glm/glm.hpp>
+#include <glm/trigonometric.hpp>
 
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
@@ -51,8 +52,10 @@ namespace ls::player_system {
       return glm::vec2(worldPos.x, worldPos.y);
     }
 
-    void handleRotation(ecs::Registry& registry, const ecs::Entity playerEntity) {
-      auto& transform{ registry.getComponent<component::Transform>(playerEntity) };
+    void handleRotation(ecs::Registry& registry, const ecs::Entity playerEntity, float dt) {
+      const auto& movement{ registry.getComponent<component::Movement>(playerEntity) };
+      const auto& transform{ registry.getComponent<component::Transform>(playerEntity) };
+      auto& velocity{ registry.getComponent<component::Velocity>(playerEntity) };
 
       for (auto entity : registry.view<component::Camera>()) {
         const auto& camera{ registry.getComponent<component::Camera>(entity) };
@@ -65,7 +68,13 @@ namespace ls::player_system {
 
         glm::vec2 direction{ mouseWorldPos - transform.position };
         if (glm::length(direction) > 0.001f) {
-          transform.rotation = glm::degrees(std::atan2(direction.y, direction.x)) - 90.f;
+          float targetAngle{ glm::degrees(std::atan2(direction.y, direction.x)) - 90.f };
+          float angleDiff{ std::remainder(targetAngle - transform.rotation, 360.f) };
+          float desiredAngularSpeed{ angleDiff / dt };
+          float maxAngularSpeed{ movement.angularSpeed };
+          velocity.angular = glm::clamp(desiredAngularSpeed, -maxAngularSpeed, maxAngularSpeed);
+        } else {
+          velocity.angular = 0.f;
         }
         break;
       }
@@ -76,7 +85,7 @@ namespace ls::player_system {
   void update(ecs::Registry& registry, float dt) {
     for (auto entity : registry.view<component::Player, component::Velocity, component::Movement>()) {
       handleInput(registry, entity);
-      handleRotation(registry, entity);
+      handleRotation(registry, entity, dt);
     }
   }
 

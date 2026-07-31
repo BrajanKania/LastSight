@@ -7,8 +7,8 @@
 
 namespace ls {
 
-  ComposePass::ComposePass(std::shared_ptr<Framebuffer> litFramebuffer)
-      : processedFBO_{litFramebuffer} {}
+  ComposePass::ComposePass(std::shared_ptr<Framebuffer> target)
+      : targetFBO_{ target } {}
 
   void ComposePass::onEnter() {
     shader_.emplace(asset_system::shader("compose_vertex.glsl"), asset_system::shader("compose_fragment.glsl"));
@@ -47,7 +47,7 @@ namespace ls {
 
     shader_->use();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, processedFBO_->getColorBufferID());
+    glBindTexture(GL_TEXTURE_2D, targetFBO_->getColorBufferID());
     shader_->setInt("uLitTexture", 0);
 
     renderer_system::drawArrays(vao_, renderer_system::Primitive::Triangle, 0, 6);

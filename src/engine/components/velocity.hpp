@@ -5,7 +5,8 @@
 namespace ls::component {
 
   struct Velocity {
-    glm::vec2 linear{0.f, 0.f};
+    glm::vec2 linear{ 0.f, 0.f };
+    float angular{ 0.f };
   };
 
 }  // namespace ls::component
