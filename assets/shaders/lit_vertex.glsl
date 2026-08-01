@@ -9,6 +9,6 @@ uniform vec2 uUvScale;
 out vec2 texCoords;
 
 void main(){
-  gl_Position = uViewProjection * uModel * vec4(aPos.xy * 2.f - 1.f, 0.f, 1.f);
+  gl_Position = uViewProjection * uModel * vec4(aPos.xy - 0.5f, 0.f, 1.f);
   texCoords = aPos * uUvScale;
 }
