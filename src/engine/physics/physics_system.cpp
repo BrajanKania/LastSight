@@ -6,6 +6,7 @@
 #include "engine/components/collider.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
+#include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/events/collision.hpp"
 
@@ -170,7 +171,7 @@ namespace ls::physics_system {
       return true;
     }
 
-    void resolveCollisions(ecs::Registry& registry) {
+    void resolveCollisions(ecs::Registry& registry, dispatch::EventQueue& eventQueue) {
       event::Collision collision;
       auto view{ registry.view<component::Collider, component::Transform>() };
 
@@ -211,6 +212,8 @@ namespace ls::physics_system {
             if (!collision.isTrigger) {
               resolveCollision(registry, collision);
             }
+
+            eventQueue.publish<event::Collision>(collision);
           }
         }
       }
@@ -218,9 +221,9 @@ namespace ls::physics_system {
 
   }  // namespace
 
-  void update(ecs::Registry& registry, float dt) {
+  void update(ecs::Registry& registry, dispatch::EventQueue& eventQueue, float dt) {
     applyVelocity(registry, dt);
-    resolveCollisions(registry);
+    resolveCollisions(registry, eventQueue);
   }
 
 }  // namespace ls::physics_system

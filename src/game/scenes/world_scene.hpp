@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "engine/core/i_scene.hpp"
+#include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/renderer/framebuffer.hpp"
@@ -25,6 +26,8 @@ namespace ls {
 
   private:
     ecs::Registry registry_;
+    dispatch::EventQueue eventQueue_;
+
     RenderPipeline renderPipeline_;
     TextureManager textureManager_;
 

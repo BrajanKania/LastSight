@@ -1,5 +1,6 @@
 #include "game/scenes/world_scene.hpp"
 
+#include <SDL3/SDL_log.h>
 #include <glad/gl.h>
 
 #include <cstdint>
@@ -233,11 +234,13 @@ namespace ls {
   void WorldScene::update(float dt) {
     player_system::update(registry_, textureManager_, dt);
     combat_system::update(registry_, dt);
-    physics_system::update(registry_, dt);
-    projectile_system::update(registry_, dt);
+    physics_system::update(registry_, eventQueue_, dt);
+    projectile_system::update(registry_, eventQueue_, dt);
 
     camera_system::follow(registry_, player_, dt, 6.f);
     camera_system::update(registry_);
+
+    eventQueue_.clear();
   }
 
   void WorldScene::render() {
