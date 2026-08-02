@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 
 #include "engine/core/asset_system.hpp"
+#include "engine/core/time_system.hpp"
 #include "engine/renderer/renderer_system.hpp"
 
 namespace ls {
@@ -53,6 +54,7 @@ namespace ls {
 
     shader_->use();
     shader_->setInt("uTexture", 0);
+    shader_->setFloat("uTime", time_system::sec());
 
     renderer_system::drawArrays(vao_, renderer_system::Primitive::Triangle, 0, 6);
 

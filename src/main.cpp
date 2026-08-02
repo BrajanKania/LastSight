@@ -1,9 +1,10 @@
 #include <SDL3/SDL_log.h>
-#include <SDL3/SDL_timer.h>
-#include <glad/gl.h>
+
+#include <algorithm>
 
 #include "engine/core/input_system.hpp"
 #include "engine/core/scene_manager.hpp"
+#include "engine/core/time_system.hpp"
 #include "engine/core/window.hpp"
 #include "game/scenes/world_scene.hpp"
 
@@ -15,10 +16,11 @@ int main() {
 
     sceneManager.pushScene<ls::WorldScene>();
 
-    uint64_t lastTime{SDL_GetTicks()};
+    uint64_t lastTime{ ls::time_system::ms() };
     while (!window.shouldClose()) {
-      uint64_t currentTime{SDL_GetTicks()};
-      float dt{static_cast<float>(currentTime - lastTime) / 1000.f};
+      uint64_t currentTime{ ls::time_system::ms() };
+      float dt{ static_cast<float>(currentTime - lastTime) / 1000.f };
+      dt = std::min(dt, 0.1f);
       lastTime = currentTime;
 
       window.pollEvents();
