@@ -7,20 +7,20 @@
 
 namespace ls::ecs {
 
-  template <typename... Components>
+  template <typename... TComponents>
   class View {
   public:
     class Iterator {
     public:
       using iterator_category = std::forward_iterator_tag;
-      using value_type = Entity;
+      using value_type = EntityId;
       using difference_type = std::ptrdiff_t;
-      using pointer = const Entity*;
-      using reference = Entity;
+      using pointer = const EntityId*;
+      using reference = EntityId;
 
       Iterator(
-          std::tuple<const SparseSet<Components>*...> sets,
-          const std::vector<Entity>* smallestEntities,
+          std::tuple<const SparseSet<TComponents>*...> sets,
+          const std::vector<EntityId>* smallestEntities,
           std::size_t index
       )
           : sets_{ sets },
@@ -29,7 +29,7 @@ namespace ls::ecs {
         advanceToValid();
       }
 
-      Entity operator*() const { return (*smallestEntities_)[index_]; }
+      EntityId operator*() const { return (*smallestEntities_)[index_]; }
 
       Iterator& operator++() {
         ++index_;
@@ -49,7 +49,7 @@ namespace ls::ecs {
           return;
 
         while (index_ < smallestEntities_->size()) {
-          Entity entity = (*smallestEntities_)[index_];
+          EntityId entity = (*smallestEntities_)[index_];
           if (isValid(entity)) {
             break;
           }
@@ -57,30 +57,30 @@ namespace ls::ecs {
         }
       }
 
-      bool isValid(Entity entity) const {
-        auto checkEntity = [entity](auto* set) { return set && set->hasComponent(entity); };
+      bool isValid(EntityId entity) const {
+        auto checkEntity{ [entity](auto* set) { return set && set->hasComponent(entity); } };
         return std::apply([&](auto*... s) { return (checkEntity(s) && ...); }, sets_);
       }
 
-      std::tuple<const SparseSet<Components>*...> sets_;
-      const std::vector<Entity>* smallestEntities_{ nullptr };
+      std::tuple<const SparseSet<TComponents>*...> sets_;
+      const std::vector<EntityId>* smallestEntities_{ nullptr };
       std::size_t index_{ 0 };
     };
 
-    explicit View(const SparseSet<Components>*... sets)
+    explicit View(const SparseSet<TComponents>*... sets)
         : sets_{ sets... } {
       if (((sets == nullptr) || ...)) {
         smallestSetEntities_ = nullptr;
         return;
       }
 
-      std::size_t minSize = std::numeric_limits<std::size_t>::max();
-      auto findSmallest = [&](auto* set) {
+      std::size_t minSize{ std::numeric_limits<std::size_t>::max() };
+      auto findSmallest{ [&](auto* set) {
         if (set->getEntities().size() < minSize) {
           minSize = set->getEntities().size();
           smallestSetEntities_ = &set->getEntities();
         }
-      };
+      } };
       (findSmallest(sets), ...);
     }
 
@@ -95,7 +95,7 @@ namespace ls::ecs {
       return Iterator(sets_, smallestSetEntities_, endIdx);
     }
 
-    size_t size() const {
+    std::size_t size() const {
       if (smallestSetEntities_)
         return smallestSetEntities_->size();
 
@@ -103,8 +103,8 @@ namespace ls::ecs {
     }
 
   private:
-    std::tuple<const SparseSet<Components>*...> sets_;
-    const std::vector<Entity>* smallestSetEntities_{ nullptr };
+    std::tuple<const SparseSet<TComponents>*...> sets_;
+    const std::vector<EntityId>* smallestSetEntities_{ nullptr };
   };
 
 }  // namespace ls::ecs

@@ -35,7 +35,7 @@ namespace ls {
     std::shared_ptr<Framebuffer> fovFBO_{ nullptr };
     std::shared_ptr<Framebuffer> processedFBO_{ nullptr };
 
-    ecs::Entity player_{ 0 };
+    ecs::EntityId player_{ 0 };
   };
 
 }  // namespace ls

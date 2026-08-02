@@ -55,14 +55,14 @@ namespace ls {
     renderer_system::clearColorBuffer();
 
     auto view{ ctx.registry.view<component::Transform, component::Sprite>() };
-    std::vector<ecs::Entity> renderQueue;
+    std::vector<ecs::EntityId> renderQueue;
     renderQueue.reserve(view.size());
 
     for (auto entity : view) {
       renderQueue.push_back(entity);
     }
 
-    std::stable_sort(renderQueue.begin(), renderQueue.end(), [&](ecs::Entity a, ecs::Entity b) {
+    std::stable_sort(renderQueue.begin(), renderQueue.end(), [&](ecs::EntityId a, ecs::EntityId b) {
       return ctx.registry.getComponent<component::Sprite>(a).zIndex <
              ctx.registry.getComponent<component::Sprite>(b).zIndex;
     });

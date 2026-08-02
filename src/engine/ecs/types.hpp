@@ -5,9 +5,9 @@
 
 namespace ls::ecs {
 
-  using Entity = uint32_t;
-  constexpr Entity kNullEntity{std::numeric_limits<Entity>::max()};
+  using EntityId = uint32_t;
+  constexpr EntityId kNullEntity{ std::numeric_limits<EntityId>::max() };
 
-  using ComponentType = uint16_t;
+  using ComponentId = uint16_t;
 
 }  // namespace ls::ecs

@@ -26,7 +26,6 @@
 #include "game/components/field_of_view.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
-#include "game/components/projectile.hpp"
 #include "game/components/weapon.hpp"
 #include "game/systems/camera_system.hpp"
 #include "game/systems/combat_system.hpp"
@@ -203,12 +202,6 @@ namespace ls {
               .halfExtents = glm::vec2(0.5f),
           }
       );
-    }
-
-    // projectile
-    {
-      auto projectile{ registry_.createEntity() };
-      registry_.addComponent(projectile, component::Projectile{ .lifetime = 0.f });
     }
 
     worldFBO_ = std::make_shared<Framebuffer>(1000, 800);

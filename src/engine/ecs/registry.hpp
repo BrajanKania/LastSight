@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+#include <cassert>
 #include <memory>
 
 #include "engine/ecs/sparse_set.hpp"
@@ -10,95 +12,137 @@ namespace ls::ecs {
 
   class Registry {
   public:
-    Entity createEntity() {
-      Entity entity;
+    EntityId createEntity() {
+      EntityId entity;
+
       if (!availableEntities_.empty()) {
         entity = availableEntities_.back();
         availableEntities_.pop_back();
       } else {
         entity = nextEntity_++;
       }
+
       return entity;
     }
 
-    void destroyEntity(Entity entity) {
+    void destroyEntity(EntityId entity) {
+      if (!isValidEntity(entity))
+        return;
+
       availableEntities_.push_back(entity);
+
       for (auto& sparseSet : sparseSets_) {
-        if (sparseSet)
+        if (sparseSet) {
           sparseSet->destroyComponent(entity);
+        }
       }
     }
 
-    template <typename T>
-    bool hasComponent(Entity entity) const {
-      return getSparseSetPointer<T>()->hasComponent(entity);
+    bool isValidEntity(EntityId entity) const {
+      if (entity >= nextEntity_)
+        return false;
+
+      return std::ranges::find(availableEntities_, entity) == availableEntities_.end();
     }
 
-    template <typename T>
-    void addComponent(Entity entity, T component) {
-      ComponentType componentTypeId{getComponentTypeId<T>()};
-      if (sparseSets_.size() <= componentTypeId) {
-        registerComponent<T>();
-      }
+    template <typename TComponent>
+    bool hasComponent(EntityId entity) const {
+      if (!isValidEntity(entity))
+        return false;
 
-      getSparseSetPointer<T>()->addComponent(entity, component);
+      const auto* sparseSet{ getSparseSetPointer<TComponent>() };
+      if (!sparseSet)
+        return false;
+
+      return sparseSet->hasComponent(entity);
     }
 
-    template <typename T>
-    void destroyComponent(Entity entity) {
-      ComponentType componentTypeId{getComponentTypeId<T>()};
-      if (sparseSets_.size() <= componentTypeId) {
-        registerComponent<T>();
-      }
+    template <typename TComponent>
+    void addComponent(EntityId entity, TComponent component) {
+      assert(isValidEntity(entity) && "Attempted to add component to an invalid entity.");
+      assert(!hasComponent<TComponent>(entity) && "Entity already has this component.");
 
-      getSparseSetPointer<T>()->destroyComponent(entity);
+      getSparseSetPointer<TComponent>()->addComponent(entity, std::move(component));
     }
 
-    template <typename T>
-    T& getComponent(Entity entity) {
-      return getSparseSetPointer<T>()->get(entity);
+    template <typename TComponent>
+    void destroyComponent(EntityId entity) {
+      assert(isValidEntity(entity) && "Attempted to destroy component on an invalid entity.");
+      assert(hasComponent<TComponent>(entity) && "Entity does not have the component to destroy.");
+
+      getSparseSetPointer<TComponent>()->destroyComponent(entity);
     }
 
-    template <typename T>
-    const T& getComponent(Entity entity) const {
-      return getSparseSetPointer<T>()->get(entity);
+    template <typename TComponent>
+    TComponent& getComponent(EntityId entity) {
+      assert(isValidEntity(entity) && "Attempted to get component from an invalid entity.");
+
+      auto* sparseSet{ getSparseSetPointer<TComponent>() };
+      assert(sparseSet->hasComponent(entity) && "Entity does not have the requested component.");
+
+      return sparseSet->get(entity);
     }
 
-    template <typename... Components>
+    template <typename TComponent>
+    const TComponent& getComponent(EntityId entity) const {
+      assert(isValidEntity(entity) && "Attempted to get component from an invalid entity.");
+
+      const auto* sparseSet{ getSparseSetPointer<TComponent>() };
+      assert(sparseSet && "Attempted to get unregistered component type.");
+      assert(sparseSet->hasComponent(entity) && "Entity does not have the requested component.");
+
+      return sparseSet->get(entity);
+    }
+
+    template <typename... TComponents>
     auto view() const {
-      return View<Components...>(getSparseSetPointer<Components>()...);
+      return View<TComponents...>(getSparseSetPointer<TComponents>()...);
     }
 
   private:
-    template <typename T>
-    static ComponentType getComponentTypeId() {
-      static ComponentType id{nextComponentType_++};
+    template <typename TComponent>
+    static ComponentId getComponentId() {
+      static ComponentId id{ nextComponentId_++ };
       return id;
     }
 
-    template <typename T>
+    template <typename TComponent>
     void registerComponent() {
-      ComponentType componentTypeId{getComponentTypeId<T>()};
-      if (sparseSets_.size() <= componentTypeId) {
-        sparseSets_.resize(componentTypeId + 1);
+      ComponentId componentId{ getComponentId<TComponent>() };
+
+      if (sparseSets_.size() <= componentId) {
+        sparseSets_.resize(componentId + 1);
       }
-      sparseSets_[componentTypeId] = std::make_unique<SparseSet<T>>();
+
+      sparseSets_[componentId] = std::make_unique<SparseSet<TComponent>>();
     }
 
-    template <typename T>
-    SparseSet<T>* getSparseSetPointer() {
-      return static_cast<SparseSet<T>*>(sparseSets_[getComponentTypeId<T>()].get());
+    template <typename TComponent>
+    SparseSet<TComponent>* getSparseSetPointer() {
+      ComponentId componentId{ getComponentId<TComponent>() };
+
+      if (sparseSets_.size() <= componentId || !sparseSets_[componentId]) {
+        registerComponent<TComponent>();
+      }
+
+      return static_cast<SparseSet<TComponent>*>(sparseSets_[componentId].get());
     }
 
-    template <typename T>
-    const SparseSet<T>* getSparseSetPointer() const {
-      return static_cast<const SparseSet<T>*>(sparseSets_[getComponentTypeId<T>()].get());
+    template <typename TComponent>
+    const SparseSet<TComponent>* getSparseSetPointer() const {
+      ComponentId componentId{ getComponentId<TComponent>() };
+
+      if (sparseSets_.size() <= componentId) {
+        return nullptr;
+      }
+
+      return static_cast<const SparseSet<TComponent>*>(sparseSets_[componentId].get());
     }
 
-    Entity nextEntity_{0};
-    std::vector<Entity> availableEntities_{};
+    EntityId nextEntity_{ 0 };
+    std::vector<EntityId> availableEntities_{};
 
-    inline static ComponentType nextComponentType_{0};
+    inline static ComponentId nextComponentId_{ 0 };
     std::vector<std::unique_ptr<ISparseSet>> sparseSets_{};
   };
 

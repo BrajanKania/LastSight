@@ -20,7 +20,7 @@ namespace ls::combat_system {
     }
   }
 
-  void shoot(ecs::Registry& registry, const ecs::Entity shooterEntity, const TextureManager& textureManager) {
+  void shoot(ecs::Registry& registry, const ecs::EntityId shooterEntity, const TextureManager& textureManager) {
     const auto& transform{ registry.getComponent<component::Transform>(shooterEntity) };
     const auto& sprite{ registry.getComponent<component::Sprite>(shooterEntity) };
     auto& weapon{ registry.getComponent<component::Weapon>(shooterEntity) };

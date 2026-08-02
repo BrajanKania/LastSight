@@ -24,7 +24,7 @@ namespace ls::player_system {
 
   namespace {
 
-    void handleInput(ecs::Registry& registry, const ecs::Entity playerEntity) {
+    void handleInput(ecs::Registry& registry, const ecs::EntityId playerEntity) {
       auto& velocity{ registry.getComponent<component::Velocity>(playerEntity) };
       const auto& movement{ registry.getComponent<component::Movement>(playerEntity) };
 
@@ -55,7 +55,7 @@ namespace ls::player_system {
       return glm::vec2(worldPos.x, worldPos.y);
     }
 
-    void handleRotation(ecs::Registry& registry, const ecs::Entity playerEntity, float dt) {
+    void handleRotation(ecs::Registry& registry, const ecs::EntityId playerEntity, float dt) {
       const auto& movement{ registry.getComponent<component::Movement>(playerEntity) };
       const auto& transform{ registry.getComponent<component::Transform>(playerEntity) };
       auto& velocity{ registry.getComponent<component::Velocity>(playerEntity) };
@@ -84,7 +84,7 @@ namespace ls::player_system {
     }
 
     void updateAim(
-        ecs::Registry& registry, const ecs::Entity playerEntity, const TextureManager& textureManager, float dt
+        ecs::Registry& registry, const ecs::EntityId playerEntity, const TextureManager& textureManager, float dt
     ) {
       auto& weapon{ registry.getComponent<component::Weapon>(playerEntity) };
       const auto& transform{ registry.getComponent<component::Transform>(playerEntity) };

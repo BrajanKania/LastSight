@@ -11,7 +11,7 @@
 namespace ls::factory {
 
   void spawnProjectile(ecs::Registry& registry, const ProjectileConfig& config) {
-    ecs::Entity proj{ registry.createEntity() };
+    ecs::EntityId proj{ registry.createEntity() };
     registry.addComponent(
         proj,
         component::Projectile{

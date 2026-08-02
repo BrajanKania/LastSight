@@ -10,9 +10,9 @@
 namespace ls::projectile_system {
 
   void update(ecs::Registry& registry, dispatch::EventQueue& eventQueue, float dt) {
-    std::vector<ecs::Entity> entitiesToDestroy{};
+    std::vector<ecs::EntityId> entitiesToDestroy{};
 
-    for (ecs::Entity entity : registry.view<component::Projectile>()) {
+    for (ecs::EntityId entity : registry.view<component::Projectile>()) {
       auto& projectile{ registry.getComponent<component::Projectile>(entity) };
       projectile.lifetime -= dt;
       if (projectile.lifetime <= 0.f) {
@@ -29,7 +29,7 @@ namespace ls::projectile_system {
       }
     }
 
-    for (ecs::Entity entity : entitiesToDestroy) {
+    for (ecs::EntityId entity : entitiesToDestroy) {
       registry.destroyEntity(entity);
     }
   }

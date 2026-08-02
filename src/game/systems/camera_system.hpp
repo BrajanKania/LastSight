@@ -7,6 +7,6 @@ namespace ls::camera_system {
 
   void update(ecs::Registry& registry);
 
-  void follow(ecs::Registry& registry, const ecs::Entity targetEntity, float dt, float smoothness);
+  void follow(ecs::Registry& registry, const ecs::EntityId targetEntity, float dt, float smoothness);
 
 }  // namespace ls::camera_system
