@@ -45,6 +45,10 @@ add_executable(LastSight
 
   src/game/systems/player_system.cpp
   src/game/systems/camera_system.cpp
+  src/game/systems/combat_system.cpp
+  src/game/systems/projectile_system.cpp
+
+  src/game/factories/projectile_factory.cpp
 
   src/game/scenes/world_scene.cpp
 )

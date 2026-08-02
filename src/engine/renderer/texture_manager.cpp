@@ -24,7 +24,7 @@ namespace ls {
   }
 
   const Texture2D* TextureManager::get(const std::string& name) const {
-    const auto it{nameToId_.find(name)};
+    const auto it{ nameToId_.find(name) };
 
     if (it != nameToId_.end())
       return textures_[it->second].get();
@@ -32,4 +32,11 @@ namespace ls {
     return nullptr;
   }
 
+  uint32_t TextureManager::getId(const std::string& name) const {
+    const auto it{ nameToId_.find(name) };
+    if (it != nameToId_.end())
+      return it->second;
+
+    return 0;
+  }
 }  // namespace ls

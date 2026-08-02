@@ -22,8 +22,15 @@ namespace ls::input_system {
         case Key::LShift:
           return SDL_SCANCODE_LSHIFT;
       }
+    }
 
-      return SDL_SCANCODE_ESCAPE;
+    SDL_MouseButtonFlags toMouseButtonFlags(Button button) {
+      switch (button) {
+        case Button::Left:
+          return SDL_BUTTON_LMASK;
+        case Button::Right:
+          return SDL_BUTTON_RMASK;
+      }
     }
   }  // namespace
 
@@ -36,6 +43,11 @@ namespace ls::input_system {
     glm::vec2 pos{ 0.f };
     SDL_GetMouseState(&pos.x, &pos.y);
     return pos;
+  }
+
+  bool isButtonPressed(Button button) {
+    const auto buttons{ SDL_GetMouseState(nullptr, nullptr) };
+    return (buttons & toMouseButtonFlags(button));
   }
 
 }  // namespace ls::input_system

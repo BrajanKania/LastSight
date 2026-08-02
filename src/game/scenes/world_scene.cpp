@@ -25,8 +25,12 @@
 #include "game/components/field_of_view.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
+#include "game/components/projectile.hpp"
+#include "game/components/weapon.hpp"
 #include "game/systems/camera_system.hpp"
+#include "game/systems/combat_system.hpp"
 #include "game/systems/player_system.hpp"
+#include "game/systems/projectile_system.hpp"
 
 namespace ls {
 
@@ -34,6 +38,7 @@ namespace ls {
     uint32_t playerTextureId{ textureManager_.load("player", asset_system::texture("player.png")) };
     uint32_t backgroundTextureId{ textureManager_.load("grass", asset_system::texture("grass.jpg")) };
     uint32_t containerTextureId{ textureManager_.load("container", asset_system::texture("container.png")) };
+    textureManager_.load("bullet", asset_system::texture("bullet.png"));
 
     // background
     {
@@ -64,6 +69,7 @@ namespace ls {
           component::Sprite{
               .uvScale = glm::vec2(1.f),
               .textureId = playerTextureId,
+              .angleOffset = -90.f,
               .zIndex = layer::Ground,
           }
       );
@@ -89,6 +95,16 @@ namespace ls {
           component::Collider{
               .type = component::ColliderType::Circle,
               .radius = 0.3f,
+          }
+      );
+      registry_.addComponent(
+          player_,
+          component::Weapon{
+              .fireRate = 0.15f,
+              .initialSpeed = 4.f,
+              .barrelOffset = glm::vec2(-0.07f, 0.22f),
+              .bulletScale = glm::vec2(0.02f),
+              .bulletLifetime = 5.f,
           }
       );
     }
@@ -188,6 +204,12 @@ namespace ls {
       );
     }
 
+    // projectile
+    {
+      auto projectile{ registry_.createEntity() };
+      registry_.addComponent(projectile, component::Projectile{ .lifetime = 0.f });
+    }
+
     worldFBO_ = std::make_shared<Framebuffer>(1000, 800);
     fovFBO_ = std::make_shared<Framebuffer>(1000, 800);
     processedFBO_ = std::make_shared<Framebuffer>(1000, 800);
@@ -209,8 +231,10 @@ namespace ls {
   void WorldScene::handleInput() {}
 
   void WorldScene::update(float dt) {
-    player_system::update(registry_, dt);
+    player_system::update(registry_, textureManager_, dt);
+    combat_system::update(registry_, dt);
     physics_system::update(registry_, dt);
+    projectile_system::update(registry_, dt);
 
     camera_system::follow(registry_, player_, dt, 6.f);
     camera_system::update(registry_);

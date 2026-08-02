@@ -14,7 +14,7 @@ namespace ls {
     Texture2D(Texture2D&& other);
     Texture2D& operator=(Texture2D&& other);
 
-    int getId() const { return id_; }
+    uint32_t getId() const { return id_; }
     int getWidth() const { return width_; }
     int getHeight() const { return height_; }
 
@@ -24,10 +24,10 @@ namespace ls {
     void unbind() const;
 
   private:
-    uint32_t id_{0};
-    int width_{0};
-    int height_{0};
-    int channels_{0};
+    uint32_t id_{ 0 };
+    int width_{ 0 };
+    int height_{ 0 };
+    int channels_{ 0 };
   };
 
 }  // namespace ls

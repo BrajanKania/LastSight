@@ -20,6 +20,8 @@ namespace ls {
 
     const Texture2D* get(const std::string& name) const;
 
+    uint32_t getId(const std::string& name) const;
+
   private:
     std::vector<std::unique_ptr<Texture2D>> textures_;
     std::unordered_map<std::string, uint32_t> nameToId_{};

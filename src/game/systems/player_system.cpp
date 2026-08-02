@@ -1,6 +1,6 @@
 #include "game/systems/player_system.hpp"
 
-#include <unistd.h>
+#include <SDL3/SDL_log.h>
 
 #include <cmath>
 #include <glm/geometric.hpp>
@@ -13,9 +13,12 @@
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/texture_manager.hpp"
 #include "game/components/camera.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
+#include "game/components/weapon.hpp"
+#include "game/systems/combat_system.hpp"
 
 namespace ls::player_system {
 
@@ -68,9 +71,9 @@ namespace ls::player_system {
 
         glm::vec2 direction{ mouseWorldPos - transform.position };
         if (glm::length(direction) > 0.001f) {
-          float targetAngle{ glm::degrees(std::atan2(direction.y, direction.x)) - 90.f };
+          float targetAngle{ glm::degrees(std::atan2(direction.y, direction.x)) };
           float angleDiff{ std::remainder(targetAngle - transform.rotation, 360.f) };
-          float desiredAngularSpeed{ angleDiff / dt };
+          float desiredAngularSpeed{ (dt > 0.00001f ? angleDiff / dt : 0.f) };
           float maxAngularSpeed{ movement.angularSpeed };
           velocity.angular = glm::clamp(desiredAngularSpeed, -maxAngularSpeed, maxAngularSpeed);
         } else {
@@ -80,12 +83,29 @@ namespace ls::player_system {
       }
     }
 
+    void updateAim(
+        ecs::Registry& registry, const ecs::Entity playerEntity, const TextureManager& textureManager, float dt
+    ) {
+      auto& weapon{ registry.getComponent<component::Weapon>(playerEntity) };
+      const auto& transform{ registry.getComponent<component::Transform>(playerEntity) };
+
+      if (weapon.cooldown <= 0.f) {
+        if (input_system::isButtonPressed(input_system::Button::Left)) {
+          combat_system::shoot(registry, playerEntity, textureManager);
+        }
+      }
+    }
+
   }  // namespace
 
-  void update(ecs::Registry& registry, float dt) {
+  void update(ecs::Registry& registry, const TextureManager& textureManager, float dt) {
     for (auto entity : registry.view<component::Player, component::Velocity, component::Movement>()) {
       handleInput(registry, entity);
       handleRotation(registry, entity, dt);
+    }
+
+    for (auto entity : registry.view<component::Player, component::Transform, component::Weapon>()) {
+      updateAim(registry, entity, textureManager, dt);
     }
   }
 

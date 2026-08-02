@@ -10,6 +10,7 @@ namespace ls::component {
     glm::vec4 color{ 1.f };
     glm::vec2 uvScale{ 1.f };
     uint32_t textureId{ 0 };
+    float angleOffset{ 0.f };
     int zIndex{ layer::Ground };
   };
 

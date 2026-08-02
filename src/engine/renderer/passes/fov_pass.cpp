@@ -62,7 +62,7 @@ namespace ls {
       const auto& fieldOfView{ ctx.registry.getComponent<component::FieldOfView>(entity) };
       const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
 
-      float rad{ glm::radians(transform.rotation + 90.0f) };
+      float rad{ glm::radians(transform.rotation) };
       glm::vec2 playerDir{ std::cos(rad), std::sin(rad) };
 
       shader_->setVec2("uViewPos", transform.position);

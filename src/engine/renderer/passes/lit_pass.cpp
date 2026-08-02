@@ -82,7 +82,7 @@ namespace ls {
 
       glm::mat4 model{ 1.f };
       model = glm::translate(model, glm::vec3(transform.position.x, transform.position.y, 0.f));
-      model = glm::rotate(model, glm::radians(transform.rotation), glm::vec3(0.f, 0.f, 1.f));
+      model = glm::rotate(model, glm::radians(transform.rotation + sprite.angleOffset), glm::vec3(0.f, 0.f, 1.f));
       model = glm::scale(model, glm::vec3(transform.scale.x, transform.scale.y, 1.f));
       shader_->setMat4("uModel", model);
       shader_->setVec4("uColor", sprite.color);
