@@ -22,6 +22,8 @@ namespace ls::input_system {
         case Key::LShift:
           return SDL_SCANCODE_LSHIFT;
       }
+
+      return SDL_SCANCODE_UNKNOWN;
     }
 
     SDL_MouseButtonFlags toMouseButtonFlags(Button button) {
@@ -31,6 +33,8 @@ namespace ls::input_system {
         case Button::Right:
           return SDL_BUTTON_RMASK;
       }
+
+      return 0;
     }
   }  // namespace
 

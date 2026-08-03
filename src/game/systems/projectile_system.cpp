@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "engine/core/update_context.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/events/collision.hpp"
@@ -9,28 +10,28 @@
 
 namespace ls::projectile_system {
 
-  void update(ecs::Registry& registry, dispatch::EventQueue& eventQueue, float dt) {
+  void update(const UpdateContext& ctx) {
     std::vector<ecs::EntityId> entitiesToDestroy{};
 
-    for (ecs::EntityId entity : registry.view<component::Projectile>()) {
-      auto& projectile{ registry.getComponent<component::Projectile>(entity) };
-      projectile.lifetime -= dt;
+    for (ecs::EntityId entity : ctx.registry.view<component::Projectile>()) {
+      auto& projectile{ ctx.registry.getComponent<component::Projectile>(entity) };
+      projectile.lifetime -= ctx.dt;
       if (projectile.lifetime <= 0.f) {
         entitiesToDestroy.push_back(entity);
       }
     }
 
-    for (const auto& event : eventQueue.getEvents<event::Collision>()) {
-      if (registry.hasComponent<component::Projectile>(event.entityA)) {
+    for (const auto& event : ctx.eventQueue.getEvents<event::Collision>()) {
+      if (ctx.registry.hasComponent<component::Projectile>(event.entityA)) {
         entitiesToDestroy.push_back(event.entityA);
       }
-      if (registry.hasComponent<component::Projectile>(event.entityB)) {
+      if (ctx.registry.hasComponent<component::Projectile>(event.entityB)) {
         entitiesToDestroy.push_back(event.entityB);
       }
     }
 
     for (ecs::EntityId entity : entitiesToDestroy) {
-      registry.destroyEntity(entity);
+      ctx.registry.destroyEntity(entity);
     }
   }
 

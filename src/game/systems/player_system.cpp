@@ -10,10 +10,10 @@
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
 #include "engine/core/input_system.hpp"
+#include "engine/core/update_context.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/renderer/renderer_system.hpp"
-#include "engine/renderer/texture_manager.hpp"
 #include "game/components/camera.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
@@ -24,9 +24,9 @@ namespace ls::player_system {
 
   namespace {
 
-    void handleInput(ecs::Registry& registry, const ecs::EntityId playerEntity) {
-      auto& velocity{ registry.getComponent<component::Velocity>(playerEntity) };
-      const auto& movement{ registry.getComponent<component::Movement>(playerEntity) };
+    void handleInput(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
+      auto& velocity{ ctx.registry.getComponent<component::Velocity>(playerEntity) };
+      const auto& movement{ ctx.registry.getComponent<component::Movement>(playerEntity) };
 
       float speed{ (input_system::isKeyPressed(input_system::Key::LShift) ? movement.runSpeed : movement.walkSpeed) };
 
@@ -55,13 +55,13 @@ namespace ls::player_system {
       return glm::vec2(worldPos.x, worldPos.y);
     }
 
-    void handleRotation(ecs::Registry& registry, const ecs::EntityId playerEntity, float dt) {
-      const auto& movement{ registry.getComponent<component::Movement>(playerEntity) };
-      const auto& transform{ registry.getComponent<component::Transform>(playerEntity) };
-      auto& velocity{ registry.getComponent<component::Velocity>(playerEntity) };
+    void handleRotation(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
+      const auto& movement{ ctx.registry.getComponent<component::Movement>(playerEntity) };
+      const auto& transform{ ctx.registry.getComponent<component::Transform>(playerEntity) };
+      auto& velocity{ ctx.registry.getComponent<component::Velocity>(playerEntity) };
 
-      for (auto entity : registry.view<component::Camera>()) {
-        const auto& camera{ registry.getComponent<component::Camera>(entity) };
+      for (auto entity : ctx.registry.view<component::Camera>()) {
+        const auto& camera{ ctx.registry.getComponent<component::Camera>(entity) };
 
         glm::mat4 invViewProjection{ glm::inverse(camera.projection * camera.view) };
         glm::vec2 viewportSize{ renderer_system::getViewportSize() };
@@ -73,7 +73,7 @@ namespace ls::player_system {
         if (glm::length(direction) > 0.001f) {
           float targetAngle{ glm::degrees(std::atan2(direction.y, direction.x)) };
           float angleDiff{ std::remainder(targetAngle - transform.rotation, 360.f) };
-          float desiredAngularSpeed{ (dt > 0.00001f ? angleDiff / dt : 0.f) };
+          float desiredAngularSpeed{ (ctx.dt > 0.00001f ? angleDiff / ctx.dt : 0.f) };
           float maxAngularSpeed{ movement.angularSpeed };
           velocity.angular = glm::clamp(desiredAngularSpeed, -maxAngularSpeed, maxAngularSpeed);
         } else {
@@ -83,29 +83,26 @@ namespace ls::player_system {
       }
     }
 
-    void updateAim(
-        ecs::Registry& registry, const ecs::EntityId playerEntity, const TextureManager& textureManager, float dt
-    ) {
-      auto& weapon{ registry.getComponent<component::Weapon>(playerEntity) };
-      const auto& transform{ registry.getComponent<component::Transform>(playerEntity) };
+    void updateAim(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
+      const auto& weapon{ ctx.registry.getComponent<component::Weapon>(playerEntity) };
 
       if (weapon.cooldown <= 0.f) {
         if (input_system::isButtonPressed(input_system::Button::Left)) {
-          combat_system::shoot(registry, playerEntity, textureManager);
+          combat_system::shoot(ctx, playerEntity);
         }
       }
     }
 
   }  // namespace
 
-  void update(ecs::Registry& registry, const TextureManager& textureManager, float dt) {
-    for (auto entity : registry.view<component::Player, component::Velocity, component::Movement>()) {
-      handleInput(registry, entity);
-      handleRotation(registry, entity, dt);
+  void update(const UpdateContext& ctx) {
+    for (auto entity : ctx.registry.view<component::Player, component::Velocity, component::Movement>()) {
+      handleInput(ctx, entity);
+      handleRotation(ctx, entity);
     }
 
-    for (auto entity : registry.view<component::Player, component::Transform, component::Weapon>()) {
-      updateAim(registry, entity, textureManager, dt);
+    for (auto entity : ctx.registry.view<component::Player, component::Transform, component::Weapon>()) {
+      updateAim(ctx, entity);
     }
   }
 

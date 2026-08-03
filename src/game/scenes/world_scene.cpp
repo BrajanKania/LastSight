@@ -14,6 +14,7 @@
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
 #include "engine/core/asset_system.hpp"
+#include "engine/core/update_context.hpp"
 #include "engine/physics/physics_system.hpp"
 #include "engine/renderer/framebuffer.hpp"
 #include "engine/renderer/i_render_pass.hpp"
@@ -218,20 +219,27 @@ namespace ls {
 
   void WorldScene::onResize(int width, int height) {
     worldFBO_->resize(width, height);
-    processedFBO_->resize(width, height);
     fovFBO_->resize(width, height);
+    processedFBO_->resize(width, height);
   }
 
   void WorldScene::handleInput() {}
 
   void WorldScene::update(float dt) {
-    player_system::update(registry_, textureManager_, dt);
-    combat_system::update(registry_, dt);
-    physics_system::update(registry_, eventQueue_, dt);
-    projectile_system::update(registry_, eventQueue_, dt);
+    UpdateContext ctx{
+      .registry = registry_,
+      .eventQueue = eventQueue_,
+      .textureManager = textureManager_,
+      .dt = dt,
+    };
 
-    camera_system::follow(registry_, player_, dt, 6.f);
-    camera_system::update(registry_);
+    player_system::update(ctx);
+    combat_system::update(ctx);
+    physics_system::update(ctx);
+    projectile_system::update(ctx);
+
+    camera_system::follow(ctx, player_, 6.f);
+    camera_system::update(ctx);
 
     eventQueue_.clear();
   }

@@ -6,6 +6,7 @@
 #include "engine/components/collider.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
+#include "engine/core/update_context.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/events/collision.hpp"
@@ -14,13 +15,13 @@ namespace ls::physics_system {
 
   namespace {
 
-    void applyVelocity(ecs::Registry& registry, float dt) {
-      for (auto entity : registry.view<component::Transform, component::Velocity>()) {
-        auto& transform{ registry.getComponent<component::Transform>(entity) };
-        const auto& velocity{ registry.getComponent<component::Velocity>(entity) };
+    void applyVelocity(const UpdateContext& ctx) {
+      for (auto entity : ctx.registry.view<component::Transform, component::Velocity>()) {
+        auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
+        const auto& velocity{ ctx.registry.getComponent<component::Velocity>(entity) };
 
-        transform.position += velocity.linear * dt;
-        transform.rotation += velocity.angular * dt;
+        transform.position += velocity.linear * ctx.dt;
+        transform.rotation += velocity.angular * ctx.dt;
       }
     }
 
@@ -171,19 +172,19 @@ namespace ls::physics_system {
       return true;
     }
 
-    void resolveCollisions(ecs::Registry& registry, dispatch::EventQueue& eventQueue) {
+    void resolveCollisions(const UpdateContext& ctx) {
       event::Collision collision;
-      auto view{ registry.view<component::Collider, component::Transform>() };
+      auto view{ ctx.registry.view<component::Collider, component::Transform>() };
 
       for (auto itA{ view.begin() }; itA != view.end(); ++itA) {
         for (auto itB{ std::next(itA) }; itB != view.end(); ++itB) {
           auto entityA{ *itA };
           auto entityB{ *itB };
 
-          const auto& transA{ registry.getComponent<component::Transform>(entityA) };
-          const auto& colA{ registry.getComponent<component::Collider>(entityA) };
-          const auto& transB{ registry.getComponent<component::Transform>(entityB) };
-          const auto& colB{ registry.getComponent<component::Collider>(entityB) };
+          const auto& transA{ ctx.registry.getComponent<component::Transform>(entityA) };
+          const auto& colA{ ctx.registry.getComponent<component::Collider>(entityA) };
+          const auto& transB{ ctx.registry.getComponent<component::Transform>(entityB) };
+          const auto& colB{ ctx.registry.getComponent<component::Collider>(entityB) };
 
           bool wasCollision{ false };
           if (colA.type == component::ColliderType::Circle && colB.type == component::ColliderType::Circle) {
@@ -210,10 +211,10 @@ namespace ls::physics_system {
             collision.entityB = entityB;
 
             if (!collision.isTrigger) {
-              resolveCollision(registry, collision);
+              resolveCollision(ctx.registry, collision);
             }
 
-            eventQueue.publish<event::Collision>(collision);
+            ctx.eventQueue.publish<event::Collision>(collision);
           }
         }
       }
@@ -221,9 +222,9 @@ namespace ls::physics_system {
 
   }  // namespace
 
-  void update(ecs::Registry& registry, dispatch::EventQueue& eventQueue, float dt) {
-    applyVelocity(registry, dt);
-    resolveCollisions(registry, eventQueue);
+  void update(const UpdateContext& ctx) {
+    applyVelocity(ctx);
+    resolveCollisions(ctx);
   }
 
 }  // namespace ls::physics_system

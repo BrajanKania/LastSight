@@ -3,27 +3,26 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/trigonometric.hpp>
 
-#include "engine/components/sprite.hpp"
 #include "engine/components/transform.hpp"
+#include "engine/core/update_context.hpp"
 #include "engine/renderer/texture_manager.hpp"
 #include "game/components/weapon.hpp"
 #include "game/factories/projectile_factory.hpp"
 
 namespace ls::combat_system {
 
-  void update(ecs::Registry& registry, float dt) {
-    for (auto entity : registry.view<component::Weapon>()) {
-      auto& weapon{ registry.getComponent<component::Weapon>(entity) };
+  void update(const UpdateContext& ctx) {
+    for (auto entity : ctx.registry.view<component::Weapon>()) {
+      auto& weapon{ ctx.registry.getComponent<component::Weapon>(entity) };
       if (weapon.cooldown > 0.f) {
-        weapon.cooldown -= dt;
+        weapon.cooldown -= ctx.dt;
       }
     }
   }
 
-  void shoot(ecs::Registry& registry, const ecs::EntityId shooterEntity, const TextureManager& textureManager) {
-    const auto& transform{ registry.getComponent<component::Transform>(shooterEntity) };
-    const auto& sprite{ registry.getComponent<component::Sprite>(shooterEntity) };
-    auto& weapon{ registry.getComponent<component::Weapon>(shooterEntity) };
+  void shoot(const UpdateContext& ctx, const ecs::EntityId shooterEntity) {
+    const auto& transform{ ctx.registry.getComponent<component::Transform>(shooterEntity) };
+    auto& weapon{ ctx.registry.getComponent<component::Weapon>(shooterEntity) };
 
     float angleRad{ glm::radians(transform.rotation) };
     glm::vec2 forward{ glm::vec2(glm::cos(angleRad), glm::sin(angleRad)) };
@@ -35,12 +34,12 @@ namespace ls::combat_system {
       .position = transform.position + rotatedOffset,
       .direction = forward,
       .speed = weapon.initialSpeed,
-      .textureId = textureManager.getId("bullet"),
+      .textureId = ctx.textureManager.getId("bullet"),
       .angleOffset = -90.f,
       .lifetime = weapon.bulletLifetime,
     };
 
-    factory::spawnProjectile(registry, config);
+    factory::spawnProjectile(ctx.registry, config);
 
     weapon.cooldown = weapon.fireRate;
   }

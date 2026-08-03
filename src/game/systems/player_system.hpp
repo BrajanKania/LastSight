@@ -1,10 +1,9 @@
 #pragma once
 
-#include "engine/ecs/registry.hpp"
-#include "engine/renderer/texture_manager.hpp"
+#include "engine/core/update_context.hpp"
 
 namespace ls::player_system {
 
-  void update(ecs::Registry& registry, const TextureManager& textureManager, float dt);
+  void update(const UpdateContext& ctx);
 
 }

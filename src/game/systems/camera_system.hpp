@@ -1,12 +1,12 @@
 #pragma once
 
-#include "engine/ecs/registry.hpp"
+#include "engine/core/update_context.hpp"
 #include "engine/ecs/types.hpp"
 
 namespace ls::camera_system {
 
-  void update(ecs::Registry& registry);
+  void update(const UpdateContext& ctx);
 
-  void follow(ecs::Registry& registry, const ecs::EntityId targetEntity, float dt, float smoothness);
+  void follow(const UpdateContext& ctx, const ecs::EntityId targetEntity, float smoothness);
 
 }  // namespace ls::camera_system

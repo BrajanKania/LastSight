@@ -1,10 +1,9 @@
 #pragma once
 
-#include "engine/dispatch/event_queue.hpp"
-#include "engine/ecs/registry.hpp"
+#include "engine/core/update_context.hpp"
 
 namespace ls::projectile_system {
 
-  void update(ecs::Registry& registry, dispatch::EventQueue& eventQueue, float dt);
+  void update(const UpdateContext& ctx);
 
 }

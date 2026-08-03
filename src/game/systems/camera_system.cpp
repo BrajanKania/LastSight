@@ -4,18 +4,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "engine/components/transform.hpp"
+#include "engine/core/update_context.hpp"
 #include "engine/renderer/renderer_system.hpp"
 #include "game/components/camera.hpp"
 
 namespace ls::camera_system {
 
-  void update(ecs::Registry& registry) {
+  void update(const UpdateContext& ctx) {
     glm::vec2 viewportSize{ renderer_system::getViewportSize() };
     float aspectRatio{ (viewportSize.y > 0.f ? viewportSize.x / viewportSize.y : 1.f) };
 
-    for (auto entity : registry.view<component::Camera, component::Transform>()) {
-      auto& camera{ registry.getComponent<component::Camera>(entity) };
-      const auto& transform{ registry.getComponent<component::Transform>(entity) };
+    for (auto entity : ctx.registry.view<component::Camera, component::Transform>()) {
+      auto& camera{ ctx.registry.getComponent<component::Camera>(entity) };
+      const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
 
       float halfHeight{ (camera.orthographicSize / camera.zoom) * 0.5f };
       float halfWidth{ halfHeight * aspectRatio };
@@ -29,15 +30,15 @@ namespace ls::camera_system {
     }
   }
 
-  void follow(ecs::Registry& registry, const ecs::EntityId targetEntity, float dt, float smoothness) {
-    if (!registry.hasComponent<component::Transform>(targetEntity))
+  void follow(const UpdateContext& ctx, const ecs::EntityId targetEntity, float smoothness) {
+    if (!ctx.registry.hasComponent<component::Transform>(targetEntity))
       return;
 
-    const auto& targetTransform{ registry.getComponent<component::Transform>(targetEntity) };
+    const auto& targetTransform{ ctx.registry.getComponent<component::Transform>(targetEntity) };
 
-    for (auto entity : registry.view<component::Camera, component::Transform>()) {
-      auto& cameraTransform{ registry.getComponent<component::Transform>(entity) };
-      cameraTransform.position = glm::mix(cameraTransform.position, targetTransform.position, smoothness * dt);
+    for (auto entity : ctx.registry.view<component::Camera, component::Transform>()) {
+      auto& cameraTransform{ ctx.registry.getComponent<component::Transform>(entity) };
+      cameraTransform.position = glm::mix(cameraTransform.position, targetTransform.position, smoothness * ctx.dt);
     }
   }
 
