@@ -5,13 +5,13 @@
 
 #include "engine/components/transform.hpp"
 #include "engine/core/update_context.hpp"
-#include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/render_system.hpp"
 #include "game/components/camera.hpp"
 
 namespace ls::camera_system {
 
   void update(const UpdateContext& ctx) {
-    glm::vec2 viewportSize{ renderer_system::getViewportSize() };
+    glm::vec2 viewportSize{ render_system::getViewportSize() };
     float aspectRatio{ (viewportSize.y > 0.f ? viewportSize.x / viewportSize.y : 1.f) };
 
     for (auto entity : ctx.registry.view<component::Camera, component::Transform>()) {

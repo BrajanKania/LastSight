@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-#include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/render_system.hpp"
 
 namespace ls {
 
@@ -33,7 +33,7 @@ namespace ls {
     SDL_GLContext getOpengGlContext() { return glContext_; }
 
   private:
-    void resizeViewport() { renderer_system::setViewport(0, 0, width_, height_); }
+    void resizeViewport() { render_system::setViewport(0, 0, width_, height_); }
 
   private:
     SDL_Window* window_{ nullptr };

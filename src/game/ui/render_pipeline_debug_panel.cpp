@@ -5,19 +5,19 @@
 #include <cstdint>
 #include <format>
 
-#include "engine/renderer/framebuffer.hpp"
+#include "engine/gfx/framebuffer.hpp"
 
 namespace ls::ui {
 
   namespace {
-    void drawTexturePreview(const Framebuffer* fbo, float scale) {
-      ImTextureID textureId{ (ImTextureID)(uintptr_t)fbo->getColorBufferID() };
+    void drawTexturePreview(const gfx::Framebuffer* fbo, float scale) {
+      ImTextureID textureId{ (ImTextureID)(uintptr_t)fbo->getColorBufferId() };
       ImGui::Image(textureId, ImVec2(fbo->getWidth() * scale, fbo->getHeight() * scale), ImVec2(0, 1), ImVec2(1, 0));
     }
 
   }  // namespace
 
-  RenderPipelineDebugPanel::RenderPipelineDebugPanel(RenderPipeline& renderPipeline)
+  RenderPipelineDebugPanel::RenderPipelineDebugPanel(renderer::RenderPipeline& renderPipeline)
       : renderPipeline_{ renderPipeline } {}
 
   void RenderPipelineDebugPanel::render(const UIContext& ctx) {
@@ -52,14 +52,14 @@ namespace ls::ui {
       ImGui::Separator();
       if (selectedPassIndex_ >= 0 && selectedPassIndex_ < static_cast<int>(renderPipeline_.getPassCount())) {
         auto* pass{ renderPipeline_.getPass(selectedPassIndex_) };
-        Framebuffer* targetFBO{ pass->getTargetFBO() };
+        gfx::Framebuffer* targetFBO{ pass->getTargetFBO() };
 
         if (targetFBO) {
           ImGui::Text(
               "Resolution: [%i, %i], Id: %i",
               targetFBO->getWidth(),
               targetFBO->getHeight(),
-              targetFBO->getColorBufferID()
+              targetFBO->getColorBufferId()
           );
           drawTexturePreview(targetFBO, imageScale_);
         } else {

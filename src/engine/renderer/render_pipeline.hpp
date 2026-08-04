@@ -7,7 +7,7 @@
 
 #include "engine/renderer/i_render_pass.hpp"
 
-namespace ls {
+namespace ls::renderer {
 
   class RenderPipeline {
   public:
@@ -36,4 +36,4 @@ namespace ls {
     std::vector<std::unique_ptr<IRenderPass>> passes_{};
   };
 
-}  // namespace ls
+}  // namespace ls::renderer

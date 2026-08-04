@@ -4,7 +4,7 @@
 
 #include "engine/core/i_scene.hpp"
 #include "engine/ecs/types.hpp"
-#include "engine/renderer/framebuffer.hpp"
+#include "engine/gfx/framebuffer.hpp"
 #include "engine/renderer/render_pipeline.hpp"
 
 namespace ls {
@@ -22,11 +22,11 @@ namespace ls {
     bool isOpaque() const override { return true; }
 
   private:
-    RenderPipeline renderPipeline_;
+    renderer::RenderPipeline renderPipeline_;
 
-    std::shared_ptr<Framebuffer> worldFBO_{ nullptr };
-    std::shared_ptr<Framebuffer> fovFBO_{ nullptr };
-    std::shared_ptr<Framebuffer> processedFBO_{ nullptr };
+    std::shared_ptr<gfx::Framebuffer> worldFBO_{ nullptr };
+    std::shared_ptr<gfx::Framebuffer> fovFBO_{ nullptr };
+    std::shared_ptr<gfx::Framebuffer> processedFBO_{ nullptr };
 
     ecs::EntityId player_{ 0 };
   };

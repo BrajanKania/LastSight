@@ -2,6 +2,7 @@
 
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
+#include "engine/gfx/texture_manager.hpp"
 #include "engine/ui/ui_context.hpp"
 #include "engine/ui/ui_manager.hpp"
 
@@ -33,7 +34,7 @@ namespace ls {
     ecs::Registry registry_;
     dispatch::EventQueue eventQueue_;
     ui::UIManager uiManager_;
-    TextureManager textureManager_;
+    gfx::TextureManager textureManager_;
   };
 
 }  // namespace ls

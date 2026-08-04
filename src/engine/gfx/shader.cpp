@@ -1,4 +1,4 @@
-#include "engine/renderer/shader.hpp"
+#include "engine/gfx/shader.hpp"
 
 #include <glad/gl.h>
 
@@ -11,9 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "engine/renderer/shader_exception.hpp"
+#include "engine/gfx/shader_exception.hpp"
 
-namespace ls {
+namespace ls::gfx {
 
   Shader::Shader(const std::filesystem::path& vertexShaderPath, const std::filesystem::path& fragmentShaderPath) {
     GLuint vertexShader{ createShader(GL_VERTEX_SHADER, vertexShaderPath) };
@@ -164,4 +164,4 @@ namespace ls {
     glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
   }
 
-}  // namespace ls
+}  // namespace ls::gfx

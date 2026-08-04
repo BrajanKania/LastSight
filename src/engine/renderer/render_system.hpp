@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cstdint>
 #include <glm/glm.hpp>
 
-namespace ls::renderer_system {
+namespace ls::render_system {
 
   enum class Primitive { Triangle, Point };
 
@@ -14,8 +15,8 @@ namespace ls::renderer_system {
 
   void clearColorBuffer();
 
-  void drawArrays(unsigned int vao, Primitive primitive, unsigned int first, unsigned int count);
+  void drawArrays(uint32_t vao, Primitive primitive, uint32_t first, uint32_t count);
 
-  void bindFramebuffer(unsigned int fbo);
+  void bindFramebuffer(uint32_t fbo);
 
-}  // namespace ls::renderer_system
+}  // namespace ls::render_system

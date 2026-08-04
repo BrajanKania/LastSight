@@ -4,20 +4,22 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/fwd.hpp>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "engine/components/sprite.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/core/asset_system.hpp"
 #include "engine/ecs/types.hpp"
-#include "engine/renderer/framebuffer.hpp"
-#include "engine/renderer/renderer_system.hpp"
-#include "engine/renderer/texture_2d.hpp"
+#include "engine/gfx/framebuffer.hpp"
+#include "engine/gfx/texture_2d.hpp"
+#include "engine/renderer/i_render_pass.hpp"
+#include "engine/renderer/render_system.hpp"
 
-namespace ls {
+namespace ls::renderer {
 
-  LitPass::LitPass(std::shared_ptr<Framebuffer> target)
-      : targetFBO_{ std::move(target) } {}
+  LitPass::LitPass(std::shared_ptr<gfx::Framebuffer> target)
+      : IRenderPass{ std::move(target) } {}
 
   void LitPass::onEnter() {
     shader_.emplace(asset_system::shader("lit_vertex.glsl"), asset_system::shader("lit_fragment.glsl"));
@@ -51,8 +53,8 @@ namespace ls {
   void LitPass::execute(const RenderContext& ctx) {
     targetFBO_->bind();
 
-    renderer_system::setClearColor({ 0.2f, 0.2f, 0.2f, 1.f });
-    renderer_system::clearColorBuffer();
+    render_system::setClearColor({ 0.2f, 0.2f, 0.2f, 1.f });
+    render_system::clearColorBuffer();
 
     auto view{ ctx.registry.view<component::Transform, component::Sprite>() };
     std::vector<ecs::EntityId> renderQueue;
@@ -75,7 +77,7 @@ namespace ls {
       const auto& transform{ ctx.registry.getComponent<ls::component::Transform>(entity) };
       const auto& sprite{ ctx.registry.getComponent<ls::component::Sprite>(entity) };
 
-      const Texture2D* texture{ ctx.textureManager.get(sprite.textureId) };
+      const gfx::Texture2D* texture{ ctx.textureManager.get(sprite.textureId) };
       if (texture) {
         texture->bind(0);
       }
@@ -87,10 +89,10 @@ namespace ls {
       shader_->setMat4("uModel", model);
       shader_->setVec4("uColor", sprite.color);
       shader_->setVec2("uUvScale", sprite.uvScale);
-      renderer_system::drawArrays(vao_, ls::renderer_system::Primitive::Triangle, 0, 6);
+      render_system::drawArrays(vao_, ls::render_system::Primitive::Triangle, 0, 6);
     }
 
-    targetFBO_->unBind();
+    targetFBO_->unbind();
   }
 
-}  // namespace ls
+}  // namespace ls::renderer

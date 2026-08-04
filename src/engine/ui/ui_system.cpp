@@ -4,7 +4,7 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
 
-#include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/render_system.hpp"
 
 namespace ls::ui_system {
 
@@ -46,7 +46,7 @@ namespace ls::ui_system {
   }
 
   void endFrame() {
-    renderer_system::bindFramebuffer(0);
+    render_system::bindFramebuffer(0);
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   }

@@ -35,7 +35,7 @@ namespace ls::factory {
             .uvScale = glm::vec2(1.f),
             .textureId = config.textureId,
             .angleOffset = config.angleOffset,
-            .zIndex = layer::Entities,
+            .zIndex = renderer::Layer::Entities,
         }
     );
     registry.addComponent(

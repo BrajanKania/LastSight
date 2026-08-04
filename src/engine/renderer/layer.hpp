@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-namespace ls::layer {
+namespace ls::renderer {
 
-  enum : int32_t {
+  enum Layer : int32_t {
     Background = -100,
     Ground = 0,
     Entities = 10,

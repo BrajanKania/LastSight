@@ -11,7 +11,7 @@ namespace ls::component {
     glm::vec2 uvScale{ 1.f };
     uint32_t textureId{ 0 };
     float angleOffset{ 0.f };
-    int zIndex{ layer::Ground };
+    int zIndex{ renderer::Layer::Ground };
   };
 
 }  // namespace ls::component

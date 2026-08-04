@@ -6,18 +6,20 @@
 #include <glm/fwd.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
+#include <utility>
 
 #include "engine/components/transform.hpp"
 #include "engine/core/asset_system.hpp"
-#include "engine/renderer/framebuffer.hpp"
-#include "engine/renderer/renderer_system.hpp"
+#include "engine/gfx/framebuffer.hpp"
+#include "engine/renderer/i_render_pass.hpp"
+#include "engine/renderer/render_system.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/player.hpp"
 
-namespace ls {
+namespace ls::renderer {
 
-  FovPass::FovPass(std::shared_ptr<Framebuffer> target, std::shared_ptr<Framebuffer> source)
-      : targetFBO_{ std::move(target) },
+  FovPass::FovPass(std::shared_ptr<gfx::Framebuffer> target, std::shared_ptr<gfx::Framebuffer> source)
+      : IRenderPass{ std::move(target) },
         sourceFBO_{ std::move(source) } {}
 
   void FovPass::onEnter() {
@@ -53,7 +55,7 @@ namespace ls {
     targetFBO_->bind();
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sourceFBO_->getColorBufferID());
+    glBindTexture(GL_TEXTURE_2D, sourceFBO_->getColorBufferId());
 
     shader_->use();
     shader_->setInt("uScreenTexture", 0);
@@ -75,11 +77,11 @@ namespace ls {
       shader_->setFloat("uSmoothnessRad", glm::radians(fieldOfView.smoothnessAngle));
       shader_->setFloat("uSmoothnessDistance", fieldOfView.smoothnessDistance);
 
-      renderer_system::drawArrays(vao_, renderer_system::Primitive::Triangle, 0, 6);
+      render_system::drawArrays(vao_, render_system::Primitive::Triangle, 0, 6);
       break;
     }
 
-    targetFBO_->unBind();
+    targetFBO_->unbind();
   }
 
-}  // namespace ls
+}  // namespace ls::renderer

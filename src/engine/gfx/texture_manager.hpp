@@ -6,9 +6,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "engine/renderer/texture_2d.hpp"
+#include "engine/gfx/texture_2d.hpp"
 
-namespace ls {
+namespace ls::gfx {
 
   class TextureManager {
   public:
@@ -27,4 +27,4 @@ namespace ls {
     std::unordered_map<std::string, uint32_t> nameToId_{};
   };
 
-}  // namespace ls
+}  // namespace ls::gfx

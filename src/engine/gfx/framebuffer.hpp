@@ -1,10 +1,14 @@
 #pragma once
 
-namespace ls {
+#include <cstdint>
+
+#include "engine/gfx/texture_2d.hpp"
+
+namespace ls::gfx {
 
   class Framebuffer {
   public:
-    Framebuffer(int width, int height);
+    explicit Framebuffer(int width = 0, int height = 0);
     ~Framebuffer();
 
     Framebuffer(const Framebuffer&) = delete;
@@ -15,22 +19,24 @@ namespace ls {
 
     void cleanup();
 
-    unsigned int getID() const { return fbo_; }
-    unsigned int getColorBufferID() const { return colorTexture_; }
+    uint32_t getId() const { return fbo_; }
+    uint32_t getColorBufferId() const { return colorTexture_.getId(); }
+    const Texture2D& getColorTexture() const { return colorTexture_; }
 
     int getWidth() const { return width_; }
     int getHeight() const { return height_; }
 
     void bind() const;
-    void unBind() const;
+    void unbind() const;
 
     void resize(int width, int height);
 
   private:
-    unsigned int fbo_{ 0 };
-    unsigned int colorTexture_{ 0 };
+    uint32_t fbo_{ 0 };
+    Texture2D colorTexture_;
+
     int width_{ 0 };
     int height_{ 0 };
   };
 
-}  // namespace ls
+}  // namespace ls::gfx

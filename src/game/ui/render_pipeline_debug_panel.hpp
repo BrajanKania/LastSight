@@ -7,12 +7,12 @@ namespace ls::ui {
 
   class RenderPipelineDebugPanel : public IUIPanel {
   public:
-    explicit RenderPipelineDebugPanel(RenderPipeline& renderPipeline);
+    explicit RenderPipelineDebugPanel(renderer::RenderPipeline& renderPipeline);
 
     void render(const UIContext& ctx) override;
 
   private:
-    RenderPipeline& renderPipeline_;
+    renderer::RenderPipeline& renderPipeline_;
 
     int selectedPassIndex_{ -1 };
     float imageScale_{ 0.2f };

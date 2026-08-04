@@ -26,10 +26,11 @@ namespace ls {
   }
 
   void SceneManager::update(float dt) {
+    processPendingOperations();
+
     if (!scenes_.empty()) {
       scenes_.back()->update(dt);
     }
-    processPendingOperations();
   }
 
   void SceneManager::render() {

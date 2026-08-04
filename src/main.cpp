@@ -10,13 +10,14 @@
 #include "game/scenes/world_scene.hpp"
 
 int main() {
+  constexpr int kWidth{ 1000 };
+  constexpr int kHeight{ 800 };
+
   try {
-    ls::Window window(1000, 800);
+    ls::Window window(kWidth, kHeight);
     ls::ui_system::init(window.getSDLWindow(), window.getOpengGlContext());
 
-    ls::SceneManager sceneManager{};
-    sceneManager.onResize(1000, 800);
-
+    ls::SceneManager sceneManager(window.getWidth(), window.getHeight());
     sceneManager.pushScene<ls::WorldScene>();
 
     uint64_t lastTime{ ls::time_system::ms() };

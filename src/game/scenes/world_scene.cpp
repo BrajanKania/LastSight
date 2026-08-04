@@ -15,8 +15,8 @@
 #include "engine/components/velocity.hpp"
 #include "engine/core/asset_system.hpp"
 #include "engine/core/update_context.hpp"
+#include "engine/gfx/framebuffer.hpp"
 #include "engine/physics/physics_system.hpp"
-#include "engine/renderer/framebuffer.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/layer.hpp"
 #include "engine/renderer/passes/compose_pass.hpp"
@@ -51,7 +51,7 @@ namespace ls {
           component::Sprite{
               .uvScale = glm::vec2(2.5f),
               .textureId = backgroundTextureId,
-              .zIndex = layer::Background,
+              .zIndex = renderer::Layer::Background,
           }
       );
     }
@@ -72,7 +72,7 @@ namespace ls {
               .uvScale = glm::vec2(1.f),
               .textureId = playerTextureId,
               .angleOffset = -90.f,
-              .zIndex = layer::Ground,
+              .zIndex = renderer::Layer::Ground,
           }
       );
       registry_.addComponent(player_, component::Velocity{});
@@ -139,7 +139,7 @@ namespace ls {
           component::Sprite{
               .uvScale = glm::vec2(1.f),
               .textureId = containerTextureId,
-              .zIndex = layer::Entities,
+              .zIndex = renderer::Layer::Entities,
           }
       );
       registry_.addComponent(
@@ -166,7 +166,7 @@ namespace ls {
           component::Sprite{
               .uvScale = glm::vec2(1.f),
               .textureId = playerTextureId,
-              .zIndex = layer::Entities,
+              .zIndex = renderer::Layer::Entities,
           }
       );
       registry_.addComponent(
@@ -194,7 +194,7 @@ namespace ls {
           component::Sprite{
               .uvScale = glm::vec2(1.f),
               .textureId = containerTextureId,
-              .zIndex = layer::Entities,
+              .zIndex = renderer::Layer::Entities,
           }
       );
       registry_.addComponent(
@@ -206,14 +206,14 @@ namespace ls {
       );
     }
 
-    worldFBO_ = std::make_shared<Framebuffer>(1000, 800);
-    fovFBO_ = std::make_shared<Framebuffer>(1000, 800);
-    processedFBO_ = std::make_shared<Framebuffer>(1000, 800);
+    worldFBO_ = std::make_shared<gfx::Framebuffer>();
+    fovFBO_ = std::make_shared<gfx::Framebuffer>();
+    processedFBO_ = std::make_shared<gfx::Framebuffer>();
 
-    renderPipeline_.addPass<LitPass>(worldFBO_);
-    renderPipeline_.addPass<FovPass>(fovFBO_, worldFBO_);
-    renderPipeline_.addPass<PostProcessPass>(processedFBO_, fovFBO_);
-    renderPipeline_.addPass<ComposePass>(processedFBO_);
+    renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
+    renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
+    renderPipeline_.addPass<renderer::PostProcessPass>(processedFBO_, fovFBO_);
+    renderPipeline_.addPass<renderer::ComposePass>(processedFBO_);
 
     uiManager_.addPanel<ui::RenderPipelineDebugPanel>("render_pipeline_debbuger", renderPipeline_);
   }
@@ -255,7 +255,7 @@ namespace ls {
       const auto& camera{ registry_.getComponent<component::Camera>(entity) };
       glm::mat4 viewProjection{ camera.projection * camera.view };
       renderPipeline_.execute(
-          RenderContext{
+          renderer::RenderContext{
               .registry = registry_,
               .viewProjection = viewProjection,
               .textureManager = textureManager_,

@@ -1,11 +1,14 @@
 #pragma once
 
 #include <filesystem>
-namespace ls {
+
+namespace ls::gfx {
 
   class Texture2D {
   public:
-    Texture2D(const std::filesystem::path& path);
+    explicit Texture2D(const std::filesystem::path& path);
+    explicit Texture2D(int width, int height);
+
     ~Texture2D();
 
     Texture2D(const Texture2D&) = delete;
@@ -23,6 +26,8 @@ namespace ls {
     void bind(uint32_t slot) const;
     void unbind() const;
 
+    void resize(int width, int height);
+
   private:
     uint32_t id_{ 0 };
     int width_{ 0 };
@@ -30,4 +35,4 @@ namespace ls {
     int channels_{ 0 };
   };
 
-}  // namespace ls
+}  // namespace ls::gfx

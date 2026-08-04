@@ -1,8 +1,10 @@
-#include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/render_system.hpp"
 
 #include <glad/gl.h>
 
-namespace ls::renderer_system {
+#include <cstdint>
+
+namespace ls::render_system {
 
   namespace {
     GLenum toGlPrimitive(Primitive primitive) {
@@ -15,7 +17,7 @@ namespace ls::renderer_system {
       return 0;
     }
 
-    glm::vec2 viewportSize{0.f, 0.f};
+    glm::vec2 viewportSize{ 0.f, 0.f };
 
   }  // namespace
 
@@ -30,12 +32,12 @@ namespace ls::renderer_system {
 
   void clearColorBuffer() { glClear(GL_COLOR_BUFFER_BIT); }
 
-  void drawArrays(unsigned int vao, Primitive primitive, unsigned int first, unsigned int count) {
+  void drawArrays(uint32_t vao, Primitive primitive, uint32_t first, uint32_t count) {
     glBindVertexArray(vao);
     glDrawArrays(toGlPrimitive(primitive), first, count);
     glBindVertexArray(0);
   }
 
-  void bindFramebuffer(unsigned int fbo) { glBindFramebuffer(GL_FRAMEBUFFER, fbo); }
+  void bindFramebuffer(uint32_t fbo) { glBindFramebuffer(GL_FRAMEBUFFER, fbo); }
 
-}  // namespace ls::renderer_system
+}  // namespace ls::render_system

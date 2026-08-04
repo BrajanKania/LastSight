@@ -1,8 +1,8 @@
-#include "engine/renderer/texture_manager.hpp"
+#include "engine/gfx/texture_manager.hpp"
 
 #include <memory>
 
-namespace ls {
+namespace ls::gfx {
 
   TextureManager::~TextureManager() {
     for (auto& texture : textures_)
@@ -39,4 +39,5 @@ namespace ls {
 
     return 0;
   }
-}  // namespace ls
+
+}  // namespace ls::gfx

@@ -2,14 +2,17 @@
 
 #include <glad/gl.h>
 
+#include <utility>
+
 #include "engine/core/asset_system.hpp"
 #include "engine/core/time_system.hpp"
-#include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/i_render_pass.hpp"
+#include "engine/renderer/render_system.hpp"
 
-namespace ls {
+namespace ls::renderer {
 
-  PostProcessPass::PostProcessPass(std::shared_ptr<Framebuffer> target, std::shared_ptr<Framebuffer> source)
-      : targetFBO_{ target },
+  PostProcessPass::PostProcessPass(std::shared_ptr<gfx::Framebuffer> target, std::shared_ptr<gfx::Framebuffer> source)
+      : IRenderPass{ std::move(target) },
         sourceFBO_{ source } {}
 
   void PostProcessPass::onEnter() {
@@ -47,17 +50,18 @@ namespace ls {
   void PostProcessPass::execute(const RenderContext& ctx) {
     targetFBO_->bind();
 
-    renderer_system::clearColorBuffer();
+    render_system::clearColorBuffer();
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sourceFBO_->getColorBufferID());
+    glBindTexture(GL_TEXTURE_2D, sourceFBO_->getColorBufferId());
 
     shader_->use();
     shader_->setInt("uTexture", 0);
     shader_->setFloat("uTime", time_system::sec());
 
-    renderer_system::drawArrays(vao_, renderer_system::Primitive::Triangle, 0, 6);
+    render_system::drawArrays(vao_, render_system::Primitive::Triangle, 0, 6);
 
-    targetFBO_->unBind();
+    targetFBO_->unbind();
   }
-}  // namespace ls
+
+}  // namespace ls::renderer

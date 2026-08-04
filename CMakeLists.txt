@@ -26,35 +26,41 @@ find_package(imgui CONFIG REQUIRED)
 add_executable(LastSight 
   src/main.cpp
 
+  # Engine ---
+ 
   src/engine/core/input_system.cpp
-  src/engine/core/window.cpp
   src/engine/core/scene_manager.cpp
   src/engine/core/stb_impl.cpp
+  src/engine/core/window.cpp
 
-  src/engine/renderer/renderer_system.cpp
-  src/engine/renderer/passes/lit_pass.cpp
-  src/engine/renderer/passes/compose_pass.cpp
-  src/engine/renderer/passes/post_process_pass.cpp
-  src/engine/renderer/passes/fov_pass.cpp
-  src/engine/renderer/framebuffer.cpp
-  src/engine/renderer/shader.cpp
-  src/engine/renderer/shader_exception.cpp
-  src/engine/renderer/texture_2d.cpp
-  src/engine/renderer/texture_manager.cpp
+  src/engine/gfx/framebuffer.cpp
+  src/engine/gfx/shader.cpp
+  src/engine/gfx/shader_exception.cpp
+  src/engine/gfx/texture_2d.cpp
+  src/engine/gfx/texture_manager.cpp
 
   src/engine/physics/physics_system.cpp
+
+  src/engine/renderer/passes/compose_pass.cpp
+  src/engine/renderer/passes/fov_pass.cpp
+  src/engine/renderer/passes/lit_pass.cpp
+  src/engine/renderer/passes/post_process_pass.cpp
+
+  src/engine/renderer/render_system.cpp
 
   src/engine/ui/ui_manager.cpp
   src/engine/ui/ui_system.cpp
 
-  src/game/systems/player_system.cpp
-  src/game/systems/camera_system.cpp
-  src/game/systems/combat_system.cpp
-  src/game/systems/projectile_system.cpp
+  # Game ---
 
   src/game/factories/projectile_factory.cpp
 
   src/game/scenes/world_scene.cpp
+
+  src/game/systems/camera_system.cpp
+  src/game/systems/combat_system.cpp
+  src/game/systems/player_system.cpp
+  src/game/systems/projectile_system.cpp
 
   src/game/ui/render_pipeline_debug_panel.cpp
 )

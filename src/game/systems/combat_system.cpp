@@ -5,7 +5,7 @@
 
 #include "engine/components/transform.hpp"
 #include "engine/core/update_context.hpp"
-#include "engine/renderer/texture_manager.hpp"
+#include "engine/gfx/texture_manager.hpp"
 #include "game/components/weapon.hpp"
 #include "game/factories/projectile_factory.hpp"
 

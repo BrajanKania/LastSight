@@ -1,14 +1,14 @@
-#include "engine/renderer/shader_exception.hpp"
+#include "engine/gfx/shader_exception.hpp"
 
 #include <filesystem>
 #include <format>
 #include <stdexcept>
 
-namespace ls {
+namespace ls::gfx {
 
   CompileError::CompileError(const std::filesystem::path& file, const std::string& infoLog)
       : std::runtime_error("Failed to compile shader.") {
-    std::string formattedInfoLog{infoLog};
+    std::string formattedInfoLog{ infoLog };
     formatInfoLog(formattedInfoLog, "\n", "\n\t\t\t");
 
     formattedMessage_ = std::format(
@@ -18,7 +18,8 @@ namespace ls {
         "\n\t\tInfo log: [ \n\t\t\t{} \n\t\t]"
         "\n\t]",
         file.string(),
-        std::move(formattedInfoLog));
+        std::move(formattedInfoLog)
+    );
   }
 
   const char* CompileError::what() const noexcept { return formattedMessage_.c_str(); }
@@ -30,16 +31,19 @@ namespace ls {
         "\n\t\tCause: failed to open file."
         "\n\t\tFile: \"{}\"."
         "\n\t]",
-        file.string());
+        file.string()
+    );
   }
 
   const char* OpenFileError::what() const noexcept { return formattedMessage_.c_str(); }
 
-  LinkError::LinkError(const std::filesystem::path& vertexShaderPath,
-                       const std::filesystem::path& fragmentShaderPath,
-                       const std::string& infoLog)
+  LinkError::LinkError(
+      const std::filesystem::path& vertexShaderPath,
+      const std::filesystem::path& fragmentShaderPath,
+      const std::string& infoLog
+  )
       : std::runtime_error("Failed to link program.") {
-    std::string formattedInfoLog{infoLog};
+    std::string formattedInfoLog{ infoLog };
     formatInfoLog(formattedInfoLog, "\n", "\n\t\t\t");
 
     formattedMessage_ = std::format(
@@ -53,7 +57,8 @@ namespace ls {
         "\n\t]",
         vertexShaderPath.string(),
         fragmentShaderPath.string(),
-        std::move(formattedInfoLog));
+        std::move(formattedInfoLog)
+    );
   }
 
   const char* LinkError::what() const noexcept { return formattedMessage_.c_str(); }
@@ -65,11 +70,11 @@ namespace ls {
     if (!source.empty() && source.back() == '\n')
       source.pop_back();
 
-    std::string::size_type startPos{0};
+    std::string::size_type startPos{ 0 };
 
     while ((startPos = source.find(from, startPos)) != std::string::npos) {
       source.replace(startPos, from.length(), to);
       startPos += to.length();
     }
   }
-}  // namespace ls
+}  // namespace ls::gfx

@@ -13,7 +13,7 @@
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
-#include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/render_system.hpp"
 #include "game/components/camera.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
@@ -64,7 +64,7 @@ namespace ls::player_system {
         const auto& camera{ ctx.registry.getComponent<component::Camera>(entity) };
 
         glm::mat4 invViewProjection{ glm::inverse(camera.projection * camera.view) };
-        glm::vec2 viewportSize{ renderer_system::getViewportSize() };
+        glm::vec2 viewportSize{ render_system::getViewportSize() };
         glm::vec2 mouseScreenPos{ input_system::getMousePosition() };
 
         glm::vec2 mouseWorldPos{ screenToWorld(mouseScreenPos, viewportSize, invViewProjection) };

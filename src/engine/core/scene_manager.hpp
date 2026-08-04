@@ -9,11 +9,20 @@ namespace ls {
 
   class SceneManager {
   public:
+    explicit SceneManager(int width, int height)
+        : width_{ width },
+          height_{ height } {}
+
     template <typename T>
     void pushScene() {
       pendingOperations_.push_back([this]() {
-        auto newScene{std::make_unique<T>()};
+        auto newScene{ std::make_unique<T>() };
         newScene->onEnter();
+
+        if (width_ > 0 && height_ > 0) {
+          newScene->onResize(width_, height_);
+        }
+
         scenes_.push_back(std::move(newScene));
       });
     }
@@ -28,8 +37,13 @@ namespace ls {
           scenes_.pop_back();
         }
 
-        auto newScene{std::make_unique<T>()};
+        auto newScene{ std::make_unique<T>() };
         newScene->onEnter();
+
+        if (width_ > 0 && height_ > 0) {
+          newScene->onResize(width_, height_);
+        }
+
         scenes_.push_back(std::move(newScene));
       });
     }
@@ -42,6 +56,9 @@ namespace ls {
 
   private:
     void processPendingOperations();
+
+    int width_{ 0 };
+    int height_{ 0 };
 
     std::vector<std::unique_ptr<IScene>> scenes_{};
     std::vector<std::function<void()>> pendingOperations_{};

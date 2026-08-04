@@ -2,13 +2,16 @@
 
 #include <glad/gl.h>
 
+#include <utility>
+
 #include "engine/core/asset_system.hpp"
-#include "engine/renderer/renderer_system.hpp"
+#include "engine/renderer/i_render_pass.hpp"
+#include "engine/renderer/render_system.hpp"
 
-namespace ls {
+namespace ls::renderer {
 
-  ComposePass::ComposePass(std::shared_ptr<Framebuffer> target)
-      : targetFBO_{ target } {}
+  ComposePass::ComposePass(std::shared_ptr<gfx::Framebuffer> target)
+      : IRenderPass{ std::move(target) } {}
 
   void ComposePass::onEnter() {
     shader_.emplace(asset_system::shader("compose_vertex.glsl"), asset_system::shader("compose_fragment.glsl"));
@@ -41,15 +44,15 @@ namespace ls {
   }
 
   void ComposePass::execute(const RenderContext& ctx) {
-    renderer_system::bindFramebuffer(0);
+    render_system::bindFramebuffer(0);
 
-    renderer_system::clearColorBuffer();
+    render_system::clearColorBuffer();
 
     shader_->use();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, targetFBO_->getColorBufferID());
+    glBindTexture(GL_TEXTURE_2D, targetFBO_->getColorBufferId());
     shader_->setInt("uLitTexture", 0);
 
-    renderer_system::drawArrays(vao_, renderer_system::Primitive::Triangle, 0, 6);
+    render_system::drawArrays(vao_, render_system::Primitive::Triangle, 0, 6);
   }
-}  // namespace ls
+}  // namespace ls::renderer

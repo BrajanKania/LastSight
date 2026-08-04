@@ -7,7 +7,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace ls {
+namespace ls::gfx {
 
   class Shader {
   public:
@@ -50,4 +50,4 @@ namespace ls {
     std::unordered_map<std::string, GLint> uniformLocations_;
   };
 
-}  // namespace ls
+}  // namespace ls::gfx
