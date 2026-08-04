@@ -14,6 +14,9 @@ namespace ls {
     LitPass(std::shared_ptr<Framebuffer> target);
     void onEnter() override;
     void execute(const RenderContext& ctx) override;
+    const char* getName() const override { return "Lit Pass"; }
+
+    Framebuffer* getTargetFBO() override { return targetFBO_.get(); }
 
   private:
     std::shared_ptr<Framebuffer> targetFBO_;

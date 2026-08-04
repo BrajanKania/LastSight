@@ -6,11 +6,14 @@
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/time_system.hpp"
 #include "engine/core/window.hpp"
+#include "engine/ui/ui_system.hpp"
 #include "game/scenes/world_scene.hpp"
 
 int main() {
   try {
     ls::Window window(1000, 800);
+    ls::ui_system::init(window.getSDLWindow(), window.getOpengGlContext());
+
     ls::SceneManager sceneManager{};
     sceneManager.onResize(1000, 800);
 
@@ -41,6 +44,8 @@ int main() {
 
       window.swapBuffers();
     }
+
+    ls::ui_system::shutdown();
 
   } catch (const std::exception& e) {
     SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "[\n%s\n]", e.what());

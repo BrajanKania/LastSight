@@ -3,6 +3,14 @@
   "dependencies": [
     "sdl3",
     "glm",
-    "stb"
+    "stb",
+    {
+      "name": "imgui",
+      "features": [
+        "sdl3-binding",
+        "opengl3-binding",
+        "docking-experimental"
+      ]
+    }
   ]
 }

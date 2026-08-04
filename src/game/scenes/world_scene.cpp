@@ -32,6 +32,7 @@
 #include "game/systems/combat_system.hpp"
 #include "game/systems/player_system.hpp"
 #include "game/systems/projectile_system.hpp"
+#include "game/ui/render_pipeline_debug_panel.hpp"
 
 namespace ls {
 
@@ -213,6 +214,8 @@ namespace ls {
     renderPipeline_.addPass<FovPass>(fovFBO_, worldFBO_);
     renderPipeline_.addPass<PostProcessPass>(processedFBO_, fovFBO_);
     renderPipeline_.addPass<ComposePass>(processedFBO_);
+
+    uiManager_.addPanel<ui::RenderPipelineDebugPanel>("render_pipeline_debbuger", renderPipeline_);
   }
 
   void WorldScene::onExit() {}
@@ -260,6 +263,8 @@ namespace ls {
       );
       break;
     }
+
+    uiManager_.render(getUIContext());
   }
 
 }  // namespace ls

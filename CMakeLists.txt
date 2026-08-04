@@ -21,6 +21,7 @@ glad_add_library(glad2_lib STATIC API gl:core=4.6)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(SDL3 REQUIRED COMPONENTS SDL3-static)
 find_package(glm REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 
 add_executable(LastSight 
   src/main.cpp
@@ -43,6 +44,9 @@ add_executable(LastSight
 
   src/engine/physics/physics_system.cpp
 
+  src/engine/ui/ui_manager.cpp
+  src/engine/ui/ui_system.cpp
+
   src/game/systems/player_system.cpp
   src/game/systems/camera_system.cpp
   src/game/systems/combat_system.cpp
@@ -51,6 +55,8 @@ add_executable(LastSight
   src/game/factories/projectile_factory.cpp
 
   src/game/scenes/world_scene.cpp
+
+  src/game/ui/render_pipeline_debug_panel.cpp
 )
 
 target_link_libraries(
@@ -60,6 +66,7 @@ target_link_libraries(
     glm::glm
     OpenGL::OpenGL
     SDL3::SDL3
+    imgui::imgui
 )
 
 target_include_directories(

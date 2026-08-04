@@ -18,16 +18,19 @@ namespace ls {
     unsigned int getID() const { return fbo_; }
     unsigned int getColorBufferID() const { return colorTexture_; }
 
+    int getWidth() const { return width_; }
+    int getHeight() const { return height_; }
+
     void bind() const;
     void unBind() const;
 
     void resize(int width, int height);
 
   private:
-    unsigned int fbo_{0};
-    unsigned int colorTexture_{0};
-    int width_{0};
-    int height_{0};
+    unsigned int fbo_{ 0 };
+    unsigned int colorTexture_{ 0 };
+    int width_{ 0 };
+    int height_{ 0 };
   };
 
 }  // namespace ls

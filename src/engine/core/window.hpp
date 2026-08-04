@@ -28,17 +28,21 @@ namespace ls {
 
     bool wasResized() const { return wasResized_; }
 
+    SDL_Window* getSDLWindow() { return window_; }
+
+    SDL_GLContext getOpengGlContext() { return glContext_; }
+
   private:
     void resizeViewport() { renderer_system::setViewport(0, 0, width_, height_); }
 
   private:
-    SDL_Window* window_{nullptr};
-    SDL_GLContext glContext_{nullptr};
+    SDL_Window* window_{ nullptr };
+    SDL_GLContext glContext_{ nullptr };
 
-    int width_{0};
-    int height_{0};
-    bool shouldClose_{false};
-    bool wasResized_{false};
+    int width_{ 0 };
+    int height_{ 0 };
+    bool shouldClose_{ false };
+    bool wasResized_{ false };
   };
 
 }  // namespace ls

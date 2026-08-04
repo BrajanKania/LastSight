@@ -1,5 +1,9 @@
 #include "engine/core/scene_manager.hpp"
 
+#include <imgui.h>
+
+#include "engine/ui/ui_system.hpp"
+
 namespace ls {
 
   void SceneManager::popScene() {
@@ -12,6 +16,10 @@ namespace ls {
   }
 
   void SceneManager::handleInput() {
+    ImGuiIO& io{ ImGui::GetIO() };
+    if (io.WantCaptureKeyboard || io.WantCaptureMouse)
+      return;
+
     if (!scenes_.empty()) {
       scenes_.back()->handleInput();
     }
@@ -25,16 +33,19 @@ namespace ls {
   }
 
   void SceneManager::render() {
-    if (scenes_.empty())
-      return;
+    ui_system::beginFrame();
 
-    auto firstToRender{scenes_.size() - 1};
-    while (firstToRender > 0 && !scenes_[firstToRender]->isOpaque())
-      firstToRender--;
+    if (!scenes_.empty()) {
+      auto firstToRender{ scenes_.size() - 1 };
+      while (firstToRender > 0 && !scenes_[firstToRender]->isOpaque())
+        firstToRender--;
 
-    for (size_t i{firstToRender}; i < scenes_.size(); i++) {
-      scenes_[i]->render();
+      for (size_t i{ firstToRender }; i < scenes_.size(); i++) {
+        scenes_[i]->render();
+      }
     }
+
+    ui_system::endFrame();
   }
 
   void SceneManager::processPendingOperations() {

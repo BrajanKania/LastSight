@@ -3,12 +3,9 @@
 #include <memory>
 
 #include "engine/core/i_scene.hpp"
-#include "engine/dispatch/event_queue.hpp"
-#include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/renderer/framebuffer.hpp"
 #include "engine/renderer/render_pipeline.hpp"
-#include "engine/renderer/texture_manager.hpp"
 
 namespace ls {
 
@@ -25,11 +22,7 @@ namespace ls {
     bool isOpaque() const override { return true; }
 
   private:
-    ecs::Registry registry_;
-    dispatch::EventQueue eventQueue_;
-
     RenderPipeline renderPipeline_;
-    TextureManager textureManager_;
 
     std::shared_ptr<Framebuffer> worldFBO_{ nullptr };
     std::shared_ptr<Framebuffer> fovFBO_{ nullptr };

@@ -10,11 +10,13 @@
 #include <format>
 #include <stdexcept>
 
+#include "engine/ui/ui_system.hpp"
+
 namespace ls {
 
   Window::Window(int width, int height)
-      : width_{width},
-        height_{height} {
+      : width_{ width },
+        height_{ height } {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
       throw std::runtime_error(std::format("Failed to initialize SDL3: {}", SDL_GetError()));
     }
@@ -70,6 +72,8 @@ namespace ls {
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
+      ui_system::processEvent(&event);
+
       if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
         close();
 

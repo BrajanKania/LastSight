@@ -14,6 +14,9 @@ namespace ls {
     PostProcessPass(std::shared_ptr<Framebuffer> target, std::shared_ptr<Framebuffer> source);
     void onEnter() override;
     void execute(const RenderContext& ctx) override;
+    const char* getName() const override { return "Post Process Pass"; }
+
+    Framebuffer* getTargetFBO() override { return targetFBO_.get(); }
 
   private:
     std::shared_ptr<Framebuffer> targetFBO_;
