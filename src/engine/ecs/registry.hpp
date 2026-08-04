@@ -26,16 +26,26 @@ namespace ls::ecs {
     }
 
     void destroyEntity(EntityId entity) {
-      if (!isValidEntity(entity))
+      if (isEntityPendingDestroy(entity))
         return;
 
-      availableEntities_.push_back(entity);
+      entitiesToDestroy_.push_back(entity);
+    }
 
+    void purgeDestroyedEntities() {
       for (auto& sparseSet : sparseSets_) {
         if (sparseSet) {
-          sparseSet->destroyComponent(entity);
+          for (auto entity : entitiesToDestroy_) {
+            sparseSet->destroyComponent(entity);
+          }
         }
       }
+
+      for (auto entity : entitiesToDestroy_) {
+        availableEntities_.push_back(entity);
+      }
+
+      entitiesToDestroy_.clear();
     }
 
     bool isValidEntity(EntityId entity) const {
@@ -43,6 +53,10 @@ namespace ls::ecs {
         return false;
 
       return std::ranges::find(availableEntities_, entity) == availableEntities_.end();
+    }
+
+    bool isEntityPendingDestroy(EntityId entity) const {
+      return std::ranges::find(entitiesToDestroy_, entity) != entitiesToDestroy_.end();
     }
 
     template <typename TComponent>
@@ -144,6 +158,7 @@ namespace ls::ecs {
 
     inline static ComponentId nextComponentId_{ 0 };
     std::vector<std::unique_ptr<ISparseSet>> sparseSets_{};
+    std::vector<EntityId> entitiesToDestroy_{};
   };
 
 }  // namespace ls::ecs

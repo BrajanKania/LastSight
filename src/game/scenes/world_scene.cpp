@@ -244,6 +244,7 @@ namespace ls {
     camera_system::follow(ctx, player_, 6.f);
     camera_system::update(ctx);
 
+    registry_.purgeDestroyedEntities();
     eventQueue_.clear();
   }
 
