@@ -113,6 +113,8 @@ namespace ls::ecs {
       return View<TComponents...>(getSparseSetPointer<TComponents>()...);
     }
 
+    ecs::EntityId getMaxEntityId() const { return nextEntity_; }
+
   private:
     template <typename TComponent>
     static ComponentId getComponentId() {

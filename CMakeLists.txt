@@ -62,6 +62,7 @@ add_executable(LastSight
   src/game/systems/player_system.cpp
   src/game/systems/projectile_system.cpp
 
+  src/game/ui/entity_explorer_panel.cpp
   src/game/ui/render_pipeline_debug_panel.cpp
 )
 

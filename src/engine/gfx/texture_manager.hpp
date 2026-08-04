@@ -22,6 +22,8 @@ namespace ls::gfx {
 
     uint32_t getId(const std::string& name) const;
 
+    std::size_t getTextureCount() const { return textures_.size(); }
+
   private:
     std::vector<std::unique_ptr<Texture2D>> textures_;
     std::unordered_map<std::string, uint32_t> nameToId_{};

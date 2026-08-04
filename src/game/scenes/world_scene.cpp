@@ -4,12 +4,12 @@
 #include <glad/gl.h>
 
 #include <cstdint>
-#include <glm/ext/vector_float2.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 
 #include "engine/components/collider.hpp"
+#include "engine/components/entity_name.hpp"
 #include "engine/components/sprite.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
@@ -32,6 +32,7 @@
 #include "game/systems/combat_system.hpp"
 #include "game/systems/player_system.hpp"
 #include "game/systems/projectile_system.hpp"
+#include "game/ui/entity_explorer_panel.hpp"
 #include "game/ui/render_pipeline_debug_panel.hpp"
 
 namespace ls {
@@ -60,6 +61,12 @@ namespace ls {
     {
       player_ = registry_.createEntity();
       registry_.addComponent(player_, component::Player{});
+      registry_.addComponent(
+          player_,
+          component::EntityName{
+              .name = "Player",
+          }
+      );
       registry_.addComponent(
           player_,
           component::Transform{
@@ -119,6 +126,12 @@ namespace ls {
           component::Camera{
               .orthographicSize = 4.f,
               .zoom = 1.f,
+          }
+      );
+      registry_.addComponent(
+          camera,
+          component::EntityName{
+              .name = "Camera",
           }
       );
       registry_.addComponent(camera, component::Transform{});
@@ -216,6 +229,7 @@ namespace ls {
     renderPipeline_.addPass<renderer::ComposePass>(processedFBO_);
 
     uiManager_.addPanel<ui::RenderPipelineDebugPanel>("render_pipeline_debbuger", renderPipeline_);
+    uiManager_.addPanel<ui::EntityExplorerPanel>("entity_explorer_panel");
   }
 
   void WorldScene::onExit() {}
