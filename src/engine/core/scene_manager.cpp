@@ -16,10 +16,6 @@ namespace ls {
   }
 
   void SceneManager::handleInput() {
-    ImGuiIO& io{ ImGui::GetIO() };
-    if (io.WantCaptureKeyboard || io.WantCaptureMouse)
-      return;
-
     if (!scenes_.empty()) {
       scenes_.back()->handleInput();
     }

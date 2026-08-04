@@ -1,4 +1,4 @@
-#include "engine/core/input_system.hpp"
+#include "engine/input/input_system.hpp"
 
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_mouse.h>
@@ -7,30 +7,32 @@
 namespace ls::input_system {
 
   namespace {
-    SDL_Scancode toScancode(Key key) {
+    SDL_Scancode toScancode(input::Key key) {
       switch (key) {
-        case Key::W:
+        case input::Key::W:
           return SDL_SCANCODE_W;
-        case Key::A:
+        case input::Key::A:
           return SDL_SCANCODE_A;
-        case Key::S:
+        case input::Key::S:
           return SDL_SCANCODE_S;
-        case Key::D:
+        case input::Key::D:
           return SDL_SCANCODE_D;
-        case Key::Escape:
+        case input::Key::Escape:
           return SDL_SCANCODE_ESCAPE;
-        case Key::LShift:
+        case input::Key::LShift:
           return SDL_SCANCODE_LSHIFT;
+        case input::Key::Grave:
+          return SDL_SCANCODE_GRAVE;
       }
 
       return SDL_SCANCODE_UNKNOWN;
     }
 
-    SDL_MouseButtonFlags toMouseButtonFlags(Button button) {
+    SDL_MouseButtonFlags toMouseButtonFlags(input::Button button) {
       switch (button) {
-        case Button::Left:
+        case input::Button::Left:
           return SDL_BUTTON_LMASK;
-        case Button::Right:
+        case input::Button::Right:
           return SDL_BUTTON_RMASK;
       }
 
@@ -38,7 +40,7 @@ namespace ls::input_system {
     }
   }  // namespace
 
-  bool isKeyPressed(Key key) {
+  bool isKeyPressed(input::Key key) {
     const bool* keys{ SDL_GetKeyboardState(nullptr) };
     return keys[toScancode(key)];
   }
@@ -49,7 +51,7 @@ namespace ls::input_system {
     return pos;
   }
 
-  bool isButtonPressed(Button button) {
+  bool isButtonPressed(input::Button button) {
     const auto buttons{ SDL_GetMouseState(nullptr, nullptr) };
     return (buttons & toMouseButtonFlags(button));
   }

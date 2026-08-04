@@ -3,6 +3,7 @@
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/gfx/texture_manager.hpp"
+#include "engine/input/input_manager.hpp"
 #include "engine/ui/ui_context.hpp"
 #include "engine/ui/ui_manager.hpp"
 
@@ -35,6 +36,8 @@ namespace ls {
     dispatch::EventQueue eventQueue_;
     ui::UIManager uiManager_;
     gfx::TextureManager textureManager_;
+    input::InputManager inputManager_;
+    input::InputManager debugInputManager_;
   };
 
 }  // namespace ls

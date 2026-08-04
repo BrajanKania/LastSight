@@ -9,11 +9,14 @@
 
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
-#include "engine/core/input_system.hpp"
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
+#include "engine/input/types.hpp"
 #include "engine/renderer/render_system.hpp"
+#include "game/actions/move.hpp"
+#include "game/actions/shoot.hpp"
+#include "game/actions/sprint.hpp"
 #include "game/components/camera.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
@@ -28,23 +31,14 @@ namespace ls::player_system {
       auto& velocity{ ctx.registry.getComponent<component::Velocity>(playerEntity) };
       const auto& movement{ ctx.registry.getComponent<component::Movement>(playerEntity) };
 
-      float speed{ (input_system::isKeyPressed(input_system::Key::LShift) ? movement.runSpeed : movement.walkSpeed) };
+      auto sprintActionState{ ctx.inputManager.getActionState<action::Sprint>() };
+      float speed{ (sprintActionState == input::ActionState::JustPressed ||
+                    sprintActionState == input::ActionState::Held)
+                       ? movement.runSpeed
+                       : movement.walkSpeed };
 
-      glm::vec2 direction{ 0.f, 0.f };
-
-      if (input_system::isKeyPressed(input_system::Key::W))
-        direction.y += 1.f;
-
-      if (input_system::isKeyPressed(input_system::Key::A))
-        direction.x -= 1.f;
-
-      if (input_system::isKeyPressed(input_system::Key::S))
-        direction.y -= 1.f;
-
-      if (input_system::isKeyPressed(input_system::Key::D))
-        direction.x += 1.f;
-
-      velocity.linear = (glm::length(direction) != 0.f ? glm::normalize(direction) * speed : glm::vec2(0.f));
+      glm::vec2 direction{ ctx.inputManager.getAxis2D<action::Move>() };
+      velocity.linear = direction * speed;
     }
 
     glm::vec2 screenToWorld(glm::vec2 mousePos, glm::vec2 viewportSize, const glm::mat4& invViewProjection) {
@@ -65,7 +59,7 @@ namespace ls::player_system {
 
         glm::mat4 invViewProjection{ glm::inverse(camera.projection * camera.view) };
         glm::vec2 viewportSize{ render_system::getViewportSize() };
-        glm::vec2 mouseScreenPos{ input_system::getMousePosition() };
+        glm::vec2 mouseScreenPos{ ctx.inputManager.getMousePosition() };
 
         glm::vec2 mouseWorldPos{ screenToWorld(mouseScreenPos, viewportSize, invViewProjection) };
 
@@ -87,7 +81,8 @@ namespace ls::player_system {
       const auto& weapon{ ctx.registry.getComponent<component::Weapon>(playerEntity) };
 
       if (weapon.cooldown <= 0.f) {
-        if (input_system::isButtonPressed(input_system::Button::Left)) {
+        auto actionState{ ctx.inputManager.getActionState<action::Shoot>() };
+        if (actionState == input::ActionState::JustPressed || actionState == input::ActionState::Held) {
           combat_system::shoot(ctx, playerEntity);
         }
       }

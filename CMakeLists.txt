@@ -28,7 +28,6 @@ add_executable(LastSight
 
   # Engine ---
  
-  src/engine/core/input_system.cpp
   src/engine/core/scene_manager.cpp
   src/engine/core/stb_impl.cpp
   src/engine/core/window.cpp
@@ -38,6 +37,9 @@ add_executable(LastSight
   src/engine/gfx/shader_exception.cpp
   src/engine/gfx/texture_2d.cpp
   src/engine/gfx/texture_manager.cpp
+
+  src/engine/input/input_manager.cpp
+  src/engine/input/input_system.cpp
 
   src/engine/physics/physics_system.cpp
 
@@ -62,6 +64,7 @@ add_executable(LastSight
   src/game/systems/player_system.cpp
   src/game/systems/projectile_system.cpp
 
+  src/game/ui/debug_toolbox_panel.cpp
   src/game/ui/entity_explorer_panel.cpp
   src/game/ui/render_pipeline_debug_panel.cpp
 )

@@ -15,7 +15,7 @@ namespace ls::ui {
     void toggleVisible() { visible_ = !visible_; }
 
   protected:
-    bool visible_{ true };
+    bool visible_{ false };
   };
 
 }  // namespace ls::ui

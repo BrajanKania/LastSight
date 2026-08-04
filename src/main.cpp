@@ -2,10 +2,10 @@
 
 #include <algorithm>
 
-#include "engine/core/input_system.hpp"
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/time_system.hpp"
 #include "engine/core/window.hpp"
+#include "engine/input/input_system.hpp"
 #include "engine/ui/ui_system.hpp"
 #include "game/scenes/world_scene.hpp"
 
@@ -29,7 +29,7 @@ int main() {
 
       window.pollEvents();
 
-      if (ls::input_system::isKeyPressed(ls::input_system::Key::Escape)) {
+      if (ls::input_system::isKeyPressed(ls::input::Key::Escape)) {
         window.close();
       }
 

@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_log.h>
 #include <glad/gl.h>
+#include <imgui.h>
 
 #include <cstdint>
 #include <glm/glm.hpp>
@@ -15,7 +16,10 @@
 #include "engine/components/velocity.hpp"
 #include "engine/core/asset_system.hpp"
 #include "engine/core/update_context.hpp"
+#include "engine/events/set_panel_visibility.hpp"
+#include "engine/events/toggle_panel.hpp"
 #include "engine/gfx/framebuffer.hpp"
+#include "engine/input/types.hpp"
 #include "engine/physics/physics_system.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/layer.hpp"
@@ -23,6 +27,10 @@
 #include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
 #include "engine/renderer/passes/post_process_pass.hpp"
+#include "game/actions/move.hpp"
+#include "game/actions/shoot.hpp"
+#include "game/actions/sprint.hpp"
+#include "game/actions/toggle_debug.hpp"
 #include "game/components/camera.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/movement.hpp"
@@ -32,7 +40,9 @@
 #include "game/systems/combat_system.hpp"
 #include "game/systems/player_system.hpp"
 #include "game/systems/projectile_system.hpp"
+#include "game/ui/debug_toolbox_panel.hpp"
 #include "game/ui/entity_explorer_panel.hpp"
+#include "game/ui/panel_names.hpp"
 #include "game/ui/render_pipeline_debug_panel.hpp"
 
 namespace ls {
@@ -228,8 +238,15 @@ namespace ls {
     renderPipeline_.addPass<renderer::PostProcessPass>(processedFBO_, fovFBO_);
     renderPipeline_.addPass<renderer::ComposePass>(processedFBO_);
 
-    uiManager_.addPanel<ui::RenderPipelineDebugPanel>("render_pipeline_debbuger", renderPipeline_);
-    uiManager_.addPanel<ui::EntityExplorerPanel>("entity_explorer_panel");
+    uiManager_.addPanel<ui::DebugToolboxPanel>(ui::panel::kDebugToolbox);
+    uiManager_.addPanel<ui::RenderPipelineDebugPanel>(ui::panel::kRenderPipelineDebug, renderPipeline_);
+    uiManager_.addPanel<ui::EntityExplorerPanel>(ui::panel::kEntityExplorer);
+
+    inputManager_.bindAxis2D<action::Move>(input::Key::W, input::Key::S, input::Key::A, input::Key::D);
+    inputManager_.bindButton<action::Shoot>(input::Button::Left);
+    inputManager_.bindKey<action::Sprint>(input::Key::LShift);
+
+    debugInputManager_.bindKey<action::ToggleDebug>(input::Key::Grave);
   }
 
   void WorldScene::onExit() {}
@@ -240,13 +257,47 @@ namespace ls {
     processedFBO_->resize(width, height);
   }
 
-  void WorldScene::handleInput() {}
+  void WorldScene::handleInput() {
+    debugInputManager_.update(false, false);
+
+    if (debugInputManager_.getActionState<action::ToggleDebug>() == input::ActionState::JustPressed) {
+      eventQueue_.publish<event::TogglePanel>(event::TogglePanel{
+          .name = ui::panel::kDebugToolbox,
+      });
+
+      eventQueue_.publish(
+          event::SetPanelVisibility{
+              .name = ui::panel::kEntityExplorer,
+              .visible = false,
+          }
+      );
+
+      eventQueue_.publish(
+          event::SetPanelVisibility{
+              .name = ui::panel::kRenderPipelineDebug,
+              .visible = false,
+          }
+      );
+    }
+
+    ImGuiIO& io{ ImGui::GetIO() };
+    inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
+  }
 
   void WorldScene::update(float dt) {
+    for (const auto& event : eventQueue_.getEvents<event::TogglePanel>()) {
+      uiManager_.getPanel(event.name).toggleVisible();
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::SetPanelVisibility>()) {
+      uiManager_.getPanel(event.name).setVisible(event.visible);
+    }
+
     UpdateContext ctx{
       .registry = registry_,
       .eventQueue = eventQueue_,
       .textureManager = textureManager_,
+      .inputManager = inputManager_,
       .dt = dt,
     };
 

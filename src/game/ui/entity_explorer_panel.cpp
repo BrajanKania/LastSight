@@ -73,70 +73,70 @@ namespace ls::ui {
     if (!ctx.registry.isValidEntity(selectedEntity_))
       selectedEntity_ = ecs::kNullEntity;
 
-    ImGui::Begin("Entity Explorer");
+    if (ImGui::Begin("Entity Explorer", &visible_)) {
+      ImGui::Columns(2, "ExplorerSpliter", true);
 
-    ImGui::Columns(2, "ExplorerSpliter", true);
+      {  // Entities
+        ImGui::Text("Entities");
 
-    {  // Entities
-      ImGui::Text("Entities");
+        {  // Filter
+          ImGui::SeparatorText("Filter");
+          ImGui::Checkbox("With name", &hideNameless_);
+        }
 
-      {  // Filter
-        ImGui::SeparatorText("Filter");
-        ImGui::Checkbox("With name", &hideNameless_);
-      }
+        {  // Entity Tree
+          ImGui::BeginChild("EntityListRegion");
 
-      {  // Entity Tree
-        ImGui::BeginChild("EntityListRegion");
+          ImGui::SeparatorText("Entities");
 
-        ImGui::SeparatorText("Entities");
+          for (ecs::EntityId entity{ 0 }; entity < ctx.registry.getMaxEntityId(); entity++) {
+            if (!filterEntity(ctx.registry, entity))
+              continue;
 
-        for (ecs::EntityId entity{ 0 }; entity < ctx.registry.getMaxEntityId(); entity++) {
-          if (!filterEntity(ctx.registry, entity))
-            continue;
+            {  // Entity
+              ImGuiTreeNodeFlags flags{ ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen };
+              if (entity == selectedEntity_) {
+                flags |= ImGuiTreeNodeFlags_Selected;
+              }
 
-          {  // Entity
-            ImGuiTreeNodeFlags flags{ ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen };
-            if (entity == selectedEntity_) {
-              flags |= ImGuiTreeNodeFlags_Selected;
-            }
+              std::string label{ getEntityLabel(ctx.registry, entity) };
+              ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(entity)), flags, "%s", label.c_str());
 
-            std::string label{ getEntityLabel(ctx.registry, entity) };
-            ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(entity)), flags, "%s", label.c_str());
-
-            if (ImGui::IsItemClicked()) {
-              selectedEntity_ = entity;
+              if (ImGui::IsItemClicked()) {
+                selectedEntity_ = entity;
+              }
             }
           }
+
+          ImGui::EndChild();
+        }
+      }
+
+      ImGui::NextColumn();
+
+      {  // Inspector
+        ImGui::Text("Inspector");
+        ImGui::Separator();
+
+        ImGui::BeginChild("InspectorRegion");
+
+        if (ctx.registry.isValidEntity(selectedEntity_)) {
+          ImGui::PushItemWidth(120.f);
+
+          inspectComponentTransform(ctx.registry, selectedEntity_);
+          inspectComponentSprite(ctx.registry, ctx.textureManager, selectedEntity_);
+          inspectComponentCamera(ctx.registry, selectedEntity_);
+
+          ImGui::PopItemWidth();
+        } else {
+          ImGui::Text("Select an entity from the list");
         }
 
         ImGui::EndChild();
       }
+
+      ImGui::Columns(1);
     }
-
-    ImGui::NextColumn();
-
-    {  // Inspector
-      ImGui::Text("Inspector");
-      ImGui::Separator();
-
-      ImGui::BeginChild("InspectorRegion");
-
-      if (ctx.registry.isValidEntity(selectedEntity_)) {
-        ImGui::PushItemWidth(120.f);
-
-        inspectComponentTransform(ctx.registry, selectedEntity_);
-        inspectComponentSprite(ctx.registry, ctx.textureManager, selectedEntity_);
-        inspectComponentCamera(ctx.registry, selectedEntity_);
-
-        ImGui::PopItemWidth();
-      } else {
-        ImGui::Text("Select an entity from the list");
-      }
-
-      ImGui::EndChild();
-    }
-
-    ImGui::Columns(1);
     ImGui::End();
   }
 

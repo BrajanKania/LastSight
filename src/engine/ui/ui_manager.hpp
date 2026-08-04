@@ -34,15 +34,18 @@ namespace ls::ui {
       }
     }
 
-    template <typename TPanel>
-    TPanel& getPanel(const std::string& name) {
+    IUIPanel& getPanel(const std::string& name) {
       auto itName{ nameToIndex_.find(name) };
       assert(itName != nameToIndex_.end() && "Attempted to get non-existent panel.");
+      return *panels_[itName->second];
+    }
 
-      auto* ptr{ panels_[itName->second].get() };
-      assert(dynamic_cast<TPanel*>(ptr) != nullptr && "Panel type mismatch.");
+    template <typename TPanel>
+    TPanel& getPanel(const std::string& name) {
+      IUIPanel& panel{ getPanel(name) };
+      assert(dynamic_cast<TPanel*>(&panel) != nullptr && "Panel type mismatch.");
 
-      return *static_cast<TPanel*>(ptr);
+      return static_cast<TPanel&>(panel);
     }
 
     void render(const UIContext& ctx);
