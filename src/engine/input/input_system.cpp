@@ -4,6 +4,8 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 
+#include "engine/input/types.hpp"
+
 namespace ls::input_system {
 
   namespace {
@@ -23,6 +25,8 @@ namespace ls::input_system {
           return SDL_SCANCODE_LSHIFT;
         case input::Key::Grave:
           return SDL_SCANCODE_GRAVE;
+        case input::Key::E:
+          return SDL_SCANCODE_E;
       }
 
       return SDL_SCANCODE_UNKNOWN;

@@ -40,6 +40,8 @@ add_executable(LastSight
 
   src/engine/input/input_manager.cpp
   src/engine/input/input_system.cpp
+ 
+  src/engine/interactions/interaction_system.cpp
 
   src/engine/particles/particle_system.cpp
 
@@ -59,10 +61,12 @@ add_executable(LastSight
 
   src/game/factories/projectile_factory.cpp
 
+
   src/game/scenes/world_scene.cpp
 
   src/game/systems/camera_system.cpp
   src/game/systems/combat_system.cpp
+  src/game/systems/lamp_system.cpp
   src/game/systems/player_system.cpp
   src/game/systems/projectile_system.cpp
 

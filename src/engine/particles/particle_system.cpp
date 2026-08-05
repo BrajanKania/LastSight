@@ -110,7 +110,9 @@ namespace ls::particle_system {
       emitter.elapsedTime += ctx.dt;
 
       updateParticles(emitter, ctx.dt);
-      emitParticles(emitter, transform, ctx.dt);
+      if (!emitter.isPaused) {
+        emitParticles(emitter, transform, ctx.dt);
+      }
 
       if (!emitter.isEmitting && emitter.activeParticlesCount == 0) {
         entitiesToDestroy.push_back(entity);

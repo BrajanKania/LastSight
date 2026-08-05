@@ -12,6 +12,7 @@
 #include "game/particles/blood_splat.hpp"
 
 namespace ls::projectile_system {
+
   namespace {
 
     void hitEnemy(ecs::Registry& registry, const ecs::EntityId enemy) {

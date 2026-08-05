@@ -11,6 +11,7 @@
 
 #include "engine/components/collider.hpp"
 #include "engine/components/entity_name.hpp"
+#include "engine/components/interactable.hpp"
 #include "engine/components/particle_emitter.hpp"
 #include "engine/components/sprite.hpp"
 #include "engine/components/transform.hpp"
@@ -21,6 +22,7 @@
 #include "engine/events/toggle_panel.hpp"
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/input/types.hpp"
+#include "engine/interactions/interaction_system.hpp"
 #include "engine/particles/particle_system.hpp"
 #include "engine/physics/physics_system.hpp"
 #include "engine/renderer/i_render_pass.hpp"
@@ -29,6 +31,7 @@
 #include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
 #include "engine/renderer/passes/post_process_pass.hpp"
+#include "game/actions/interact.hpp"
 #include "game/actions/move.hpp"
 #include "game/actions/shoot.hpp"
 #include "game/actions/sprint.hpp"
@@ -36,12 +39,14 @@
 #include "game/components/camera.hpp"
 #include "game/components/enemy.hpp"
 #include "game/components/field_of_view.hpp"
+#include "game/components/lamp.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
 #include "game/components/weapon.hpp"
 #include "game/particles/fire.hpp"
 #include "game/systems/camera_system.hpp"
 #include "game/systems/combat_system.hpp"
+#include "game/systems/lamp_system.hpp"
 #include "game/systems/player_system.hpp"
 #include "game/systems/projectile_system.hpp"
 #include "game/ui/debug_toolbox_panel.hpp"
@@ -178,6 +183,13 @@ namespace ls {
           }
       );
       registry_.addComponent(container, component::ParticleEmitter{ particle::preset::fire() });
+      registry_.addComponent(container, component::Lamp{});
+      registry_.addComponent(
+          container,
+          component::Interactable{
+              .radius = 0.8f,
+          }
+      );
     }
 
     // enemy
@@ -252,6 +264,7 @@ namespace ls {
     inputManager_.bindAxis2D<action::Move>(input::Key::W, input::Key::S, input::Key::A, input::Key::D);
     inputManager_.bindButton<action::Shoot>(input::Button::Left);
     inputManager_.bindKey<action::Sprint>(input::Key::LShift);
+    inputManager_.bindKey<action::Interact>(input::Key::E);
 
     debugInputManager_.bindKey<action::ToggleDebug>(input::Key::Grave);
   }
@@ -309,9 +322,15 @@ namespace ls {
     };
 
     player_system::update(ctx);
+    interaction_system::update(ctx);
+
     combat_system::update(ctx);
+
     physics_system::update(ctx);
+
     projectile_system::update(ctx);
+    lamp_system::update(ctx);
+
     particle_system::update(ctx);
 
     camera_system::follow(ctx, player_, 6.f);

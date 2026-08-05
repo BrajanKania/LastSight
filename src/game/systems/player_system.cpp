@@ -12,8 +12,10 @@
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
+#include "engine/events/request_interaction.hpp"
 #include "engine/input/types.hpp"
 #include "engine/renderer/render_system.hpp"
+#include "game/actions/interact.hpp"
 #include "game/actions/move.hpp"
 #include "game/actions/shoot.hpp"
 #include "game/actions/sprint.hpp"
@@ -27,7 +29,7 @@ namespace ls::player_system {
 
   namespace {
 
-    void handleInput(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
+    void updateMovement(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
       auto& velocity{ ctx.registry.getComponent<component::Velocity>(playerEntity) };
       const auto& movement{ ctx.registry.getComponent<component::Movement>(playerEntity) };
 
@@ -88,16 +90,30 @@ namespace ls::player_system {
       }
     }
 
+    void updateInteractions(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
+      if (ctx.inputManager.getActionState<action::Interact>() == input::ActionState::JustPressed) {
+        ctx.eventQueue.publish(
+            event::RequestInteraction{
+                .interactor = playerEntity,
+            }
+        );
+      }
+    }
+
   }  // namespace
 
   void update(const UpdateContext& ctx) {
     for (auto entity : ctx.registry.view<component::Player, component::Velocity, component::Movement>()) {
-      handleInput(ctx, entity);
+      updateMovement(ctx, entity);
       handleRotation(ctx, entity);
     }
 
     for (auto entity : ctx.registry.view<component::Player, component::Transform, component::Weapon>()) {
       updateAim(ctx, entity);
+    }
+
+    for (auto entity : ctx.registry.view<component::Player, component::Transform>()) {
+      updateInteractions(ctx, entity);
     }
   }
 

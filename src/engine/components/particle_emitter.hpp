@@ -12,6 +12,7 @@ namespace ls::component {
 
     float elapsedTime{ 0.f };
 
+    bool isPaused{ false };
     bool isEmitting{ true };
     float spawnTimer{ 0.f };
 
