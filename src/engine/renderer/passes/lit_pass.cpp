@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "engine/components/particle_emitter.hpp"
 #include "engine/components/sprite.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/core/asset_system.hpp"
@@ -90,6 +91,32 @@ namespace ls::renderer {
       shader_->setVec4("uColor", sprite.color);
       shader_->setVec2("uUvScale", sprite.uvScale);
       render_system::drawArrays(vao_, ls::render_system::Primitive::Triangle, 0, 6);
+    }
+
+    shader_->setInt("uTexture", 0);
+    const gfx::Texture2D* texture{ ctx.textureManager.get("white") };
+    if (texture) {
+      texture->bind(0);
+    }
+    shader_->setVec2("uUvScale", glm::vec2(1.f));
+
+    auto particleView{ ctx.registry.view<component::ParticleEmitter>() };
+    for (auto entity : particleView) {
+      const auto& emitter{ ctx.registry.getComponent<component::ParticleEmitter>(entity) };
+
+      for (std::size_t i = 0; i < emitter.activeParticlesCount; ++i) {
+        const auto& particle{ emitter.particles[i] };
+
+        glm::mat4 model{ 1.f };
+        model = glm::translate(model, glm::vec3(particle.position.x, particle.position.y, 0.f));
+        model = glm::rotate(model, glm::radians(particle.rotation), glm::vec3(0.f, 0.f, 1.f));
+        model = glm::scale(model, glm::vec3(particle.scale.x, particle.scale.y, 1.f));
+
+        shader_->setMat4("uModel", model);
+        shader_->setVec4("uColor", particle.color);
+
+        render_system::drawArrays(vao_, render_system::Primitive::Triangle, 0, 6);
+      }
     }
 
     targetFBO_->unbind();

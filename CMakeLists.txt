@@ -41,6 +41,8 @@ add_executable(LastSight
   src/engine/input/input_manager.cpp
   src/engine/input/input_system.cpp
 
+  src/engine/particles/particle_system.cpp
+
   src/engine/physics/physics_system.cpp
 
   src/engine/renderer/passes/compose_pass.cpp

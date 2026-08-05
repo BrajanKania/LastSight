@@ -3,11 +3,14 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/trigonometric.hpp>
 
+#include "engine/components/particle_emitter.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/core/update_context.hpp"
+#include "engine/ecs/types.hpp"
 #include "engine/gfx/texture_manager.hpp"
 #include "game/components/weapon.hpp"
 #include "game/factories/projectile_factory.hpp"
+#include "game/particles/gun_sparks.hpp"
 
 namespace ls::combat_system {
 
@@ -40,6 +43,15 @@ namespace ls::combat_system {
     };
 
     factory::spawnProjectile(ctx.registry, config);
+
+    ecs::EntityId particleEmitter{ ctx.registry.createEntity() };
+    ctx.registry.addComponent(particleEmitter, component::ParticleEmitter{ particle::preset::gunSparks() });
+    ctx.registry.addComponent(
+        particleEmitter,
+        component::Transform{
+            .position = transform.position + rotatedOffset,
+        }
+    );
 
     weapon.cooldown = weapon.fireRate;
   }

@@ -11,6 +11,7 @@
 
 #include "engine/components/collider.hpp"
 #include "engine/components/entity_name.hpp"
+#include "engine/components/particle_emitter.hpp"
 #include "engine/components/sprite.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
@@ -20,6 +21,7 @@
 #include "engine/events/toggle_panel.hpp"
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/input/types.hpp"
+#include "engine/particles/particle_system.hpp"
 #include "engine/physics/physics_system.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/layer.hpp"
@@ -32,10 +34,12 @@
 #include "game/actions/sprint.hpp"
 #include "game/actions/toggle_debug.hpp"
 #include "game/components/camera.hpp"
+#include "game/components/enemy.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
 #include "game/components/weapon.hpp"
+#include "game/particles/fire.hpp"
 #include "game/systems/camera_system.hpp"
 #include "game/systems/combat_system.hpp"
 #include "game/systems/player_system.hpp"
@@ -48,6 +52,7 @@
 namespace ls {
 
   void WorldScene::onEnter() {
+    textureManager_.load("white", asset_system::texture("white.png"));
     uint32_t playerTextureId{ textureManager_.load("player", asset_system::texture("player.png")) };
     uint32_t backgroundTextureId{ textureManager_.load("grass", asset_system::texture("grass.jpg")) };
     uint32_t containerTextureId{ textureManager_.load("container", asset_system::texture("container.png")) };
@@ -172,11 +177,13 @@ namespace ls {
               .halfExtents = glm::vec2(0.5f),
           }
       );
+      registry_.addComponent(container, component::ParticleEmitter{ particle::preset::fire() });
     }
 
     // enemy
     {
       auto enemy{ registry_.createEntity() };
+      registry_.addComponent(enemy, component::Enemy{});
       registry_.addComponent(
           enemy,
           component::Transform{
@@ -305,6 +312,7 @@ namespace ls {
     combat_system::update(ctx);
     physics_system::update(ctx);
     projectile_system::update(ctx);
+    particle_system::update(ctx);
 
     camera_system::follow(ctx, player_, 6.f);
     camera_system::update(ctx);
