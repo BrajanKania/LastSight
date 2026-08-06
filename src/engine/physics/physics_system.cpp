@@ -1,5 +1,6 @@
 #include "engine/physics/physics_system.hpp"
 
+#include <cmath>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/glm.hpp>
 
@@ -22,6 +23,7 @@ namespace ls::physics_system {
 
         transform.position += velocity.linear * ctx.dt;
         transform.rotation += velocity.angular * ctx.dt;
+        transform.rotation = std::remainder(transform.rotation, 360.f);
       }
     }
 

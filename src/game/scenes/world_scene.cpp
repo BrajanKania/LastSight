@@ -52,6 +52,7 @@
 #include "game/components/lamp.hpp"
 #include "game/components/movement_settings.hpp"
 #include "game/components/player.hpp"
+#include "game/components/player_camera_settings.hpp"
 #include "game/components/player_fov_settings.hpp"
 #include "game/components/player_state.hpp"
 #include "game/components/post_process_settings.hpp"
@@ -195,6 +196,19 @@ namespace ls {
             }
         );
         registry_.addComponent(player_, component::PlayerState{});
+        registry_.addComponent(
+            player_,
+            component::PlayerCameraSettings{
+                .baseZoom = 1.f,
+                .aimZoom = 1.2f,
+                .sprintZoom = 0.95f,
+                .zoomSpeed = 0.5f,
+                .baseFollowSpeed = 5.f,
+                .aimFollowSpeed = 1.f,
+                .aimOffsetWeight = 0.3f,
+                .maxAimOffset = 0.5f,
+            }
+        );
       }
 
       {  // Camera
@@ -520,11 +534,11 @@ namespace ls {
 
     particle_system::update(ctx);
 
+    camera_system::follow(ctx, player_);
+    camera_system::update(ctx);
+
     fov_system::update(ctx);
     post_process_system::update(ctx);
-
-    camera_system::follow(ctx, player_, 6.f);
-    camera_system::update(ctx);
 
     registry_.purgeDestroyedEntities();
     eventQueue_.clear();

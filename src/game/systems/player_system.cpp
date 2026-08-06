@@ -35,6 +35,7 @@
 #include "game/components/player_state.hpp"
 #include "game/components/stamina.hpp"
 #include "game/components/weapon.hpp"
+#include "game/systems/camera_system.hpp"
 #include "game/systems/combat_system.hpp"
 
 namespace ls::player_system {
@@ -73,14 +74,6 @@ namespace ls::player_system {
       velocity.linear = direction * speed;
     }
 
-    glm::vec2 screenToWorld(glm::vec2 mousePos, glm::vec2 viewportSize, const glm::mat4& invViewProjection) {
-      float ndcX{ (2.0f * mousePos.x) / viewportSize.x - 1.0f };
-      float ndcY{ 1.0f - (2.0f * mousePos.y) / viewportSize.y };
-
-      glm::vec4 worldPos{ invViewProjection * glm::vec4(ndcX, ndcY, 0.0f, 1.0f) };
-      return glm::vec2(worldPos.x, worldPos.y);
-    }
-
     void handleRotation(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
       const auto& movement{ ctx.registry.getComponent<component::MovementSettings>(playerEntity) };
       const auto& transform{ ctx.registry.getComponent<component::Transform>(playerEntity) };
@@ -89,11 +82,9 @@ namespace ls::player_system {
       for (auto entity : ctx.registry.view<component::Camera>()) {
         const auto& camera{ ctx.registry.getComponent<component::Camera>(entity) };
 
-        glm::mat4 invViewProjection{ glm::inverse(camera.projection * camera.view) };
-        glm::vec2 viewportSize{ render_system::getViewportSize() };
-        glm::vec2 mouseScreenPos{ ctx.inputManager.getMousePosition() };
-
-        glm::vec2 mouseWorldPos{ screenToWorld(mouseScreenPos, viewportSize, invViewProjection) };
+        glm::vec2 mouseWorldPos{
+          camera_system::screenToWorld(ctx.inputManager.getMousePosition(), render_system::getViewportSize(), camera)
+        };
 
         glm::vec2 direction{ mouseWorldPos - transform.position };
         if (glm::length(direction) > 0.001f) {
