@@ -54,6 +54,8 @@ namespace ls::input {
 
     glm::vec2 getMousePosition() const { return input_system::getMousePosition(); }
 
+    float getScrollDelta() const { return scrollDelta_; }
+
     template <typename TAction>
     ActionState getActionState() const {
       ActionId id{ getActionId<TAction>() };
@@ -81,6 +83,8 @@ namespace ls::input {
         bindings_.resize(id + 1);
       }
     }
+
+    float scrollDelta_{ 0.f };
 
     inline static ActionId nextActionId_{ 0 };
     std::vector<ActionState> actionStates_{};

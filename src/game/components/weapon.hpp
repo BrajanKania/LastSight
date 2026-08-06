@@ -5,6 +5,7 @@
 namespace ls::component {
 
   struct Weapon {
+    bool isAutomatic{ false };
     float fireRate{ 0.5f };
     float cooldown{ 0.f };
     float initialSpeed{ 5.f };

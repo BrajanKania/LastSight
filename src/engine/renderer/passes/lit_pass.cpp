@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "engine/components/equipped_sprite.hpp"
 #include "engine/components/particle_emitter.hpp"
 #include "engine/components/sprite.hpp"
 #include "engine/components/transform.hpp"
@@ -16,6 +17,7 @@
 #include "engine/gfx/texture_2d.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/render_system.hpp"
+#include "game/scenes/texture_names.hpp"
 
 namespace ls::renderer {
 
@@ -93,8 +95,31 @@ namespace ls::renderer {
       render_system::drawArrays(vao_, ls::render_system::Primitive::Triangle, 0, 6);
     }
 
+    auto equippedView{ ctx.registry.view<component::Transform, component::EquippedSprite>() };
+    for (auto entity : equippedView) {
+      const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
+      const auto& equipped{ ctx.registry.getComponent<component::EquippedSprite>(entity) };
+
+      const gfx::Texture2D* texture{ ctx.textureManager.get(equipped.textureId) };
+      if (texture) {
+        texture->bind(0);
+      }
+
+      glm::mat4 model{ 1.f };
+      model = glm::translate(model, glm::vec3(transform.position.x, transform.position.y, 0.f));
+      model = glm::rotate(model, glm::radians(transform.rotation + equipped.angleOffset), glm::vec3(0.f, 0.f, 1.f));
+      model = glm::translate(model, glm::vec3(equipped.offset.x, equipped.offset.y, 0.f));
+      glm::vec2 finalScale{ transform.scale * equipped.scale };
+      model = glm::scale(model, glm::vec3(finalScale.x, finalScale.y, 1.f));
+
+      shader_->setMat4("uModel", model);
+      shader_->setVec4("uColor", glm::vec4(1.f));
+      shader_->setVec2("uUvScale", glm::vec2(1.f));
+      render_system::drawArrays(vao_, render_system::Primitive::Triangle, 0, 6);
+    }
+
     shader_->setInt("uTexture", 0);
-    const gfx::Texture2D* texture{ ctx.textureManager.get("white") };
+    const gfx::Texture2D* texture{ ctx.textureManager.get(texture_name::kWhite) };
     if (texture) {
       texture->bind(0);
     }

@@ -8,6 +8,9 @@
 namespace ls::input {
 
   void InputManager::update(bool captureKeyboard, bool captureMouse) {
+    float scrollDelta{ input_system::getScrollDelta() };
+    scrollDelta_ = captureMouse ? 0.f : scrollDelta;
+
     for (ActionId id{ 0 }; id < bindings_.size(); id++) {
       const auto& binding{ bindings_[id] };
       bool isDown{ false };

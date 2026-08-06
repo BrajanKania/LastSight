@@ -11,6 +11,7 @@
 #include "game/components/weapon.hpp"
 #include "game/factories/projectile_factory.hpp"
 #include "game/particles/gun_sparks.hpp"
+#include "game/scenes/texture_names.hpp"
 
 namespace ls::combat_system {
 
@@ -37,7 +38,7 @@ namespace ls::combat_system {
       .position = transform.position + rotatedOffset,
       .direction = forward,
       .speed = weapon.initialSpeed,
-      .textureId = ctx.textureManager.getId("bullet"),
+      .textureId = ctx.textureManager.getId(texture_name::kBullet),
       .angleOffset = -90.f,
       .lifetime = weapon.bulletLifetime,
     };

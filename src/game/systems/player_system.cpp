@@ -17,9 +17,16 @@
 #include "engine/renderer/render_system.hpp"
 #include "game/actions/interact.hpp"
 #include "game/actions/move.hpp"
+#include "game/actions/select_slot_0.hpp"
+#include "game/actions/select_slot_1.hpp"
+#include "game/actions/select_slot_2.hpp"
+#include "game/actions/select_slot_3.hpp"
+#include "game/actions/select_slot_4.hpp"
+#include "game/actions/select_slot_5.hpp"
 #include "game/actions/shoot.hpp"
 #include "game/actions/sprint.hpp"
 #include "game/components/camera.hpp"
+#include "game/components/inventory.hpp"
 #include "game/components/movement.hpp"
 #include "game/components/player.hpp"
 #include "game/components/weapon.hpp"
@@ -84,7 +91,9 @@ namespace ls::player_system {
 
       if (weapon.cooldown <= 0.f) {
         auto actionState{ ctx.inputManager.getActionState<action::Shoot>() };
-        if (actionState == input::ActionState::JustPressed || actionState == input::ActionState::Held) {
+        if (weapon.isAutomatic
+                ? actionState == input::ActionState::JustPressed || actionState == input::ActionState::Held
+                : actionState == input::ActionState::JustPressed) {
           combat_system::shoot(ctx, playerEntity);
         }
       }
@@ -98,6 +107,49 @@ namespace ls::player_system {
             }
         );
       }
+    }
+
+    void updateSlotSelection(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
+      auto& inventory{ ctx.registry.getComponent<component::Inventory>(playerEntity) };
+      int slotCount{ static_cast<int>(inventory.slots.size()) };
+
+      if (ctx.inputManager.getActionState<action::SelectSlot0>() == input::ActionState::JustPressed && slotCount >= 1) {
+        inventory.activeSlotIndex = 0;
+      }
+      if (ctx.inputManager.getActionState<action::SelectSlot1>() == input::ActionState::JustPressed && slotCount >= 2) {
+        inventory.activeSlotIndex = 1;
+      }
+      if (ctx.inputManager.getActionState<action::SelectSlot2>() == input::ActionState::JustPressed && slotCount >= 3) {
+        inventory.activeSlotIndex = 2;
+      }
+      if (ctx.inputManager.getActionState<action::SelectSlot3>() == input::ActionState::JustPressed && slotCount >= 4) {
+        inventory.activeSlotIndex = 3;
+      }
+      if (ctx.inputManager.getActionState<action::SelectSlot4>() == input::ActionState::JustPressed && slotCount >= 5) {
+        inventory.activeSlotIndex = 4;
+      }
+      if (ctx.inputManager.getActionState<action::SelectSlot5>() == input::ActionState::JustPressed && slotCount >= 6) {
+        inventory.activeSlotIndex = 5;
+      }
+
+      float scrollDelta{ ctx.inputManager.getScrollDelta() };
+      if (scrollDelta == 0.f) {
+        return;
+      }
+
+      if (inventory.slots.empty()) {
+        return;
+      }
+
+      int step{ scrollDelta < 0.f ? 1 : -1 };
+      int activeIndex{ static_cast<int>(inventory.activeSlotIndex) };
+
+      int newIndex{ (activeIndex + step) % slotCount };
+      if (newIndex < 0) {
+        newIndex += slotCount;
+      }
+
+      inventory.activeSlotIndex = static_cast<std::size_t>(newIndex);
     }
 
   }  // namespace
@@ -114,6 +166,10 @@ namespace ls::player_system {
 
     for (auto entity : ctx.registry.view<component::Player, component::Transform>()) {
       updateInteractions(ctx, entity);
+    }
+
+    for (auto entity : ctx.registry.view<component::Player, component::Inventory>()) {
+      updateSlotSelection(ctx, entity);
     }
   }
 

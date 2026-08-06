@@ -6,6 +6,7 @@
 #include "engine/ecs/types.hpp"
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/renderer/render_pipeline.hpp"
+#include "game/items/item_registry.hpp"
 
 namespace ls {
 
@@ -23,6 +24,7 @@ namespace ls {
 
   private:
     renderer::RenderPipeline renderPipeline_;
+    item::ItemRegistry itemRegistry_;
 
     std::shared_ptr<gfx::Framebuffer> worldFBO_{ nullptr };
     std::shared_ptr<gfx::Framebuffer> fovFBO_{ nullptr };

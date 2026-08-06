@@ -10,6 +10,7 @@
 #include <format>
 #include <stdexcept>
 
+#include "engine/input/input_system.hpp"
 #include "engine/ui/ui_system.hpp"
 
 namespace ls {
@@ -69,10 +70,12 @@ namespace ls {
 
   void Window::pollEvents() {
     wasResized_ = false;
+    ls::input_system::clearScrollDelta();
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       ui_system::processEvent(&event);
+      input_system::processEvent(event);
 
       if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
         close();

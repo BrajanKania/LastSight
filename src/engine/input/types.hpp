@@ -4,7 +4,7 @@
 
 namespace ls::input {
 
-  enum class Key { W, A, S, D, LShift, Escape, Grave, E };
+  enum class Key { W, A, S, D, LShift, Escape, Grave, E, Num1, Num2, Num3, Num4, Num5, Num6 };
 
   enum class Button { Left, Right };
 

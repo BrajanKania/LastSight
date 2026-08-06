@@ -27,6 +27,18 @@ namespace ls::input_system {
           return SDL_SCANCODE_GRAVE;
         case input::Key::E:
           return SDL_SCANCODE_E;
+        case input::Key::Num1:
+          return SDL_SCANCODE_1;
+        case input::Key::Num2:
+          return SDL_SCANCODE_2;
+        case input::Key::Num3:
+          return SDL_SCANCODE_3;
+        case input::Key::Num4:
+          return SDL_SCANCODE_4;
+        case input::Key::Num5:
+          return SDL_SCANCODE_5;
+        case input::Key::Num6:
+          return SDL_SCANCODE_6;
       }
 
       return SDL_SCANCODE_UNKNOWN;
@@ -42,6 +54,8 @@ namespace ls::input_system {
 
       return 0;
     }
+
+    float scrollDeltaY{ 0.f };
   }  // namespace
 
   bool isKeyPressed(input::Key key) {
@@ -59,5 +73,15 @@ namespace ls::input_system {
     const auto buttons{ SDL_GetMouseState(nullptr, nullptr) };
     return (buttons & toMouseButtonFlags(button));
   }
+
+  void processEvent(const SDL_Event& event) {
+    if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+      scrollDeltaY += event.wheel.y;
+    }
+  }
+
+  float getScrollDelta() { return scrollDeltaY; }
+
+  void clearScrollDelta() { scrollDeltaY = 0.f; }
 
 }  // namespace ls::input_system
