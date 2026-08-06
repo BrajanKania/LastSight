@@ -31,6 +31,7 @@
 #include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
 #include "engine/renderer/passes/post_process_pass.hpp"
+#include "game/actions/aim.hpp"
 #include "game/actions/interact.hpp"
 #include "game/actions/move.hpp"
 #include "game/actions/select_slot_0.hpp"
@@ -45,19 +46,26 @@
 #include "game/components/camera.hpp"
 #include "game/components/enemy.hpp"
 #include "game/components/field_of_view.hpp"
+#include "game/components/health.hpp"
 #include "game/components/inventory.hpp"
 #include "game/components/item_pickup.hpp"
 #include "game/components/lamp.hpp"
-#include "game/components/movement.hpp"
+#include "game/components/movement_settings.hpp"
 #include "game/components/player.hpp"
+#include "game/components/player_fov_settings.hpp"
+#include "game/components/player_state.hpp"
+#include "game/components/post_process_settings.hpp"
+#include "game/components/stamina.hpp"
 #include "game/particles/fire.hpp"
 #include "game/scenes/texture_names.hpp"
 #include "game/systems/camera_system.hpp"
 #include "game/systems/combat_system.hpp"
 #include "game/systems/equip_system.hpp"
+#include "game/systems/fov_system.hpp"
 #include "game/systems/inventory_system.hpp"
 #include "game/systems/lamp_system.hpp"
 #include "game/systems/player_system.hpp"
+#include "game/systems/post_process_system.hpp"
 #include "game/systems/projectile_system.hpp"
 #include "game/ui/debug_toolbox_panel.hpp"
 #include "game/ui/entity_explorer_panel.hpp"
@@ -69,7 +77,6 @@ namespace ls {
 
   void WorldScene::onEnter() {
     textureManager_.load(texture_name::kWhite, asset_system::texture(texture_name::kWhite));
-
     textureManager_.load(texture_name::kGrass, asset_system::texture(texture_name::kGrass));
     textureManager_.load(texture_name::kContainer, asset_system::texture(texture_name::kContainer));
     textureManager_.load(texture_name::kPlayer, asset_system::texture(texture_name::kPlayer));
@@ -122,8 +129,8 @@ namespace ls {
         registry_.addComponent(player_, component::Velocity{});
         registry_.addComponent(
             player_,
-            component::Movement{
-                .runSpeed = 2.f,
+            component::MovementSettings{
+                .sprintSpeed = 2.f,
             }
         );
         registry_.addComponent(
@@ -131,9 +138,19 @@ namespace ls {
             component::FieldOfView{
                 .innerRadius = 1.0f,
                 .outerRadius = 6.f,
-                .fovAngle = 100.f,
-                .smoothnessAngle = 40.f,
                 .smoothnessDistance = 2.f,
+            }
+        );
+        registry_.addComponent(
+            player_,
+            component::PlayerFovSettings{
+                .baseAngle = 60.f,
+                .aimAngle = 10.f,
+                .lowStaminaAngle = 5.f,
+                .baseSmoothnessAngle = 40.f,
+                .aimSmoothnessAngle = 10.f,
+                .lowStaminaSmoothnessAngle = 20.f,
+                .transitionSpeed = 4.f,
             }
         );
         registry_.addComponent(
@@ -149,6 +166,35 @@ namespace ls {
                 .maxSlots = 6,
             }
         );
+        registry_.addComponent(
+            player_,
+            component::Health{
+                .max = 100.f,
+                .current = 100.f,
+            }
+        );
+        registry_.addComponent(
+            player_,
+            component::Stamina{
+                .max = 100.f,
+                .current = 100.f,
+                .regenRate = 10.f,
+                .sprintCostRate = 20.f,
+            }
+        );
+        registry_.addComponent(
+            player_,
+            component::PostProcessSettings{
+                .damageVignetteColor = glm::vec3(0.8f, 0.0f, 0.0f),
+                .damageInnerRadius = 0.1f,
+                .damageOuterRadius = 0.7f,
+                .maxDamageDesaturation = 0.5f,
+                .staminaInnerRadius = 0.1f,
+                .staminaOuterRadius = 0.3f,
+                .maxStaminaDesaturation = 0.8f,
+            }
+        );
+        registry_.addComponent(player_, component::PlayerState{});
       }
 
       {  // Camera
@@ -156,7 +202,7 @@ namespace ls {
         registry_.addComponent(
             camera,
             component::Camera{
-                .orthographicSize = 6.f,
+                .orthographicSize = 5.f,
                 .zoom = 1.f,
             }
         );
@@ -354,6 +400,7 @@ namespace ls {
     inputManager_.bindKey<action::SelectSlot3>(input::Key::Num4);
     inputManager_.bindKey<action::SelectSlot4>(input::Key::Num5);
     inputManager_.bindKey<action::SelectSlot5>(input::Key::Num6);
+    inputManager_.bindButton<action::Aim>(input::Button::Right);
 
     debugInputManager_.bindKey<action::ToggleDebug>(input::Key::Grave);
 
@@ -396,7 +443,7 @@ namespace ls {
               .weaponConfig =
                   item::WeaponConfig{
                       .isAutomatic = true,
-                      .fireRate = 0.2f,
+                      .fireRate = 0.1f,
                       .initialSpeed = 6.f,
                       .bulletScale = glm::vec2(0.03f),
                       .bulletLifetime = 3.f,
@@ -472,6 +519,9 @@ namespace ls {
     lamp_system::update(ctx);
 
     particle_system::update(ctx);
+
+    fov_system::update(ctx);
+    post_process_system::update(ctx);
 
     camera_system::follow(ctx, player_, 6.f);
     camera_system::update(ctx);

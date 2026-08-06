@@ -3,21 +3,41 @@
 in vec2 texCoords;
 
 uniform sampler2D uTexture;
-uniform float uTime;
 
 out vec4 fragColor;
 
-const float grainAmount = 0.08f;
+uniform vec3 uDamageVignetteColor;
+uniform float uDamageInnerRadius;
+uniform float uDamageOuterRadius;
+uniform float uMaxDamageDesaturation;
+uniform float uDamageIntensity;
 
-float random(vec2 st) {
-    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-}
+uniform float uStaminaInnerRadius;
+uniform float uStaminaOuterRadius;
+uniform float uMaxStaminaDesaturation;
+uniform float uStaminaIntensity;
+
 
 void main(){
-  vec4 screenColor = texture(uTexture,texCoords);
+  vec4 color = texture(uTexture, texCoords);
 
-  float noise = random(texCoords + fract(uTime));
-  float grain = (noise - 0.5f) * grainAmount;
-  vec3 color = screenColor.rgb + grain;
-  fragColor = vec4(color.rgb, screenColor.a);
+  vec2 distFromCenter = texCoords - vec2(0.5f);
+  float len = length(distFromCenter);
+
+  float damageFactor = smoothstep(uDamageInnerRadius, uDamageOuterRadius, len) * uDamageIntensity;
+
+  float staminaFactor = smoothstep(uStaminaInnerRadius, uStaminaOuterRadius, len) * uStaminaIntensity;
+
+  float totalDesatFactor = clamp(
+    damageFactor * uMaxDamageDesaturation + staminaFactor * uMaxStaminaDesaturation, 
+    0.0f, 
+    1.0f
+  );
+
+  float gray = dot(color.rgb, vec3(0.2126f, 0.7152f, 0.0722f));
+  vec3 desaturatedColor = mix(color.rgb, vec3(gray), totalDesatFactor);
+
+  vec3 finalColor = mix(desaturatedColor, uDamageVignetteColor, damageFactor * 0.5f);
+
+  fragColor = vec4(finalColor, color.a);
 }

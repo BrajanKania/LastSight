@@ -67,9 +67,11 @@ add_executable(LastSight
   src/game/systems/camera_system.cpp
   src/game/systems/combat_system.cpp
   src/game/systems/equip_system.cpp
+  src/game/systems/fov_system.cpp
   src/game/systems/inventory_system.cpp
   src/game/systems/lamp_system.cpp
   src/game/systems/player_system.cpp
+  src/game/systems/post_process_system.cpp
   src/game/systems/projectile_system.cpp
 
   src/game/ui/debug_toolbox_panel.cpp

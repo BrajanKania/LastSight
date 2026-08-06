@@ -2,12 +2,16 @@
 
 #include <glad/gl.h>
 
+#include <glm/common.hpp>
+#include <glm/ext/scalar_common.hpp>
 #include <utility>
 
 #include "engine/core/asset_system.hpp"
-#include "engine/core/time_system.hpp"
+#include "engine/ecs/types.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/render_system.hpp"
+#include "game/components/player.hpp"
+#include "game/components/post_process_settings.hpp"
 
 namespace ls::renderer {
 
@@ -57,9 +61,23 @@ namespace ls::renderer {
 
     shader_->use();
     shader_->setInt("uTexture", 0);
-    shader_->setFloat("uTime", time_system::sec());
 
-    render_system::drawArrays(vao_, render_system::Primitive::Triangle, 0, 6);
+    for (ecs::EntityId entity : ctx.registry.view<component::Player, component::PostProcessSettings>()) {
+      const auto& settings{ ctx.registry.getComponent<component::PostProcessSettings>(entity) };
+
+      shader_->setVec3("uDamageVignetteColor", settings.damageVignetteColor);
+      shader_->setFloat("uDamageInnerRadius", settings.damageInnerRadius);
+      shader_->setFloat("uDamageOuterRadius", settings.damageOuterRadius);
+      shader_->setFloat("uMaxDamageDesaturation", settings.maxDamageDesaturation);
+      shader_->setFloat("uDamageIntensity", settings.currentDamageIntensity);
+
+      shader_->setFloat("uStaminaInnerRadius", settings.staminaInnerRadius);
+      shader_->setFloat("uStaminaOuterRadius", settings.staminaOuterRadius);
+      shader_->setFloat("uMaxStaminaDesaturation", settings.maxStaminaDesaturation);
+      shader_->setFloat("uStaminaIntensity", settings.currentStaminaIntensity);
+
+      render_system::drawArrays(vao_, render_system::Primitive::Triangle, 0, 6);
+    }
 
     targetFBO_->unbind();
   }

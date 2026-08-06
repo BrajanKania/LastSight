@@ -2,9 +2,9 @@
 
 namespace ls::component {
 
-  struct Movement {
+  struct MovementSettings {
     float walkSpeed{ 1.f };
-    float runSpeed{ 3.f };
+    float sprintSpeed{ 3.f };
     float angularSpeed{ 270.f };
   };
 

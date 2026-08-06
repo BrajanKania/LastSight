@@ -13,6 +13,8 @@
 #include "engine/gfx/texture_manager.hpp"
 #include "engine/ui/ui_context.hpp"
 #include "game/components/camera.hpp"
+#include "game/components/health.hpp"
+#include "game/components/post_process_settings.hpp"
 
 namespace ls::ui {
 
@@ -63,6 +65,31 @@ namespace ls::ui {
           auto& camera{ registry.getComponent<component::Camera>(entity) };
           ImGui::DragFloat("Orthographic size", &camera.orthographicSize, 0.05f, 0.f, FLT_MAX);
           ImGui::DragFloat("Zoom", &camera.zoom, 0.05f, 0.f, FLT_MAX);
+        }
+      }
+    }
+
+    void inspectComponentHealth(ecs::Registry& registry, const ecs::EntityId entity) {
+      if (registry.hasComponent<component::Health>(entity)) {
+        if (ImGui::CollapsingHeader("Health")) {
+          auto& health{ registry.getComponent<component::Health>(entity) };
+          ImGui::DragFloat("Max", &health.max, 0.1f, 0.f, FLT_MAX);
+          ImGui::DragFloat("Current", &health.current, 0.1f, 0.f, health.max);
+        }
+      }
+    }
+
+    void inspectComponentPostProcessSettings(ecs::Registry& registry, const ecs::EntityId entity) {
+      if (registry.hasComponent<component::PostProcessSettings>(entity)) {
+        if (ImGui::CollapsingHeader("Post process settings")) {
+          auto& settings{ registry.getComponent<component::PostProcessSettings>(entity) };
+          ImGui::ColorEdit4("Damage vignette color", &settings.damageVignetteColor.r);
+          ImGui::DragFloat("Damage inner radius", &settings.damageInnerRadius, 0.05f, 0.f, 1.f);
+          ImGui::DragFloat("Damage outer radius", &settings.damageOuterRadius, 0.05f, 0.f, 1.f);
+          ImGui::DragFloat("Max damage desaturation", &settings.maxDamageDesaturation, 0.05f, 0.f, 1.f);
+          ImGui::DragFloat("Stamina inner radius", &settings.staminaInnerRadius, 0.05f, 0.f, 1.f);
+          ImGui::DragFloat("Stamina outer radius", &settings.staminaOuterRadius, 0.05f, 0.f, 1.f);
+          ImGui::DragFloat("Max stamina desaturation", &settings.maxStaminaDesaturation, 0.05f, 0.f, 1.f);
         }
       }
     }
@@ -126,6 +153,8 @@ namespace ls::ui {
           inspectComponentTransform(ctx.registry, selectedEntity_);
           inspectComponentSprite(ctx.registry, ctx.textureManager, selectedEntity_);
           inspectComponentCamera(ctx.registry, selectedEntity_);
+          inspectComponentHealth(ctx.registry, selectedEntity_);
+          inspectComponentPostProcessSettings(ctx.registry, selectedEntity_);
 
           ImGui::PopItemWidth();
         } else {

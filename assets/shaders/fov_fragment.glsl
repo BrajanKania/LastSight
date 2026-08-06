@@ -23,9 +23,12 @@ void main() {
   vec2 fragDir =  normalize(fragPos - uViewPos);
   float fragAngleCos = dot(uViewDir, fragDir);
 
-  float innerCos = cos(uHalfFovRad - uSmoothnessRad);
-  float outerCos = cos(uHalfFovRad + uSmoothnessRad);
-  float coneVis = smoothstep(outerCos, innerCos, fragAngleCos);
+  float fragAngleRad = acos(clamp(fragAngleCos, -1.0, 1.0));
+
+  float innerRad = max(0.0, uHalfFovRad - uSmoothnessRad);
+  float outerRad = uHalfFovRad + uSmoothnessRad;
+
+  float coneVis = 1.0 - smoothstep(innerRad, outerRad, fragAngleRad);
 
   float dist = length(fragPos - uViewPos);
 
