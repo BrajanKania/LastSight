@@ -12,6 +12,9 @@ namespace ls::component {
     glm::vec2 barrelOffset{ 0.f };
     glm::vec2 bulletScale{ 1.f };
     float bulletLifetime{ 1.f };
+
+    float recoilImpulse{ 0.f };
+    float recoilTrauma{ 0.f };
   };
 
 }  // namespace ls::component

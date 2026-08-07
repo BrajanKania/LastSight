@@ -50,6 +50,8 @@ namespace ls::equip_system {
                   .barrelOffset = itemDef->weaponConfig->barrelOffset,
                   .bulletScale = itemDef->weaponConfig->bulletScale,
                   .bulletLifetime = itemDef->weaponConfig->bulletLifetime,
+                  .recoilImpulse = itemDef->weaponConfig->recoilImpulse,
+                  .recoilTrauma = itemDef->weaponConfig->recoilTrauma,
               }
           );
         }

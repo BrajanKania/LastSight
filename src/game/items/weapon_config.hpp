@@ -10,6 +10,8 @@ namespace ls::item {
     glm::vec2 bulletScale{ 0.05f };
     float bulletLifetime{ 3.f };
     glm::vec2 barrelOffset{ 0.f };
+    float recoilImpulse{ 0.f };
+    float recoilTrauma{ 0.f };
   };
 
 }  // namespace ls::item

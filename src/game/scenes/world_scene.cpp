@@ -44,6 +44,7 @@
 #include "game/actions/sprint.hpp"
 #include "game/actions/toggle_debug.hpp"
 #include "game/components/camera.hpp"
+#include "game/components/camera_shake.hpp"
 #include "game/components/enemy.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/health.hpp"
@@ -227,6 +228,17 @@ namespace ls {
             }
         );
         registry_.addComponent(camera, component::Transform{});
+        registry_.addComponent(
+            camera,
+            component::CameraShake{
+                .stiffness = 180.f,
+                .damping = 20.f,
+                .maxSpringOffset = 0.4f,
+                .traumaDecay = 1.f,
+                .maxTraumaOffset = 0.3f,
+                .traumaFrequency = 8.f,
+            }
+        );
       }
 
       {  // Container
@@ -439,6 +451,8 @@ namespace ls {
                       .bulletScale = glm::vec2(0.03f),
                       .bulletLifetime = 3.f,
                       .barrelOffset = glm::vec2(0.f, 0.32f),
+                      .recoilImpulse = 1.f,
+                      .recoilTrauma = 0.1f,
                   },
           }
       );
@@ -462,6 +476,8 @@ namespace ls {
                       .bulletScale = glm::vec2(0.03f),
                       .bulletLifetime = 3.f,
                       .barrelOffset = glm::vec2(-0.082f, 0.6f),
+                      .recoilImpulse = 2.f,
+                      .recoilTrauma = 0.15f,
                   },
           }
       );

@@ -35,8 +35,8 @@
 #include "game/components/player_state.hpp"
 #include "game/components/stamina.hpp"
 #include "game/components/weapon.hpp"
+#include "game/events/request_shoot.hpp"
 #include "game/systems/camera_system.hpp"
-#include "game/systems/combat_system.hpp"
 
 namespace ls::player_system {
 
@@ -103,18 +103,30 @@ namespace ls::player_system {
     void updateAim(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
       auto& playerState{ ctx.registry.getComponent<component::PlayerState>(playerEntity) };
       const auto& aimActionState{ ctx.inputManager.getActionState<action::Aim>() };
-      playerState.isAiming =
-          (aimActionState == input::ActionState::JustPressed || aimActionState == input::ActionState::Held);
+
+      bool hasWeapon{ ctx.registry.hasComponent<component::Weapon>(playerEntity) };
+      bool wantsToAim{ aimActionState == input::ActionState::JustPressed ||
+                       aimActionState == input::ActionState::Held };
+
+      playerState.isAiming = hasWeapon && wantsToAim;
+
+      if (!hasWeapon) {
+        return;
+      }
 
       const auto& weapon{ ctx.registry.getComponent<component::Weapon>(playerEntity) };
 
-      if (weapon.cooldown <= 0.f) {
-        auto shootActionState{ ctx.inputManager.getActionState<action::Shoot>() };
-        if (weapon.isAutomatic
-                ? shootActionState == input::ActionState::JustPressed || shootActionState == input::ActionState::Held
-                : shootActionState == input::ActionState::JustPressed) {
-          combat_system::shoot(ctx, playerEntity);
-        }
+      auto shootActionState{ ctx.inputManager.getActionState<action::Shoot>() };
+      bool wantsToShoot{ weapon.isAutomatic ? (shootActionState == input::ActionState::JustPressed ||
+                                               shootActionState == input::ActionState::Held)
+                                            : (shootActionState == input::ActionState::JustPressed) };
+
+      if (wantsToShoot) {
+        ctx.eventQueue.publish(
+            event::RequestShoot{
+                .shooter = playerEntity,
+            }
+        );
       }
     }
 
@@ -184,12 +196,8 @@ namespace ls::player_system {
       handleRotation(ctx, entity);
     }
 
-    for (auto entity :
-         ctx.registry.view<component::Player, component::PlayerState, component::Transform, component::Weapon>()) {
-      updateAim(ctx, entity);
-    }
-
     for (auto entity : ctx.registry.view<component::Player, component::PlayerState, component::Transform>()) {
+      updateAim(ctx, entity);
       updateInteractions(ctx, entity);
     }
 

@@ -1,7 +1,11 @@
 #include "game/systems/camera_system.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <glm/common.hpp>
 #include <glm/ext/quaternion_common.hpp>
+#include <glm/ext/quaternion_geometric.hpp>
+#include <glm/ext/scalar_common.hpp>
 #include <glm/ext/vector_common.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
@@ -12,6 +16,7 @@
 #include "engine/core/update_context.hpp"
 #include "engine/renderer/render_system.hpp"
 #include "game/components/camera.hpp"
+#include "game/components/camera_shake.hpp"
 #include "game/components/player.hpp"
 #include "game/components/player_camera_settings.hpp"
 #include "game/components/player_state.hpp"
@@ -26,13 +31,47 @@ namespace ls::camera_system {
       auto& camera{ ctx.registry.getComponent<component::Camera>(entity) };
       const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
 
+      glm::vec2 totalShakeOffset{ 0.f };
+
+      if (ctx.registry.hasComponent<component::CameraShake>(entity)) {
+        auto& shake{ ctx.registry.getComponent<component::CameraShake>(entity) };
+        shake.trauma = glm::clamp(shake.trauma, 0.f, 1.f);
+
+        glm::vec2 springForce{ -shake.stiffness * shake.offset };
+        glm::vec2 dampingForce{ -shake.damping * shake.velocity };
+        glm::vec2 acceleration{ springForce + dampingForce };
+
+        shake.velocity += acceleration * ctx.dt;
+        shake.offset += shake.velocity * ctx.dt;
+
+        if (glm::length(shake.offset) > shake.maxSpringOffset) {
+          shake.offset = glm::normalize(shake.offset) * shake.maxSpringOffset;
+        }
+
+        totalShakeOffset += shake.offset;
+
+        if (shake.trauma > 0.f) {
+          shake.timeAccumulator += ctx.dt * shake.traumaFrequency;
+          float shakeAmount{ shake.trauma * shake.trauma };
+
+          float noiseX{ std::sin(shake.timeAccumulator * 1.1f) };
+          float noiseY{ std::cos(shake.timeAccumulator * 1.4f) };
+
+          glm::vec2 traumaOffset{ noiseX * shake.maxTraumaOffset * shakeAmount,
+                                  noiseY * shake.maxTraumaOffset * shakeAmount };
+
+          totalShakeOffset += traumaOffset;
+          shake.trauma = std::max(0.f, shake.trauma - shake.traumaDecay * ctx.dt);
+        }
+      }
+
       float halfHeight{ (camera.orthographicSize / camera.zoom) * 0.5f };
       float halfWidth{ halfHeight * aspectRatio };
 
       camera.projection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f);
 
       glm::mat4 cameraModel{ 1.0f };
-      cameraModel = glm::translate(cameraModel, glm::vec3(transform.position, 0.0f));
+      cameraModel = glm::translate(cameraModel, glm::vec3(transform.position + totalShakeOffset, 0.0f));
       cameraModel = glm::rotate(cameraModel, glm::radians(transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       camera.view = glm::inverse(cameraModel);
     }
@@ -107,6 +146,20 @@ namespace ls::camera_system {
 
     glm::vec4 worldPos{ glm::inverse(camera.projection * camera.view) * glm::vec4(ndcX, ndcY, 0.0f, 1.0f) };
     return glm::vec2(worldPos.x, worldPos.y);
+  }
+
+  void addImpulse(ecs::Registry& registry, const ecs::EntityId cameraEntity, glm::vec2 impulse) {
+    if (registry.hasComponent<component::CameraShake>(cameraEntity)) {
+      auto& shake{ registry.getComponent<component::CameraShake>(cameraEntity) };
+      shake.velocity += impulse;
+    }
+  }
+
+  void addTrauma(ecs::Registry& registry, const ecs::EntityId cameraEntity, float amount) {
+    if (registry.hasComponent<component::CameraShake>(cameraEntity)) {
+      auto& shake{ registry.getComponent<component::CameraShake>(cameraEntity) };
+      shake.trauma = std::min(1.f, shake.trauma + amount);
+    }
   }
 
 }  // namespace ls::camera_system

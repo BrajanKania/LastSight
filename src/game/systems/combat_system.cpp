@@ -8,12 +8,59 @@
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/gfx/texture_manager.hpp"
+#include "game/components/camera_shake.hpp"
 #include "game/components/weapon.hpp"
+#include "game/events/request_shoot.hpp"
 #include "game/factories/projectile_factory.hpp"
 #include "game/particles/gun_sparks.hpp"
 #include "game/scenes/texture_names.hpp"
+#include "game/systems/camera_system.hpp"
 
 namespace ls::combat_system {
+
+  namespace {
+
+    void shoot(const UpdateContext& ctx, const ecs::EntityId shooterEntity) {
+      const auto& transform{ ctx.registry.getComponent<component::Transform>(shooterEntity) };
+      auto& weapon{ ctx.registry.getComponent<component::Weapon>(shooterEntity) };
+
+      float angleRad{ glm::radians(transform.rotation) };
+      glm::vec2 forward{ glm::vec2(glm::cos(angleRad), glm::sin(angleRad)) };
+      glm::vec2 right{ -forward.y, forward.x };
+      glm::vec2 rotatedOffset{ forward * weapon.barrelOffset.y + right * weapon.barrelOffset.x };
+
+      factory::ProjectileConfig config{
+        .scale = weapon.bulletScale,
+        .position = transform.position + rotatedOffset,
+        .direction = forward,
+        .speed = weapon.initialSpeed,
+        .textureId = ctx.textureManager.getId(texture_name::kBullet),
+        .angleOffset = -90.f,
+        .lifetime = weapon.bulletLifetime,
+      };
+
+      factory::spawnProjectile(ctx.registry, config);
+
+      ecs::EntityId particleEmitter{ ctx.registry.createEntity() };
+      ctx.registry.addComponent(particleEmitter, component::ParticleEmitter{ particle::preset::gunSparks() });
+      ctx.registry.addComponent(
+          particleEmitter,
+          component::Transform{
+              .position = transform.position + rotatedOffset,
+          }
+      );
+
+      for (ecs::EntityId cameraEntity : ctx.registry.view<component::Camera, component::CameraShake>()) {
+        camera_system::addImpulse(ctx.registry, cameraEntity, -forward * weapon.recoilImpulse);
+        if (weapon.recoilTrauma > 0.f) {
+          camera_system::addTrauma(ctx.registry, cameraEntity, weapon.recoilTrauma);
+        }
+      }
+
+      weapon.cooldown = weapon.fireRate;
+    }
+
+  }  // namespace
 
   void update(const UpdateContext& ctx) {
     for (auto entity : ctx.registry.view<component::Weapon>()) {
@@ -22,39 +69,15 @@ namespace ls::combat_system {
         weapon.cooldown -= ctx.dt;
       }
     }
-  }
 
-  void shoot(const UpdateContext& ctx, const ecs::EntityId shooterEntity) {
-    const auto& transform{ ctx.registry.getComponent<component::Transform>(shooterEntity) };
-    auto& weapon{ ctx.registry.getComponent<component::Weapon>(shooterEntity) };
-
-    float angleRad{ glm::radians(transform.rotation) };
-    glm::vec2 forward{ glm::vec2(glm::cos(angleRad), glm::sin(angleRad)) };
-    glm::vec2 right{ -forward.y, forward.x };
-    glm::vec2 rotatedOffset{ forward * weapon.barrelOffset.y + right * weapon.barrelOffset.x };
-
-    factory::ProjectileConfig config{
-      .scale = weapon.bulletScale,
-      .position = transform.position + rotatedOffset,
-      .direction = forward,
-      .speed = weapon.initialSpeed,
-      .textureId = ctx.textureManager.getId(texture_name::kBullet),
-      .angleOffset = -90.f,
-      .lifetime = weapon.bulletLifetime,
-    };
-
-    factory::spawnProjectile(ctx.registry, config);
-
-    ecs::EntityId particleEmitter{ ctx.registry.createEntity() };
-    ctx.registry.addComponent(particleEmitter, component::ParticleEmitter{ particle::preset::gunSparks() });
-    ctx.registry.addComponent(
-        particleEmitter,
-        component::Transform{
-            .position = transform.position + rotatedOffset,
+    for (auto event : ctx.eventQueue.getEvents<event::RequestShoot>()) {
+      if (ctx.registry.hasComponent<component::Weapon>(event.shooter)) {
+        const auto& weapon{ ctx.registry.getComponent<component::Weapon>(event.shooter) };
+        if (weapon.cooldown <= 0.f) {
+          shoot(ctx, event.shooter);
         }
-    );
-
-    weapon.cooldown = weapon.fireRate;
+      }
+    }
   }
 
 }  // namespace ls::combat_system
