@@ -15,6 +15,7 @@
 #include "engine/renderer/render_system.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/player.hpp"
+#include "game/components/player_state.hpp"
 
 namespace ls::renderer {
 
@@ -60,9 +61,11 @@ namespace ls::renderer {
     shader_->use();
     shader_->setInt("uScreenTexture", 0);
 
-    for (auto entity : ctx.registry.view<component::Player, component::Transform, component::FieldOfView>()) {
+    for (auto entity :
+         ctx.registry.view<component::Player, component::PlayerState, component::Transform, component::FieldOfView>()) {
       const auto& fieldOfView{ ctx.registry.getComponent<component::FieldOfView>(entity) };
       const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
+      const auto& playerState{ ctx.registry.getComponent<component::PlayerState>(entity) };
 
       float rad{ glm::radians(transform.rotation) };
       glm::vec2 playerDir{ std::cos(rad), std::sin(rad) };
@@ -76,6 +79,8 @@ namespace ls::renderer {
       shader_->setFloat("uHalfFovRad", glm::radians(fieldOfView.fovAngle / 2.f));
       shader_->setFloat("uSmoothnessRad", glm::radians(fieldOfView.smoothnessAngle));
       shader_->setFloat("uSmoothnessDistance", fieldOfView.smoothnessDistance);
+
+      shader_->setFloat("uDarkness", fieldOfView.darkness);
 
       render_system::drawArrays(vao_, render_system::Primitive::Triangle, 0, 6);
       break;

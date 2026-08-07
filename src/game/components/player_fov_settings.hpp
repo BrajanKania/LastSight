@@ -11,6 +11,9 @@ namespace ls::component {
     float aimSmoothnessAngle{ 5.f };
     float lowStaminaSmoothnessAngle{ 30.f };
 
+    float baseDarkness{ 0.6f };
+    float aimDarkness{ 0.3f };
+
     float lowStaminaThreshold{ 0.5f };
 
     float transitionSpeed{ 10.f };

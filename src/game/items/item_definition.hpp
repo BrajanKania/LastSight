@@ -15,10 +15,9 @@ namespace ls::item {
     uint32_t worldTextureId{ 0 };
     uint32_t equippedTextureId{ 0 };
 
-    float angleOffset{ 0.f };
-
     glm::vec2 equippedScale{ 1.f };
     glm::vec2 equippedOffset{ 0.f };
+    float equippedAngleOffset{ 0.f };
 
     bool canStack{ false };
     std::size_t maxStackSize{ 1 };

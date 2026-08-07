@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_log.h>
 
+#include <algorithm>
 #include <cmath>
 #include <glm/common.hpp>
 #include <glm/ext/quaternion_geometric.hpp>
@@ -46,28 +47,24 @@ namespace ls::player_system {
       auto& playerState{ ctx.registry.getComponent<component::PlayerState>(playerEntity) };
       auto& velocity{ ctx.registry.getComponent<component::Velocity>(playerEntity) };
       const auto& movement{ ctx.registry.getComponent<component::MovementSettings>(playerEntity) };
-      auto& stamina{ ctx.registry.getComponent<component::Stamina>(playerEntity) };
+      const auto& stamina{ ctx.registry.getComponent<component::Stamina>(playerEntity) };
 
       auto sprintActionState{ ctx.inputManager.getActionState<action::Sprint>() };
       bool wantSprint{ sprintActionState == input::ActionState::JustPressed ||
                        sprintActionState == input::ActionState::Held };
 
+      bool canSprint{ !stamina.isExhausted && stamina.current > 0.f };
+
       glm::vec2 direction{ ctx.inputManager.getAxis2D<action::Move>() };
       float dirLength{ glm::length(direction) };
 
       float speed{ 0.f };
-      if (dirLength > 0.f && wantSprint && stamina.current > 0.f) {
+      if (dirLength > 0.f && wantSprint && canSprint) {
         speed = movement.sprintSpeed;
-        stamina.current -= stamina.sprintCostRate * ctx.dt;
         playerState.isSprinting = true;
       } else {
         speed = movement.walkSpeed;
         playerState.isSprinting = false;
-      }
-
-      if (!wantSprint) {
-        stamina.current += stamina.regenRate * ctx.dt;
-        stamina.current = glm::clamp(stamina.current, 0.f, stamina.max);
       }
 
       playerState.isMoving = dirLength > 0.f;
@@ -102,20 +99,23 @@ namespace ls::player_system {
 
     void updateAim(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
       auto& playerState{ ctx.registry.getComponent<component::PlayerState>(playerEntity) };
+      const auto& stamina{ ctx.registry.getComponent<component::Stamina>(playerEntity) };
       const auto& aimActionState{ ctx.inputManager.getActionState<action::Aim>() };
 
       bool hasWeapon{ ctx.registry.hasComponent<component::Weapon>(playerEntity) };
       bool wantsToAim{ aimActionState == input::ActionState::JustPressed ||
                        aimActionState == input::ActionState::Held };
+      bool canAim{ !stamina.isExhausted && stamina.current > 0.f };
 
-      playerState.isAiming = hasWeapon && wantsToAim;
+      playerState.isAiming = hasWeapon && wantsToAim && canAim;
 
       if (!hasWeapon) {
         return;
       }
 
-      const auto& weapon{ ctx.registry.getComponent<component::Weapon>(playerEntity) };
+      auto& weapon{ ctx.registry.getComponent<component::Weapon>(playerEntity) };
 
+      weapon.isAiming = playerState.isAiming;
       auto shootActionState{ ctx.inputManager.getActionState<action::Shoot>() };
       bool wantsToShoot{ weapon.isAutomatic ? (shootActionState == input::ActionState::JustPressed ||
                                                shootActionState == input::ActionState::Held)
@@ -183,6 +183,30 @@ namespace ls::player_system {
       inventory.activeSlotIndex = static_cast<std::size_t>(newIndex);
     }
 
+    void updateStamina(const UpdateContext& ctx, const ecs::EntityId playerEntity) {
+      auto& stamina{ ctx.registry.getComponent<component::Stamina>(playerEntity) };
+      const auto& playerState{ ctx.registry.getComponent<component::PlayerState>(playerEntity) };
+
+      if (playerState.isSprinting) {
+        stamina.current -= stamina.sprintCostRate * ctx.dt;
+      }
+      if (playerState.isAiming) {
+        stamina.current -= stamina.aimCostRate * ctx.dt;
+      }
+
+      if (!playerState.isSprinting && !playerState.isAiming) {
+        stamina.current += stamina.regenRate * ctx.dt;
+      }
+
+      stamina.current = std::clamp(stamina.current, 0.f, stamina.max);
+
+      if (stamina.current <= 0.f) {
+        stamina.isExhausted = true;
+      } else if (stamina.isExhausted && stamina.current >= (stamina.max * stamina.recoveryThresholdRatio)) {
+        stamina.isExhausted = false;
+      }
+    }
+
   }  // namespace
 
   void update(const UpdateContext& ctx) {
@@ -197,12 +221,20 @@ namespace ls::player_system {
     }
 
     for (auto entity : ctx.registry.view<component::Player, component::PlayerState, component::Transform>()) {
-      updateAim(ctx, entity);
       updateInteractions(ctx, entity);
+    }
+
+    for (auto entity :
+         ctx.registry.view<component::Player, component::PlayerState, component::Transform, component::Stamina>()) {
+      updateAim(ctx, entity);
     }
 
     for (auto entity : ctx.registry.view<component::Player, component::Inventory>()) {
       updateSlotSelection(ctx, entity);
+    }
+
+    for (auto entity : ctx.registry.view<component::Player, component::PlayerState, component::Stamina>()) {
+      updateStamina(ctx, entity);
     }
   }
 

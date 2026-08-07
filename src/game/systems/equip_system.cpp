@@ -33,8 +33,7 @@ namespace ls::equip_system {
               component::EquippedSprite{
                   .textureId = itemDef->equippedTextureId,
                   .scale = itemDef->equippedScale,
-                  .offset = itemDef->equippedOffset,
-                  .angleOffset = itemDef->angleOffset,
+                  .offset = itemDef->weaponConfig->hipOffset,
                   .zIndex = renderer::Layer::Entities,
               }
           );
@@ -47,11 +46,16 @@ namespace ls::equip_system {
                   .isAutomatic = itemDef->weaponConfig->isAutomatic,
                   .fireRate = itemDef->weaponConfig->fireRate,
                   .initialSpeed = itemDef->weaponConfig->initialSpeed,
-                  .barrelOffset = itemDef->weaponConfig->barrelOffset,
                   .bulletScale = itemDef->weaponConfig->bulletScale,
                   .bulletLifetime = itemDef->weaponConfig->bulletLifetime,
-                  .recoilImpulse = itemDef->weaponConfig->recoilImpulse,
-                  .recoilTrauma = itemDef->weaponConfig->recoilTrauma,
+                  .transitionSpeed = itemDef->weaponConfig->transitionSpeed,
+                  .baseAngleOffset = itemDef->equippedAngleOffset,
+                  .offset = itemDef->weaponConfig->hipOffset,
+                  .muzzleOffset = itemDef->weaponConfig->muzzleOffset,
+                  .hipOffset = itemDef->weaponConfig->hipOffset,
+                  .aimOffset = itemDef->weaponConfig->aimOffset,
+                  .hipRecoil = itemDef->weaponConfig->hipRecoil,
+                  .aimRecoil = itemDef->weaponConfig->aimRecoil,
               }
           );
         }

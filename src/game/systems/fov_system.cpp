@@ -1,5 +1,8 @@
 #include "game/systems/fov_system.hpp"
 
+#include <glm/common.hpp>
+#include <glm/ext/scalar_common.hpp>
+
 #include "engine/ecs/types.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/player.hpp"
@@ -23,10 +26,12 @@ namespace ls::fov_system {
 
       float targetAngle{ settings.baseAngle };
       float targetSmoothnessAngle{ settings.baseSmoothnessAngle };
+      float targetDarkness{ settings.baseDarkness };
 
       if (playerState.isAiming) {
         targetAngle = std::min(targetAngle, settings.aimAngle);
         targetSmoothnessAngle = std::min(targetSmoothnessAngle, settings.aimSmoothnessAngle);
+        targetDarkness = std::min(targetDarkness, settings.aimDarkness);
       }
 
       float staminaRatio{ stamina.max > 0.f ? stamina.current / stamina.max : 1.f };
@@ -43,6 +48,7 @@ namespace ls::fov_system {
 
       fov.fovAngle = glm::mix(fov.fovAngle, targetAngle, settings.transitionSpeed * ctx.dt);
       fov.smoothnessAngle = glm::mix(fov.smoothnessAngle, targetSmoothnessAngle, settings.transitionSpeed * ctx.dt);
+      fov.darkness = glm::mix(fov.darkness, targetDarkness, settings.transitionSpeed * ctx.dt);
     }
   }
 

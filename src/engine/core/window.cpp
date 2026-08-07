@@ -26,7 +26,7 @@ namespace ls {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    window_ = SDL_CreateWindow("Last sight", width_, height_, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    window_ = SDL_CreateWindow("Last Sight", width_, height_, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window_) {
       SDL_Quit();
       throw std::runtime_error(std::format("Failed to create window: {}", SDL_GetError()));

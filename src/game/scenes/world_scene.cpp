@@ -58,6 +58,8 @@
 #include "game/components/player_state.hpp"
 #include "game/components/post_process_settings.hpp"
 #include "game/components/stamina.hpp"
+#include "game/components/weapon.hpp"
+#include "game/items/weapon_config.hpp"
 #include "game/particles/fire.hpp"
 #include "game/scenes/texture_names.hpp"
 #include "game/systems/camera_system.hpp"
@@ -152,6 +154,9 @@ namespace ls {
                 .baseSmoothnessAngle = 40.f,
                 .aimSmoothnessAngle = 10.f,
                 .lowStaminaSmoothnessAngle = 20.f,
+                .baseDarkness = 0.6f,
+                .aimDarkness = 0.55f,
+                .lowStaminaThreshold = 0.4,
                 .transitionSpeed = 4.f,
             }
         );
@@ -182,6 +187,8 @@ namespace ls {
                 .current = 100.f,
                 .regenRate = 10.f,
                 .sprintCostRate = 20.f,
+                .aimCostRate = 10.f,
+                .recoveryThresholdRatio = 0.2f,
             }
         );
         registry_.addComponent(
@@ -217,7 +224,7 @@ namespace ls {
         registry_.addComponent(
             camera,
             component::Camera{
-                .orthographicSize = 5.f,
+                .orthographicSize = 6.f,
                 .zoom = 1.f,
             }
         );
@@ -235,7 +242,7 @@ namespace ls {
                 .damping = 20.f,
                 .maxSpringOffset = 0.4f,
                 .traumaDecay = 1.f,
-                .maxTraumaOffset = 0.3f,
+                .maxTraumaOffset = 0.35f,
                 .traumaFrequency = 8.f,
             }
         );
@@ -438,21 +445,50 @@ namespace ls {
               .iconTextureId = textureManager_.getId(texture_name::kWorldPistol),
               .worldTextureId = textureManager_.getId(texture_name::kWorldPistol),
               .equippedTextureId = textureManager_.getId(texture_name::kEquippedPistol),
-              .angleOffset = -90.f,
               .equippedScale = glm::vec2(0.5f),
               .equippedOffset = glm::vec2(0.f, 0.2f),
+              .equippedAngleOffset = -90.f,
               .canStack = false,
               .maxStackSize = 1,
               .weaponConfig =
                   item::WeaponConfig{
                       .isAutomatic = false,
-                      .fireRate = 0.f,
-                      .initialSpeed = 4.f,
-                      .bulletScale = glm::vec2(0.03f),
+                      .fireRate = 0.1f,
+                      .initialSpeed = 6.f,
+                      .bulletScale = glm::vec2(0.025f),
                       .bulletLifetime = 3.f,
-                      .barrelOffset = glm::vec2(0.f, 0.32f),
-                      .recoilImpulse = 1.f,
-                      .recoilTrauma = 0.1f,
+                      .transitionSpeed = 8.f,
+                      .muzzleOffset = glm::vec2(0.f, 0.14f),
+                      .hipOffset = glm::vec2(0.12f, 0.21f),
+                      .aimOffset = glm::vec2(0.f, 0.27f),
+                      .hipRecoil =
+                          component::Weapon::RecoilConfig{
+                              .baseSpread = 10.f,
+                              .weaponImpulse = 5.f,
+                              .weaponAngularImpulse = 150.f,
+                              .cameraImpulse = 1.f,
+                              .cameraTrauma = 0.1f,
+                              .maxSpringOffset = 0.15f,
+                              .springStiffness = 400.f,
+                              .damping = 30.f,
+                              .maxSpringRotation = 90.f,
+                              .angularSpringStiffness = 80.f,
+                              .angularDamping = 8.f,
+                          },
+                      .aimRecoil =
+                          component::Weapon::RecoilConfig{
+                              .baseSpread = 5.f,
+                              .weaponImpulse = 8.f,
+                              .weaponAngularImpulse = 100.f,
+                              .cameraImpulse = 1.2f,
+                              .cameraTrauma = 0.1f,
+                              .maxSpringOffset = 0.15f,
+                              .springStiffness = 400.f,
+                              .damping = 40.f,
+                              .maxSpringRotation = 30.f,
+                              .angularSpringStiffness = 100.f,
+                              .angularDamping = 8.f,
+                          },
                   },
           }
       );
@@ -463,21 +499,50 @@ namespace ls {
               .iconTextureId = textureManager_.getId(texture_name::kWorldRifle),
               .worldTextureId = textureManager_.getId(texture_name::kWorldRifle),
               .equippedTextureId = textureManager_.getId(texture_name::kEquippedRifle),
-              .angleOffset = -90.f,
               .equippedScale = glm::vec2(1.2f),
               .equippedOffset = glm::vec2(0.08f, 0.3f),
+              .equippedAngleOffset = -90.f,
               .canStack = false,
               .maxStackSize = 1,
               .weaponConfig =
                   item::WeaponConfig{
                       .isAutomatic = true,
-                      .fireRate = 0.1f,
-                      .initialSpeed = 6.f,
-                      .bulletScale = glm::vec2(0.03f),
+                      .fireRate = 0.12f,
+                      .initialSpeed = 10.f,
+                      .bulletScale = glm::vec2(0.025f),
                       .bulletLifetime = 3.f,
-                      .barrelOffset = glm::vec2(-0.082f, 0.6f),
-                      .recoilImpulse = 2.f,
-                      .recoilTrauma = 0.15f,
+                      .transitionSpeed = 4.f,
+                      .muzzleOffset = glm::vec2(0.f, 0.3f),
+                      .hipOffset = glm::vec2(0.12f, 0.27f),
+                      .aimOffset = glm::vec2(0.f, 0.38f),
+                      .hipRecoil =
+                          component::Weapon::RecoilConfig{
+                              .baseSpread = 10.f,
+                              .weaponImpulse = 12.f,
+                              .weaponAngularImpulse = 150.f,
+                              .cameraImpulse = 1.2f,
+                              .cameraTrauma = 0.18f,
+                              .maxSpringOffset = 0.15f,
+                              .springStiffness = 200.f,
+                              .damping = 30.f,
+                              .maxSpringRotation = 120.f,
+                              .angularSpringStiffness = 150.f,
+                              .angularDamping = 10.f,
+                          },
+                      .aimRecoil =
+                          component::Weapon::RecoilConfig{
+                              .baseSpread = 3.f,
+                              .weaponImpulse = 12.f,
+                              .weaponAngularImpulse = 80.f,
+                              .cameraImpulse = 1.5f,
+                              .cameraTrauma = 0.13f,
+                              .maxSpringOffset = 0.15f,
+                              .springStiffness = 400.f,
+                              .damping = 40.f,
+                              .maxSpringRotation = 30.f,
+                              .angularSpringStiffness = 150.f,
+                              .angularDamping = 10.f,
+                          },
                   },
           }
       );

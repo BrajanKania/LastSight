@@ -10,8 +10,8 @@
 #include "game/scenes/world_scene.hpp"
 
 int main() {
-  constexpr int kWidth{ 1000 };
-  constexpr int kHeight{ 800 };
+  constexpr int kWidth{ 1500 };
+  constexpr int kHeight{ 900 };
 
   try {
     ls::Window window(kWidth, kHeight);

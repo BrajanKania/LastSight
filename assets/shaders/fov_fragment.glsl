@@ -16,6 +16,8 @@ uniform float uHalfFovRad;
 uniform float uSmoothnessRad;
 uniform float uSmoothnessDistance;
 
+uniform float uDarkness;
+
 void main() {
   vec4 fragNDC = vec4(texCoords.xy * 2.f - 1.f, 0.f, 1.f);
   vec2 fragPos = (uInvViewProj * fragNDC).xy;
@@ -41,7 +43,8 @@ void main() {
 
   vec4 screenColor = texture(uScreenTexture, texCoords);
   float gray = dot(screenColor.rgb, vec3(0.2126f, 0.7152f, 0.0722f));
-  vec4 grayColor = vec4(vec3(gray) * 0.6f, screenColor.a);
+
+  vec4 grayColor = vec4(vec3(gray) * uDarkness, screenColor.a);
 
   fragColor = mix(grayColor, screenColor, visibility);
 }
