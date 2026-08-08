@@ -97,7 +97,10 @@ namespace ls::ui {
   }  // namespace
 
   void EntityExplorerPanel::render(const UIContext& ctx) {
-    if (!ctx.registry.isValidEntity(selectedEntity_))
+    if (!ctx.registry || !ctx.textureManager)
+      return;
+
+    if (!ctx.registry->isValidEntity(selectedEntity_))
       selectedEntity_ = ecs::kNullEntity;
 
     if (ImGui::Begin("Entity Explorer", &visible_)) {
@@ -116,8 +119,8 @@ namespace ls::ui {
 
           ImGui::SeparatorText("Entities");
 
-          for (ecs::EntityId entity{ 0 }; entity < ctx.registry.getMaxEntityId(); entity++) {
-            if (!filterEntity(ctx.registry, entity))
+          for (ecs::EntityId entity{ 0 }; entity < ctx.registry->getMaxEntityId(); entity++) {
+            if (!filterEntity(*ctx.registry, entity))
               continue;
 
             {  // Entity
@@ -126,7 +129,7 @@ namespace ls::ui {
                 flags |= ImGuiTreeNodeFlags_Selected;
               }
 
-              std::string label{ getEntityLabel(ctx.registry, entity) };
+              std::string label{ getEntityLabel(*ctx.registry, entity) };
               ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(entity)), flags, "%s", label.c_str());
 
               if (ImGui::IsItemClicked()) {
@@ -147,14 +150,14 @@ namespace ls::ui {
 
         ImGui::BeginChild("InspectorRegion");
 
-        if (ctx.registry.isValidEntity(selectedEntity_)) {
+        if (ctx.registry->isValidEntity(selectedEntity_)) {
           ImGui::PushItemWidth(120.f);
 
-          inspectComponentTransform(ctx.registry, selectedEntity_);
-          inspectComponentSprite(ctx.registry, ctx.textureManager, selectedEntity_);
-          inspectComponentCamera(ctx.registry, selectedEntity_);
-          inspectComponentHealth(ctx.registry, selectedEntity_);
-          inspectComponentPostProcessSettings(ctx.registry, selectedEntity_);
+          inspectComponentTransform(*ctx.registry, selectedEntity_);
+          inspectComponentSprite(*ctx.registry, *ctx.textureManager, selectedEntity_);
+          inspectComponentCamera(*ctx.registry, selectedEntity_);
+          inspectComponentHealth(*ctx.registry, selectedEntity_);
+          inspectComponentPostProcessSettings(*ctx.registry, selectedEntity_);
 
           ImGui::PopItemWidth();
         } else {

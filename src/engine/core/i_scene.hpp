@@ -26,9 +26,9 @@ namespace ls {
   protected:
     ui::UIContext getUIContext() {
       return ui::UIContext{
-        .registry = registry_,
         .eventQueue = eventQueue_,
-        .textureManager = textureManager_,
+        .registry = &registry_,
+        .textureManager = &textureManager_,
       };
     }
 

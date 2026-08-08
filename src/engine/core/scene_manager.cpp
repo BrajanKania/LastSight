@@ -6,6 +6,28 @@
 
 namespace ls {
 
+  void SceneManager::changeScene(const std::string& name) {
+    pendingOperations_.push_back([this, name]() {
+      auto it{ factories_.find(name) };
+      if (it == factories_.end())
+        return;
+
+      while (!scenes_.empty()) {
+        scenes_.back()->onExit();
+        scenes_.pop_back();
+      }
+
+      auto newScene{ it->second() };
+      newScene->onEnter();
+
+      if (width_ > 0 && height_ > 0) {
+        newScene->onResize(width_, height_);
+      }
+
+      scenes_.push_back(std::move(newScene));
+    });
+  }
+
   void SceneManager::popScene() {
     pendingOperations_.push_back([this]() {
       if (!scenes_.empty()) {
@@ -30,8 +52,6 @@ namespace ls {
   }
 
   void SceneManager::render() {
-    ui_system::beginFrame();
-
     if (!scenes_.empty()) {
       auto firstToRender{ scenes_.size() - 1 };
       while (firstToRender > 0 && !scenes_[firstToRender]->isOpaque())
@@ -41,8 +61,6 @@ namespace ls {
         scenes_[i]->render();
       }
     }
-
-    ui_system::endFrame();
   }
 
   void SceneManager::processPendingOperations() {
@@ -57,4 +75,12 @@ namespace ls {
       scene->onResize(width, height);
   }
 
+  std::vector<std::string> SceneManager::getRegisteredSceneNames() const {
+    std::vector<std::string> names;
+    names.reserve(factories_.size());
+    for (const auto& [name, _] : factories_) {
+      names.push_back(name);
+    }
+    return names;
+  }
 }  // namespace ls

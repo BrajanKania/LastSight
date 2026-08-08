@@ -7,9 +7,9 @@
 namespace ls::ui {
 
   struct UIContext {
-    ecs::Registry& registry;
     dispatch::EventQueue& eventQueue;
-    gfx::TextureManager& textureManager;
+    ecs::Registry* registry{ nullptr };
+    gfx::TextureManager* textureManager{ nullptr };
   };
 
 }  // namespace ls::ui

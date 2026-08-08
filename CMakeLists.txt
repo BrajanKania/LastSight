@@ -28,6 +28,7 @@ add_executable(LastSight
 
   # Engine ---
  
+  src/engine/core/engine.cpp
   src/engine/core/scene_manager.cpp
   src/engine/core/stb_impl.cpp
   src/engine/core/window.cpp
@@ -54,6 +55,8 @@ add_executable(LastSight
 
   src/engine/renderer/render_system.cpp
 
+  src/engine/ui/panels/scene_selector_panel.cpp
+
   src/engine/ui/ui_manager.cpp
   src/engine/ui/ui_system.cpp
 
@@ -62,6 +65,7 @@ add_executable(LastSight
   src/game/factories/projectile_factory.cpp
 
 
+  src/game/scenes/main_menu_scene.cpp
   src/game/scenes/world_scene.cpp
 
   src/game/systems/camera_system.cpp

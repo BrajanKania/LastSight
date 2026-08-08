@@ -13,8 +13,8 @@ namespace ls::ui {
   }
 
   void InventoryPanel::render(const UIContext& ctx) {
-    for (auto entity : ctx.registry.view<component::Player, component::Inventory>()) {
-      const auto& inventory{ ctx.registry.getComponent<component::Inventory>(entity) };
+    for (auto entity : ctx.registry->view<component::Player, component::Inventory>()) {
+      const auto& inventory{ ctx.registry->getComponent<component::Inventory>(entity) };
 
       ImGuiIO& io{ ImGui::GetIO() };
       ImVec2 windowPos(10.f, io.DisplaySize.y * 0.5f);
@@ -44,7 +44,7 @@ namespace ls::ui {
 
           const auto* itemDef{ itemRegistry_.get(slot.itemId) };
           if (itemDef && itemDef->iconTextureId != 0) {
-            const auto* texture{ ctx.textureManager.get(itemDef->iconTextureId) };
+            const auto* texture{ ctx.textureManager->get(itemDef->iconTextureId) };
             if (texture) {
               ImTextureID texHandle{ (ImTextureID)(uintptr_t)texture->getId() };
               ImGui::Image(texHandle, ImVec2(40.f, 40.f));
