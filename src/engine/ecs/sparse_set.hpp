@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cassert>
+#include <entt/core/fwd.hpp>
+#include <entt/core/type_info.hpp>
 #include <vector>
 
 #include "engine/ecs/types.hpp"
@@ -11,6 +13,8 @@ namespace ls::ecs {
   public:
     virtual ~ISparseSet() = default;
     virtual void destroyComponent(EntityId entity) = 0;
+    virtual entt::id_type getTypeId() const = 0;
+    virtual void* getRawComponent(EntityId entity) = 0;
   };
 
   template <typename TComponent>
@@ -48,17 +52,23 @@ namespace ls::ecs {
 
     bool hasComponent(EntityId entity) const { return (entity < sparse_.size() && sparse_[entity] != kNullEntity); }
 
-    TComponent& get(EntityId entity) {
+    TComponent& getComponent(EntityId entity) {
       assert(hasComponent(entity) && "Attempted to get component that entity does not have.");
       return components_[sparse_[entity]];
     }
 
-    const TComponent& get(EntityId entity) const {
+    const TComponent& getComponent(EntityId entity) const {
       assert(hasComponent(entity) && "Attempted to get component that entity does not have.");
       return components_[sparse_[entity]];
     }
 
     const std::vector<EntityId>& getEntities() const { return dense_; }
+
+    entt::id_type getTypeId() const override { return entt::type_id<TComponent>().hash(); }
+
+    void* getRawComponent(EntityId entity) override {
+      return hasComponent(entity) ? &components_[sparse_[entity]] : nullptr;
+    }
 
   private:
     std::vector<EntityId> sparse_{};

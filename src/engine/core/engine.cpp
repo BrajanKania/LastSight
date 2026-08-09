@@ -9,6 +9,7 @@
 #include "engine/events/request_change_scene.hpp"
 #include "engine/events/request_quit_engine.hpp"
 #include "engine/input/types.hpp"
+#include "engine/reflection/reflection_system.hpp"
 #include "engine/ui/panels/scene_selector_panel.hpp"
 #include "engine/ui/ui_context.hpp"
 #include "engine/ui/ui_system.hpp"
@@ -18,6 +19,8 @@ namespace ls {
   Engine::Engine()
       : window_(1500, 900),
         sceneManager_(window_.getWidth(), window_.getHeight()) {
+    reflection::registerTypes();
+
     ui_system::init(window_.getSDLWindow(), window_.getOpengGlContext());
 
     inputManager_.bindKey<action::QuitEngine>(input::Key::Escape);

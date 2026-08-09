@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <entt/core/fwd.hpp>
 #include <memory>
 
 #include "engine/ecs/sparse_set.hpp"
@@ -94,7 +95,7 @@ namespace ls::ecs {
       auto* sparseSet{ getSparseSetPointer<TComponent>() };
       assert(sparseSet->hasComponent(entity) && "Entity does not have the requested component.");
 
-      return sparseSet->get(entity);
+      return sparseSet->getComponent(entity);
     }
 
     template <typename TComponent>
@@ -105,7 +106,7 @@ namespace ls::ecs {
       assert(sparseSet && "Attempted to get unregistered component type.");
       assert(sparseSet->hasComponent(entity) && "Entity does not have the requested component.");
 
-      return sparseSet->get(entity);
+      return sparseSet->getComponent(entity);
     }
 
     template <typename... TComponents>
@@ -114,6 +115,15 @@ namespace ls::ecs {
     }
 
     ecs::EntityId getMaxEntityId() const { return nextEntity_; }
+
+    ISparseSet* getISparseSetByTypeId(entt::id_type typeId) {
+      for (auto& set : sparseSets_) {
+        if (set->getTypeId() == typeId) {
+          return set.get();
+        }
+      }
+      return nullptr;
+    }
 
   private:
     template <typename TComponent>

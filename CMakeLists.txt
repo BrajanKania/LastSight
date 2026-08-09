@@ -22,6 +22,7 @@ find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(SDL3 REQUIRED COMPONENTS SDL3-static)
 find_package(glm REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 
 add_executable(LastSight 
   src/main.cpp
@@ -48,6 +49,8 @@ add_executable(LastSight
 
   src/engine/physics/physics_system.cpp
 
+  src/engine/reflection/reflection_system.cpp
+
   src/engine/renderer/passes/compose_pass.cpp
   src/engine/renderer/passes/fov_pass.cpp
   src/engine/renderer/passes/lit_pass.cpp
@@ -55,6 +58,7 @@ add_executable(LastSight
 
   src/engine/renderer/render_system.cpp
 
+  src/engine/ui/panels/entity_explorer_panel.cpp
   src/engine/ui/panels/scene_selector_panel.cpp
 
   src/engine/ui/ui_manager.cpp
@@ -79,7 +83,6 @@ add_executable(LastSight
   src/game/systems/projectile_system.cpp
 
   src/game/ui/debug_toolbox_panel.cpp
-  src/game/ui/entity_explorer_panel.cpp
   src/game/ui/inventory_panel.cpp
   src/game/ui/render_pipeline_debug_panel.cpp
 )
@@ -92,6 +95,7 @@ target_link_libraries(
     OpenGL::OpenGL
     SDL3::SDL3
     imgui::imgui
+    EnTT::EnTT
 )
 
 target_include_directories(
