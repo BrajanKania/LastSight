@@ -23,12 +23,35 @@ find_package(SDL3 REQUIRED COMPONENTS SDL3-static)
 find_package(glm REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
+find_package(Python3 REQUIRED)
 
-add_executable(LastSight 
+set(REFLECTION_INPUT_DIRS
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/components"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/game/components"
+)
+
+set(GENERATE_REFLECTION_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/reflection/generate_reflection.py")
+set(GENERATED_REFLECTION_FILE "${CMAKE_CURRENT_BINARY_DIR}/generated/engine/reflection/generated_reflection.cpp")
+
+file(GLOB_RECURSE COMPONENT_HEADERS
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/components/*.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/game/components/*.hpp"
+)
+
+add_custom_command(
+  OUTPUT "${GENERATED_REFLECTION_FILE}"
+  COMMAND Python3::Interpreter "${GENERATE_REFLECTION_SCRIPT}"
+    --input-dir ${REFLECTION_INPUT_DIRS}
+    --output-file "${GENERATED_REFLECTION_FILE}"
+  DEPENDS "${GENERATE_REFLECTION_SCRIPT}" ${COMPONENT_HEADERS}
+  VERBATIM
+)
+
+add_executable(LastSight
   src/main.cpp
 
   # Engine ---
- 
+
   src/engine/core/engine.cpp
   src/engine/core/scene_manager.cpp
   src/engine/core/stb_impl.cpp
@@ -42,14 +65,12 @@ add_executable(LastSight
 
   src/engine/input/input_manager.cpp
   src/engine/input/input_system.cpp
- 
+
   src/engine/interactions/interaction_system.cpp
 
   src/engine/particles/particle_system.cpp
 
   src/engine/physics/physics_system.cpp
-
-  src/engine/reflection/reflection_system.cpp
 
   src/engine/renderer/passes/compose_pass.cpp
   src/engine/renderer/passes/fov_pass.cpp
@@ -85,6 +106,10 @@ add_executable(LastSight
   src/game/ui/debug_toolbox_panel.cpp
   src/game/ui/inventory_panel.cpp
   src/game/ui/render_pipeline_debug_panel.cpp
+
+  # Generated ---
+ 
+  ${GENERATED_REFLECTION_FILE}
 )
 
 target_link_libraries(
@@ -99,7 +124,7 @@ target_link_libraries(
 )
 
 target_include_directories(
-  LastSight 
+  LastSight
   PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )

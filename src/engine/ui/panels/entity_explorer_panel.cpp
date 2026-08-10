@@ -1,4 +1,3 @@
-
 #include "engine/ui/panels/entity_explorer_panel.hpp"
 
 #include <imgui.h>
@@ -12,6 +11,7 @@
 #include "engine/components/entity_name.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
+#include "engine/reflection/reflection_system.hpp"
 #include "engine/ui/ui_context.hpp"
 
 namespace ls::ui {
@@ -29,36 +29,77 @@ namespace ls::ui {
       return label;
     }
 
-    void inspectComponent(entt::meta_any& anyComponent, entt::meta_data data) {
-      const char* label{ data.name() ? data.name() : "Unassigned" };
-      entt::meta_any value{ data.get(anyComponent) };
+    bool inspectComponentProperty(entt::meta_any& owner, entt::meta_data data) {
+      const ls::reflection::PropertyInfo* propInfo{ data.custom() };
+      const bool isReadOnly{ propInfo ? propInfo->readOnly : false };
+      const char* label{ (propInfo && propInfo->displayName) ? propInfo->displayName
+                                                             : (data.name() ? data.name() : "Unassigned") };
+
+      entt::meta_any value{ data.get(owner) };
 
       if (!value)
-        return;
+        return false;
 
-      if (value.type() == entt::resolve<float>()) {
+      bool valueChanged{ false };
+
+      if (isReadOnly) {
+        ImGui::BeginDisabled(true);
+      }
+
+      if (value.type() == entt::resolve<bool>()) {
+        bool val{ value.cast<bool>() };
+        if (ImGui::Checkbox(label, &val)) {
+          value = val;
+          valueChanged = true;
+        }
+      } else if (value.type() == entt::resolve<float>()) {
         float val{ value.cast<float>() };
         if (ImGui::DragFloat(label, &val, 0.05f)) {
-          data.set(anyComponent, val);
+          value = val;
+          valueChanged = true;
         }
       } else if (value.type() == entt::resolve<int>()) {
         int val{ value.cast<int>() };
         if (ImGui::DragInt(label, &val, 1)) {
-          data.set(anyComponent, val);
+          value = val;
+          valueChanged = true;
         }
       } else if (auto* vec{ value.try_cast<glm::vec2>() }) {
         if (ImGui::DragFloat2(label, &vec->x, 0.05f)) {
-          data.set(anyComponent, *vec);
+          valueChanged = true;
         }
       } else if (auto* vec{ value.try_cast<glm::vec3>() }) {
         if (ImGui::DragFloat3(label, &vec->x, 0.05f)) {
-          data.set(anyComponent, *vec);
+          valueChanged = true;
         }
       } else if (auto* vec{ value.try_cast<glm::vec4>() }) {
         if (ImGui::DragFloat4(label, &vec->x, 0.05f)) {
-          data.set(anyComponent, *vec);
+          valueChanged = true;
+        }
+      } else if (auto valueType = value.type(); valueType.data().begin() != valueType.data().end()) {
+        if (ImGui::TreeNode(label)) {
+          ImGui::PushID(static_cast<int>(1));
+
+          for (auto [subDataId, subData] : valueType.data()) {
+            if (inspectComponentProperty(value, subData)) {
+              valueChanged = true;
+            }
+          }
+
+          ImGui::PopID();
+          ImGui::TreePop();
         }
       }
+
+      if (isReadOnly) {
+        ImGui::EndDisabled();
+      }
+
+      if (valueChanged && !isReadOnly) {
+        data.set(owner, value);
+      }
+
+      return valueChanged && !isReadOnly;
     }
 
     void inspectEntity(ecs::Registry& registry, const ecs::EntityId entity) {
@@ -72,14 +113,13 @@ namespace ls::ui {
           continue;
 
         entt::meta_any anyComponent{ type.from_void(rawComponent) };
-
         const char* headerName{ type.name() ? type.name() : "Unassigned" };
 
         if (ImGui::CollapsingHeader(headerName)) {
           ImGui::PushID(static_cast<int>(id));
 
           for (auto [dataId, data] : type.data()) {
-            inspectComponent(anyComponent, data);
+            inspectComponentProperty(anyComponent, data);
           }
 
           ImGui::PopID();

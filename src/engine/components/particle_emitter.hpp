@@ -4,9 +4,11 @@
 
 #include "engine/particles/particle.hpp"
 #include "engine/particles/particle_emitter_config.hpp"
+#include "engine/reflection/reflection_macros.hpp"
 
 namespace ls::component {
 
+  STRUCT()
   struct ParticleEmitter {
     particle::ParticleEmitterConfig config;
 

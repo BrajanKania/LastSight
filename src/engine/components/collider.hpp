@@ -2,10 +2,13 @@
 
 #include <glm/glm.hpp>
 
+#include "engine/reflection/reflection_macros.hpp"
+
 namespace ls::component {
 
   enum class ColliderType { Circle, AABB, OBB };
 
+  STRUCT()
   struct Collider {
     ColliderType type{ ColliderType::Circle };
     glm::vec2 halfExtents{ 1.f };

@@ -3,10 +3,12 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 
+#include "engine/reflection/reflection_macros.hpp"
 #include "engine/renderer/layer.hpp"
 
 namespace ls::component {
 
+  STRUCT()
   struct EquippedSprite {
     uint32_t textureId{ 0 };
     glm::vec2 scale{ 1.f };

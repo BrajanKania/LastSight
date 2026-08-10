@@ -2,6 +2,11 @@
 
 namespace ls::reflection {
 
-  void registerTypes();
+  struct PropertyInfo {
+    const char* displayName{ nullptr };
+    bool readOnly{ false };
+  };
 
-}
+  void registerGeneratedTypes();
+
+}  // namespace ls::reflection

@@ -1,7 +1,10 @@
 #pragma once
 
+#include "engine/reflection/reflection_macros.hpp"
+
 namespace ls::component {
 
+  STRUCT()
   struct PlayerFovSettings {
     float baseAngle{ 100.f };
     float aimAngle{ 20.f };

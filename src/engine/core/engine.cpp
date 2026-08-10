@@ -19,7 +19,7 @@ namespace ls {
   Engine::Engine()
       : window_(1500, 900),
         sceneManager_(window_.getWidth(), window_.getHeight()) {
-    reflection::registerTypes();
+    reflection::registerGeneratedTypes();
 
     ui_system::init(window_.getSDLWindow(), window_.getOpengGlContext());
 

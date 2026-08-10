@@ -3,9 +3,13 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/glm.hpp>
 
+#include "engine/reflection/reflection_macros.hpp"
+
 namespace ls::component {
 
+  STRUCT()
   struct Weapon {
+    STRUCT()
     struct RecoilConfig {
       float baseSpread{ 2.5f };
 
@@ -24,9 +28,13 @@ namespace ls::component {
     };
 
     bool isAutomatic{ false };
+
+    PROPERTY(ReadOnly)
     bool isAiming{ false };
 
     float fireRate{ 0.5f };
+
+    PROPERTY(ReadOnly)
     float cooldown{ 0.f };
 
     float initialSpeed{ 5.f };
@@ -36,19 +44,29 @@ namespace ls::component {
     float transitionSpeed{ 1.f };
     float baseAngleOffset{ 0.f };
 
+    PROPERTY(ReadOnly)
     glm::vec2 offset{ 0.f };
 
     glm::vec2 muzzleOffset{ 0.f };
     glm::vec2 hipOffset{ 0.f };
     glm::vec2 aimOffset{ 0.f };
 
+    PROPERTY(ReadOnly)
     glm::vec2 springOffset{ 0.f };
+
+    PROPERTY(ReadOnly)
     glm::vec2 springVelocity{ 0.f };
 
+    PROPERTY(ReadOnly)
     float springRotation{ 0.f };
+
+    PROPERTY(ReadOnly)
     float springAngularVelocity{ 0.f };
 
+    PROPERTY(Name = "Hip recoil config")
     RecoilConfig hipRecoil;
+
+    PROPERTY(Name = "Aim recoil config")
     RecoilConfig aimRecoil;
   };
 

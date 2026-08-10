@@ -2,8 +2,11 @@
 
 #include <glm/glm.hpp>
 
+#include "engine/reflection/reflection_macros.hpp"
+
 namespace ls::component {
 
+  STRUCT()
   struct PostProcessSettings {
     glm::vec3 damageVignetteColor{ 1.f, 0.0f, 0.0f };
     float damageInnerRadius{ 0.2f };
