@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "engine/core/i_scene.hpp"
+#include "engine/core/scene_context.hpp"
 
 namespace ls {
 
@@ -44,6 +45,13 @@ namespace ls {
     void onResize(int width, int height);
 
     std::vector<std::string> getRegisteredSceneNames() const;
+
+    SceneContext getActiveSceneContext() {
+      if (scenes_.empty())
+        return SceneContext{};
+
+      return scenes_.back()->getSceneContext();
+    }
 
   private:
     void processPendingOperations();

@@ -1,19 +1,15 @@
 #pragma once
 
-#include "engine/renderer/render_pipeline.hpp"
 #include "engine/ui/i_ui_panel.hpp"
 
 namespace ls::ui {
 
   class RenderPipelineDebugPanel : public IUIPanel {
   public:
-    explicit RenderPipelineDebugPanel(renderer::RenderPipeline& renderPipeline);
-
+    RenderPipelineDebugPanel() = default;
     void render(const UIContext& ctx) override;
 
   private:
-    renderer::RenderPipeline& renderPipeline_;
-
     int selectedPassIndex_{ -1 };
     float imageScale_{ 0.2f };
   };

@@ -52,6 +52,7 @@ add_executable(LastSight
 
   # Engine ---
 
+  src/engine/core/editor_layer.cpp
   src/engine/core/engine.cpp
   src/engine/core/scene_manager.cpp
   src/engine/core/stb_impl.cpp
@@ -79,8 +80,10 @@ add_executable(LastSight
 
   src/engine/renderer/render_system.cpp
 
-  src/engine/ui/panels/entity_explorer_panel.cpp
-  src/engine/ui/panels/scene_selector_panel.cpp
+  src/engine/ui/panels/toolbox_panel.cpp
+  src/engine/ui/panels/entity_inspector_panel.cpp
+  src/engine/ui/panels/render_pipeline_debug_panel.cpp
+  src/engine/ui/panels/scene_browser_panel.cpp
 
   src/engine/ui/ui_manager.cpp
   src/engine/ui/ui_system.cpp
@@ -103,12 +106,10 @@ add_executable(LastSight
   src/game/systems/post_process_system.cpp
   src/game/systems/projectile_system.cpp
 
-  src/game/ui/debug_toolbox_panel.cpp
   src/game/ui/inventory_panel.cpp
-  src/game/ui/render_pipeline_debug_panel.cpp
 
   # Generated ---
- 
+
   ${GENERATED_REFLECTION_FILE}
 )
 
@@ -133,16 +134,16 @@ option(USE_LINK_TO_ASSETS_DIR "" OFF)
 
 if(USE_LINK_TO_ASSETS_DIR)
   if(EXISTS "${CMAKE_BINARY_DIR}/assets" AND NOT IS_SYMLINK "${CMAKE_BINARY_DIR}/assets")
-      file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/assets")
+    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/assets")
   endif()
 
   if(NOT EXISTS "${CMAKE_BINARY_DIR}/assets")
-      file(CREATE_LINK
+    file(CREATE_LINK
           "${CMAKE_CURRENT_SOURCE_DIR}/assets"
           "${CMAKE_BINARY_DIR}/assets"
           SYMBOLIC
       )
-      message(STATUS "Created symlink to assets: ${CMAKE_BINARY_DIR}/assets")
+    message(STATUS "Created symlink to assets: ${CMAKE_BINARY_DIR}/assets")
   endif()
 else()
   add_custom_target(copy_assets ALL

@@ -50,7 +50,7 @@ namespace ls::dispatch {
       return static_cast<EventBuffer<TEvent>*>(eventBuffers_[eventId].get());
     }
 
-    EventId nextEventId_{ 0 };
+    inline static EventId nextEventId_{ 0 };
     std::vector<std::unique_ptr<IEventBuffer>> eventBuffers_{};
   };
 

@@ -1,15 +1,18 @@
 #pragma once
 
-#include "engine/dispatch/event_queue.hpp"
-#include "engine/ecs/registry.hpp"
-#include "engine/gfx/texture_manager.hpp"
+#include "engine/core/engine_context.hpp"
+#include "engine/core/scene_context.hpp"
+
+namespace ls::dispatch {
+  class EventQueue;
+}
 
 namespace ls::ui {
 
   struct UIContext {
     dispatch::EventQueue& eventQueue;
-    ecs::Registry* registry{ nullptr };
-    gfx::TextureManager* textureManager{ nullptr };
+    EngineContext engineCtx;
+    SceneContext sceneCtx;
   };
 
 }  // namespace ls::ui

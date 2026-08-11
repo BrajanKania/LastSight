@@ -7,8 +7,9 @@
 
 namespace ls::ui {
 
-  class EntityExplorerPanel : public IUIPanel {
+  class EntityInspectorPanel : public IUIPanel {
   public:
+    EntityInspectorPanel() = default;
     void render(const UIContext& ctx) override;
 
   private:

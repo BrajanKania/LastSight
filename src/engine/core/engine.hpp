@@ -1,10 +1,11 @@
 #pragma once
 
+#include "engine/core/editor_layer.hpp"
+#include "engine/core/engine_context.hpp"
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/window.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/input/input_manager.hpp"
-#include "engine/ui/ui_manager.hpp"
 
 namespace ls {
 
@@ -25,11 +26,18 @@ namespace ls {
     void handleRequest();
     void handleInput();
 
+    EngineContext getEngineContext() {
+      return EngineContext{
+        .window = &window_,
+        .sceneManager = &sceneManager_,
+      };
+    }
+
     Window window_;
     SceneManager sceneManager_;
     input::InputManager inputManager_;
     dispatch::EventQueue eventQueue_;
-    ui::UIManager uiManager_;
+    EditorLayer editorLayer_;
   };
 
 }  // namespace ls

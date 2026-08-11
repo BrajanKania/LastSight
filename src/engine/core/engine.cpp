@@ -10,8 +10,6 @@
 #include "engine/events/request_quit_engine.hpp"
 #include "engine/input/types.hpp"
 #include "engine/reflection/reflection_system.hpp"
-#include "engine/ui/panels/scene_selector_panel.hpp"
-#include "engine/ui/ui_context.hpp"
 #include "engine/ui/ui_system.hpp"
 
 namespace ls {
@@ -24,9 +22,6 @@ namespace ls {
     ui_system::init(window_.getSDLWindow(), window_.getOpengGlContext());
 
     inputManager_.bindKey<action::QuitEngine>(input::Key::Escape);
-
-    uiManager_.addPanel<ui::SceneSelectorPanel>("scene_selector_panel", sceneManager_);
-    uiManager_.getPanel("scene_selector_panel").setVisible(true);
   }
 
   Engine::~Engine() { ui_system::shutdown(); }
@@ -54,10 +49,9 @@ namespace ls {
       ui_system::beginFrame();
 
       sceneManager_.render();
+      editorLayer_.render(eventQueue_, getEngineContext(), sceneManager_.getActiveSceneContext());
 
-      ui::UIContext engineUIContenxt{ .eventQueue = eventQueue_ };
-      uiManager_.render(engineUIContenxt);
-
+      editorLayer_.update(eventQueue_, sceneManager_);
       ui_system::endFrame();
 
       handleRequest();
@@ -79,6 +73,9 @@ namespace ls {
 
   void Engine::handleInput() {
     ImGuiIO& io{ ImGui::GetIO() };
+
+    editorLayer_.handleInput(eventQueue_, io.WantCaptureKeyboard, io.WantCaptureMouse);
+
     inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
 
     auto actionQuitEngineState{ inputManager_.getActionState<action::QuitEngine>() };

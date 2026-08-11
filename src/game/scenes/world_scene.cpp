@@ -31,7 +31,6 @@
 #include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
 #include "engine/renderer/passes/post_process_pass.hpp"
-#include "engine/ui/panels/entity_explorer_panel.hpp"
 #include "game/actions/aim.hpp"
 #include "game/actions/interact.hpp"
 #include "game/actions/move.hpp"
@@ -43,7 +42,6 @@
 #include "game/actions/select_slot_5.hpp"
 #include "game/actions/shoot.hpp"
 #include "game/actions/sprint.hpp"
-#include "game/actions/toggle_debug.hpp"
 #include "game/components/camera.hpp"
 #include "game/components/camera_shake.hpp"
 #include "game/components/enemy.hpp"
@@ -72,10 +70,8 @@
 #include "game/systems/player_system.hpp"
 #include "game/systems/post_process_system.hpp"
 #include "game/systems/projectile_system.hpp"
-#include "game/ui/debug_toolbox_panel.hpp"
 #include "game/ui/inventory_panel.hpp"
 #include "game/ui/panel_names.hpp"
-#include "game/ui/render_pipeline_debug_panel.hpp"
 
 namespace ls {
 
@@ -418,9 +414,6 @@ namespace ls {
     renderPipeline_.addPass<renderer::PostProcessPass>(processedFBO_, fovFBO_);
     renderPipeline_.addPass<renderer::ComposePass>(processedFBO_);
 
-    uiManager_.addPanel<ui::DebugToolboxPanel>(ui::panel::kDebugToolbox);
-    uiManager_.addPanel<ui::RenderPipelineDebugPanel>(ui::panel::kRenderPipelineDebug, renderPipeline_);
-    uiManager_.addPanel<ui::EntityExplorerPanel>(ui::panel::kEntityExplorer);
     uiManager_.addPanel<ui::InventoryPanel>(ui::panel::kInventory, itemRegistry_);
 
     inputManager_.bindAxis2D<action::Move>(input::Key::W, input::Key::S, input::Key::A, input::Key::D);
@@ -434,8 +427,6 @@ namespace ls {
     inputManager_.bindKey<action::SelectSlot4>(input::Key::Num5);
     inputManager_.bindKey<action::SelectSlot5>(input::Key::Num6);
     inputManager_.bindButton<action::Aim>(input::Button::Right);
-
-    debugInputManager_.bindKey<action::ToggleDebug>(input::Key::Grave);
 
     {  // Items
 
@@ -558,28 +549,6 @@ namespace ls {
   }
 
   void WorldScene::handleInput() {
-    debugInputManager_.update(false, false);
-
-    if (debugInputManager_.getActionState<action::ToggleDebug>() == input::ActionState::JustPressed) {
-      eventQueue_.publish<event::TogglePanel>(event::TogglePanel{
-          .name = ui::panel::kDebugToolbox,
-      });
-
-      eventQueue_.publish(
-          event::SetPanelVisibility{
-              .name = ui::panel::kEntityExplorer,
-              .visible = false,
-          }
-      );
-
-      eventQueue_.publish(
-          event::SetPanelVisibility{
-              .name = ui::panel::kRenderPipelineDebug,
-              .visible = false,
-          }
-      );
-    }
-
     ImGuiIO& io{ ImGui::GetIO() };
     inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
   }

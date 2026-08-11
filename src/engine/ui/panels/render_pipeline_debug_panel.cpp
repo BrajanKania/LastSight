@@ -1,4 +1,4 @@
-#include "game/ui/render_pipeline_debug_panel.hpp"
+#include "engine/ui/panels/render_pipeline_debug_panel.hpp"
 
 #include <imgui.h>
 
@@ -6,6 +6,7 @@
 #include <format>
 
 #include "engine/gfx/framebuffer.hpp"
+#include "engine/renderer/render_pipeline.hpp"
 
 namespace ls::ui {
 
@@ -17,16 +18,19 @@ namespace ls::ui {
 
   }  // namespace
 
-  RenderPipelineDebugPanel::RenderPipelineDebugPanel(renderer::RenderPipeline& renderPipeline)
-      : renderPipeline_{ renderPipeline } {}
-
   void RenderPipelineDebugPanel::render(const UIContext& ctx) {
+    if (!ctx.sceneCtx.renderPipeline) {
+      selectedPassIndex_ = -1;
+      imageScale_ = 0.2f;
+      return;
+    }
+
     if (ImGui::Begin("Render Pipeline Debugger", &visible_)) {
       {  // render pass list
         ImGui::SeparatorText("Render Passes");
 
-        for (std::size_t i{ 0 }; i < renderPipeline_.getPassCount(); i++) {
-          auto* pass{ renderPipeline_.getPass(i) };
+        for (std::size_t i{ 0 }; i < ctx.sceneCtx.renderPipeline->getPassCount(); i++) {
+          auto* pass{ ctx.sceneCtx.renderPipeline->getPass(i) };
 
           if (!pass)
             continue;
@@ -49,8 +53,9 @@ namespace ls::ui {
         ImGui::SliderFloat("Scale", &imageScale_, 0.1f, 1.f);
 
         ImGui::Separator();
-        if (selectedPassIndex_ >= 0 && selectedPassIndex_ < static_cast<int>(renderPipeline_.getPassCount())) {
-          auto* pass{ renderPipeline_.getPass(selectedPassIndex_) };
+        if (selectedPassIndex_ >= 0 &&
+            selectedPassIndex_ < static_cast<int>(ctx.sceneCtx.renderPipeline->getPassCount())) {
+          auto* pass{ ctx.sceneCtx.renderPipeline->getPass(selectedPassIndex_) };
           gfx::Framebuffer* targetFBO{ pass->getTargetFBO() };
 
           if (targetFBO) {

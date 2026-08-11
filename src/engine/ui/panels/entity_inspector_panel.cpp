@@ -1,10 +1,11 @@
-#include "engine/ui/panels/entity_explorer_panel.hpp"
+#include "engine/ui/panels/entity_inspector_panel.hpp"
 
 #include <imgui.h>
 
 #include <entt/core/fwd.hpp>
 #include <entt/meta/meta.hpp>
 #include <entt/meta/resolve.hpp>
+#include <format>
 #include <glm/glm.hpp>
 #include <string>
 
@@ -129,14 +130,17 @@ namespace ls::ui {
 
   }  // namespace
 
-  void EntityExplorerPanel::render(const UIContext& ctx) {
-    if (!ctx.registry || !ctx.textureManager)
+  void EntityInspectorPanel::render(const UIContext& ctx) {
+    if (!ctx.sceneCtx.registry || !ctx.sceneCtx.textureManager) {
+      hideNameless_ = true;
+      selectedEntity_ = ecs::kNullEntity;
       return;
+    }
 
-    if (!ctx.registry->isValidEntity(selectedEntity_))
+    if (!ctx.sceneCtx.registry->isValidEntity(selectedEntity_))
       selectedEntity_ = ecs::kNullEntity;
 
-    if (ImGui::Begin("Entity Explorer", &visible_)) {
+    if (ImGui::Begin("Entity Inspector", &visible_)) {
       ImGui::Columns(2, "ExplorerSpliter", true);
 
       {  // Entities
@@ -152,8 +156,8 @@ namespace ls::ui {
 
           ImGui::SeparatorText("Entities");
 
-          for (ecs::EntityId entity{ 0 }; entity < ctx.registry->getMaxEntityId(); entity++) {
-            if (!filterEntity(*ctx.registry, entity))
+          for (ecs::EntityId entity{ 0 }; entity < ctx.sceneCtx.registry->getMaxEntityId(); entity++) {
+            if (!filterEntity(*ctx.sceneCtx.registry, entity))
               continue;
 
             {  // Entity
@@ -162,7 +166,7 @@ namespace ls::ui {
                 flags |= ImGuiTreeNodeFlags_Selected;
               }
 
-              std::string label{ getEntityLabel(*ctx.registry, entity) };
+              std::string label{ getEntityLabel(*ctx.sceneCtx.registry, entity) };
               ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(entity)), flags, "%s", label.c_str());
 
               if (ImGui::IsItemClicked()) {
@@ -183,10 +187,10 @@ namespace ls::ui {
 
         ImGui::BeginChild("InspectorRegion");
 
-        if (ctx.registry->isValidEntity(selectedEntity_)) {
+        if (ctx.sceneCtx.registry->isValidEntity(selectedEntity_)) {
           ImGui::PushItemWidth(120.f);
 
-          inspectEntity(*ctx.registry, selectedEntity_);
+          inspectEntity(*ctx.sceneCtx.registry, selectedEntity_);
 
           ImGui::PopItemWidth();
         } else {
@@ -201,7 +205,7 @@ namespace ls::ui {
     ImGui::End();
   }
 
-  bool EntityExplorerPanel::filterEntity(const ecs::Registry& registry, const ecs::EntityId entity) {
+  bool EntityInspectorPanel::filterEntity(const ecs::Registry& registry, const ecs::EntityId entity) {
     if (!registry.isValidEntity(entity))
       return false;
 

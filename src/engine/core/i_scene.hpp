@@ -1,11 +1,7 @@
 #pragma once
 
-#include "engine/dispatch/event_queue.hpp"
-#include "engine/ecs/registry.hpp"
-#include "engine/gfx/texture_manager.hpp"
-#include "engine/input/input_manager.hpp"
+#include "engine/core/scene_context.hpp"
 #include "engine/ui/ui_context.hpp"
-#include "engine/ui/ui_manager.hpp"
 
 namespace ls {
 
@@ -23,21 +19,10 @@ namespace ls {
 
     virtual bool isOpaque() const { return true; }
 
-  protected:
-    ui::UIContext getUIContext() {
-      return ui::UIContext{
-        .eventQueue = eventQueue_,
-        .registry = &registry_,
-        .textureManager = &textureManager_,
-      };
-    }
+    virtual SceneContext getSceneContext() = 0;
 
-    ecs::Registry registry_;
-    dispatch::EventQueue eventQueue_;
-    ui::UIManager uiManager_;
-    gfx::TextureManager textureManager_;
-    input::InputManager inputManager_;
-    input::InputManager debugInputManager_;
+  protected:
+    virtual ui::UIContext getUIContext() = 0;
   };
 
 }  // namespace ls
