@@ -46,6 +46,7 @@
 #include "game/components/camera_shake.hpp"
 #include "game/components/enemy.hpp"
 #include "game/components/field_of_view.hpp"
+#include "game/components/fov_masked.hpp"
 #include "game/components/health.hpp"
 #include "game/components/inventory.hpp"
 #include "game/components/item_pickup.hpp"
@@ -303,6 +304,7 @@ namespace ls {
                 .radius = 0.3f,
             }
         );
+        registry_.addComponent(enemy, component::FovMasked{});
       }
 
       {  // Container 2

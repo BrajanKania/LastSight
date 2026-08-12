@@ -54,6 +54,7 @@ add_executable(LastSight
 
   src/engine/core/editor_layer.cpp
   src/engine/core/engine.cpp
+  src/engine/core/random_system.cpp
   src/engine/core/scene_manager.cpp
   src/engine/core/stb_impl.cpp
   src/engine/core/window.cpp
@@ -85,6 +86,8 @@ add_executable(LastSight
   src/engine/ui/panels/render_pipeline_debug_panel.cpp
   src/engine/ui/panels/scene_browser_panel.cpp
 
+  src/engine/systems/parallax_system.cpp
+
   src/engine/ui/ui_manager.cpp
   src/engine/ui/ui_system.cpp
 
@@ -107,6 +110,7 @@ add_executable(LastSight
   src/game/systems/projectile_system.cpp
 
   src/game/ui/inventory_panel.cpp
+  src/game/ui/main_menu_panel.cpp
 
   # Generated ---
 

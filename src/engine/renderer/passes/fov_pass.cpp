@@ -14,8 +14,6 @@
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/render_system.hpp"
 #include "game/components/field_of_view.hpp"
-#include "game/components/player.hpp"
-#include "game/components/player_state.hpp"
 
 namespace ls::renderer {
 
@@ -61,17 +59,14 @@ namespace ls::renderer {
     shader_->use();
     shader_->setInt("uScreenTexture", 0);
 
-    for (auto entity :
-         ctx.registry.view<component::Player, component::PlayerState, component::Transform, component::FieldOfView>()) {
+    for (auto entity : ctx.registry.view<component::Transform, component::FieldOfView>()) {
       const auto& fieldOfView{ ctx.registry.getComponent<component::FieldOfView>(entity) };
       const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
-      const auto& playerState{ ctx.registry.getComponent<component::PlayerState>(entity) };
 
       float rad{ glm::radians(transform.rotation) };
-      glm::vec2 playerDir{ std::cos(rad), std::sin(rad) };
 
       shader_->setVec2("uViewPos", transform.position);
-      shader_->setVec2("uViewDir", playerDir);
+      shader_->setVec2("uViewDir", glm::vec2{ glm::cos(rad), glm::sin(rad) });
       shader_->setMat4("uInvViewProj", glm::inverse(ctx.viewProjection));
 
       shader_->setFloat("uInnerRadius", fieldOfView.innerRadius);

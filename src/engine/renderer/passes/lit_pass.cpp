@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/fwd.hpp>
+#include <glm/trigonometric.hpp>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -17,6 +18,8 @@
 #include "engine/gfx/texture_2d.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/render_system.hpp"
+#include "game/components/field_of_view.hpp"
+#include "game/components/fov_masked.hpp"
 #include "game/scenes/texture_names.hpp"
 
 namespace ls::renderer {
@@ -76,6 +79,23 @@ namespace ls::renderer {
     shader_->setMat4("uViewProjection", ctx.viewProjection);
     shader_->setInt("uTexture", 0);
 
+    for (auto entity : ctx.registry.view<component::Transform, component::FieldOfView>()) {
+      const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
+      const auto& fov{ ctx.registry.getComponent<component::FieldOfView>(entity) };
+
+      shader_->setVec2("uFovPos", transform.position);
+      shader_->setVec2(
+          "uFovDir", glm::vec2{ glm::cos(glm::radians(transform.rotation)), glm::sin(glm::radians(transform.rotation)) }
+      );
+      shader_->setFloat("uFovInnerRadius", fov.innerRadius);
+      shader_->setFloat("uFovOuterRadius", fov.outerRadius);
+      shader_->setFloat("uFovHalfAngleRad", glm::radians(fov.fovAngle / 2.f));
+      shader_->setFloat("uFovSmoothnessRad", glm::radians(fov.smoothnessAngle));
+      shader_->setFloat("uFovSmoothnessDist", fov.smoothnessDistance);
+      break;
+    }
+
+    shader_->setBool("uRequiresFov", false);
     for (auto entity : renderQueue) {
       const auto& transform{ ctx.registry.getComponent<ls::component::Transform>(entity) };
       const auto& sprite{ ctx.registry.getComponent<ls::component::Sprite>(entity) };
@@ -84,6 +104,8 @@ namespace ls::renderer {
       if (texture) {
         texture->bind(0);
       }
+
+      shader_->setBool("uRequiresFov", ctx.registry.hasComponent<component::FovMasked>(entity));
 
       glm::mat4 model{ 1.f };
       model = glm::translate(model, glm::vec3(transform.position.x, transform.position.y, 0.f));
@@ -95,6 +117,7 @@ namespace ls::renderer {
       render_system::drawArrays(vao_, ls::render_system::Primitive::Triangle, 0, 6);
     }
 
+    shader_->setBool("uRequiresFov", false);
     auto equippedView{ ctx.registry.view<component::Transform, component::EquippedSprite>() };
     for (auto entity : equippedView) {
       const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
@@ -125,6 +148,7 @@ namespace ls::renderer {
     }
     shader_->setVec2("uUvScale", glm::vec2(1.f));
 
+    shader_->setBool("uRequiresFov", false);
     auto particleView{ ctx.registry.view<component::ParticleEmitter>() };
     for (auto entity : particleView) {
       const auto& emitter{ ctx.registry.getComponent<component::ParticleEmitter>(entity) };

@@ -6,6 +6,7 @@
 
 #include "engine/core/i_scene.hpp"
 #include "engine/core/scene_context.hpp"
+#include "engine/dispatch/event_queue.hpp"
 
 namespace ls {
 
@@ -13,13 +14,14 @@ namespace ls {
   public:
     using SceneFactory = std::function<std::unique_ptr<IScene>()>;
 
-    explicit SceneManager(int width, int height)
-        : width_{ width },
+    explicit SceneManager(dispatch::EventQueue& engineEventQueue, int width, int height)
+        : engineEventQueue_{ engineEventQueue },
+          width_{ width },
           height_{ height } {}
 
     template <typename TScene>
     void registerScene(const std::string& name) {
-      factories_[name] = []() -> std::unique_ptr<IScene> { return std::make_unique<TScene>(); };
+      factories_[name] = [this]() -> std::unique_ptr<IScene> { return std::make_unique<TScene>(engineEventQueue_); };
     }
 
     template <typename T>
@@ -58,6 +60,8 @@ namespace ls {
 
     int width_{ 0 };
     int height_{ 0 };
+
+    dispatch::EventQueue& engineEventQueue_;
 
     std::unordered_map<std::string, SceneFactory> factories_{};
     std::vector<std::unique_ptr<IScene>> scenes_{};

@@ -16,18 +16,20 @@ namespace ls {
 
   Engine::Engine()
       : window_(1500, 900),
-        sceneManager_(window_.getWidth(), window_.getHeight()) {
+        sceneManager_(eventQueue_, window_.getWidth(), window_.getHeight()) {
     reflection::registerGeneratedTypes();
 
     ui_system::init(window_.getSDLWindow(), window_.getOpengGlContext());
 
     inputManager_.bindKey<action::QuitEngine>(input::Key::Escape);
+    sceneManager_.onResize(window_.getWidth(), window_.getHeight());
   }
 
   Engine::~Engine() { ui_system::shutdown(); }
 
   void Engine::run() {
     uint64_t lastTime{ ls::time_system::ms() };
+
     while (!window_.shouldClose()) {
       uint64_t currentTime{ ls::time_system::ms() };
       float dt{ static_cast<float>(currentTime - lastTime) / 1000.f };

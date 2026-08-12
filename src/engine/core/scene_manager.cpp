@@ -2,8 +2,6 @@
 
 #include <imgui.h>
 
-#include "engine/ui/ui_system.hpp"
-
 namespace ls {
 
   void SceneManager::changeScene(const std::string& name) {
@@ -71,8 +69,11 @@ namespace ls {
   }
 
   void SceneManager::onResize(int width, int height) {
-    for (auto& scene : scenes_)
+    for (auto& scene : scenes_) {
       scene->onResize(width, height);
+    }
+    width_ = width;
+    height_ = height;
   }
 
   std::vector<std::string> SceneManager::getRegisteredSceneNames() const {

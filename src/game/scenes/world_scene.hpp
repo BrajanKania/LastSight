@@ -18,6 +18,9 @@ namespace ls {
 
   class WorldScene : public IScene {
   public:
+    explicit WorldScene(dispatch::EventQueue& engineEventQueue)
+        : engineEventQueue_{ engineEventQueue } {}
+
     void onEnter() override;
     void onExit() override;
     void onResize(int width, int height) override;
@@ -48,6 +51,7 @@ namespace ls {
 
     ecs::Registry registry_;
     dispatch::EventQueue eventQueue_;
+    dispatch::EventQueue& engineEventQueue_;
     ui::UIManager uiManager_;
     gfx::TextureManager textureManager_;
     input::InputManager inputManager_;
