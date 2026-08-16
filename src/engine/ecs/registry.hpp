@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <entt/core/fwd.hpp>
+#include <entt/entt.hpp>
 #include <memory>
 
 #include "engine/ecs/sparse_set.hpp"
@@ -13,6 +14,15 @@ namespace ls::ecs {
 
   class Registry {
   public:
+    Registry() = default;
+    ~Registry() = default;
+
+    Registry(const Registry&) = delete;
+    Registry& operator=(const Registry&) = delete;
+
+    Registry(Registry&&) = default;
+    Registry& operator=(Registry&&) = default;
+
     EntityId createEntity() {
       EntityId entity;
 
@@ -116,13 +126,41 @@ namespace ls::ecs {
 
     ecs::EntityId getMaxEntityId() const { return nextEntity_; }
 
+    void clear() {
+      for (auto& set : sparseSets_) {
+        if (set) {
+          set->clear();
+        }
+      }
+
+      nextEntity_ = 0;
+      availableEntities_.clear();
+      entitiesToDestroy_.clear();
+    }
+
     ISparseSet* getISparseSetByTypeId(entt::id_type typeId) {
       for (auto& set : sparseSets_) {
-        if (set->getTypeId() == typeId) {
+        if (set && set->getTypeId() == typeId) {
           return set.get();
         }
       }
+
+      auto metaType{ entt::resolve(typeId) };
+      if (metaType) {
+        using namespace entt::literals;
+        if (auto ensureFunc{ metaType.func("ensureSparseSet"_hs) }) {
+          if (auto result{ ensureFunc.invoke({}, entt::forward_as_meta(*this)) }) {
+            return result.cast<ISparseSet*>();
+          }
+        }
+      }
+
       return nullptr;
+    }
+
+    template <typename TComponent>
+    ISparseSet* ensureSparseSet() {
+      return getSparseSetPointer<TComponent>();
     }
 
   private:

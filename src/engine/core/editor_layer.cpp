@@ -55,16 +55,11 @@ namespace ls {
     }
   }
 
-  void EditorLayer::update(dispatch::EventQueue& engineEventQueue, SceneManager& sceneManager) {
-    handleRequest(engineEventQueue);
-  }
+  void EditorLayer::update(EngineContext engineCtx) { handleRequest(*engineCtx.eventQueue); }
 
-  void EditorLayer::render(
-      dispatch::EventQueue& engineEventQueue, const EngineContext& engineCtx, const SceneContext& sceneCtx
-  ) {
+  void EditorLayer::render(EngineContext engineCtx, const SceneContext& sceneCtx) {
     uiManager_.render(
         ui::UIContext{
-            .eventQueue = engineEventQueue,
             .engineCtx = engineCtx,
             .sceneCtx = sceneCtx,
         }

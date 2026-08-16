@@ -1,5 +1,6 @@
 #pragma once
 
+#include "engine/core/engine_context.hpp"
 #include "engine/core/scene_context.hpp"
 #include "engine/ui/ui_context.hpp"
 
@@ -7,6 +8,9 @@ namespace ls {
 
   class IScene {
   public:
+    explicit IScene(EngineContext engineCtx)
+        : engineCtx_{ engineCtx } {}
+
     virtual ~IScene() = default;
 
     virtual void onEnter() = 0;
@@ -22,7 +26,16 @@ namespace ls {
     virtual SceneContext getSceneContext() = 0;
 
   protected:
-    virtual ui::UIContext getUIContext() = 0;
+    virtual void processEvents() = 0;
+
+    virtual ui::UIContext getUIContext() {
+      return ui::UIContext{
+        .engineCtx = engineCtx_,
+        .sceneCtx = getSceneContext(),
+      };
+    }
+
+    EngineContext engineCtx_;
   };
 
 }  // namespace ls

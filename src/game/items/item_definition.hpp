@@ -3,24 +3,27 @@
 #include <cstdint>
 #include <optional>
 
+#include "engine/gfx/texture_handle.hpp"
+#include "engine/reflection/reflection_macros.hpp"
 #include "game/items/types.hpp"
 #include "game/items/weapon_config.hpp"
 
 namespace ls::item {
 
+  STRUCT()
   struct ItemDefinition {
     ItemId id;
 
-    uint32_t iconTextureId{ 0 };
-    uint32_t worldTextureId{ 0 };
-    uint32_t equippedTextureId{ 0 };
+    gfx::TextureHandle iconTextureHandle{ 0 };
+    gfx::TextureHandle worldTextureHandle{ 0 };
+    gfx::TextureHandle equippedTextureHandle{ 0 };
 
     glm::vec2 equippedScale{ 1.f };
     glm::vec2 equippedOffset{ 0.f };
     float equippedAngleOffset{ 0.f };
 
     bool canStack{ false };
-    std::size_t maxStackSize{ 1 };
+    std::uint32_t maxStackSize{ 1 };
 
     std::optional<WeaponConfig> weaponConfig;
   };

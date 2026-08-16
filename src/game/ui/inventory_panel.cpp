@@ -15,7 +15,7 @@ namespace ls::ui {
   }
 
   void InventoryPanel::render(const UIContext& ctx) {
-    if (!ctx.sceneCtx.registry || !ctx.sceneCtx.textureManager) {
+    if (!ctx.sceneCtx.registry || !ctx.engineCtx.textureManager) {
       return;
     }
 
@@ -49,8 +49,8 @@ namespace ls::ui {
           ImGui::BeginChild(childId.c_str(), ImVec2(60.f, 60.f), true, ImGuiWindowFlags_NoScrollbar);
 
           const auto* itemDef{ itemRegistry_.get(slot.itemId) };
-          if (itemDef && itemDef->iconTextureId != 0) {
-            const auto* texture{ ctx.sceneCtx.textureManager->get(itemDef->iconTextureId) };
+          if (itemDef && itemDef->iconTextureHandle) {
+            const auto* texture{ ctx.engineCtx.textureManager->get(itemDef->iconTextureHandle) };
             if (texture) {
               ImTextureID texHandle{ (ImTextureID)(uintptr_t)texture->getId() };
               ImGui::Image(texHandle, ImVec2(40.f, 40.f));

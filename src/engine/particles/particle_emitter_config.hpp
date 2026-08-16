@@ -3,8 +3,11 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/glm.hpp>
 
+#include "engine/reflection/reflection_macros.hpp"
+
 namespace ls::particle {
 
+  STRUCT()
   struct ParticleEmitterConfig {
     std::size_t maxParticles{ 10 };
 

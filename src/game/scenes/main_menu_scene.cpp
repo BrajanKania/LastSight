@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include <cassert>
+#include <format>
 #include <glm/common.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
@@ -16,6 +17,7 @@
 #include "engine/core/asset_system.hpp"
 #include "engine/core/random_system.hpp"
 #include "engine/ecs/registry.hpp"
+#include "engine/events/request_save_scene.hpp"
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/renderer/i_render_pass.hpp"
@@ -24,12 +26,14 @@
 #include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
 #include "engine/renderer/render_system.hpp"
+#include "engine/serialization/scene_serializer.hpp"
 #include "engine/systems/parallax_system.hpp"
 #include "game/components/camera.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/fov_masked.hpp"
 #include "game/components/menu_stalker.hpp"
 #include "game/components/menu_stalker_point.hpp"
+#include "game/scenes/scene_names.hpp"
 #include "game/scenes/texture_names.hpp"
 #include "game/systems/camera_system.hpp"
 #include "game/ui/main_menu_panel.hpp"
@@ -38,24 +42,17 @@
 namespace ls {
 
   void MainMenuScene::onEnter() {
-    textureManager_.load(texture_name::kMainMenuBackground, asset_system::texture(texture_name::kMainMenuBackground));
-    textureManager_.load(texture_name::kSomething, asset_system::texture(texture_name::kSomething));
-    textureManager_.load(texture_name::kGrass1, asset_system::texture(texture_name::kGrass1));
-    textureManager_.load(texture_name::kTrunk, asset_system::texture(texture_name::kTrunk));
-    textureManager_.load(texture_name::kMainMenuTitle, asset_system::texture(texture_name::kMainMenuTitle));
+    assert(engineCtx_.textureManager != nullptr && "MainMenuScene requires a valid TextureManager!");
 
-    worldFBO_ = std::make_shared<gfx::Framebuffer>();
-    fovFBO_ = std::make_shared<gfx::Framebuffer>();
-
-    renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
-    renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
-    renderPipeline_.addPass<renderer::ComposePass>(fovFBO_);
-
-    uiManager_.addPanel<ui::MainMenuPanel>(ui::panel::kMainMenu);
-    uiManager_.getPanel(ui::panel::kMainMenu).setVisible(true);
+    engineCtx_.textureManager->load(
+        texture_name::kMainMenuBackground, asset_system::texture(texture_name::kMainMenuBackground)
+    );
+    engineCtx_.textureManager->load(texture_name::kStalker, asset_system::texture(texture_name::kStalker));
+    engineCtx_.textureManager->load(texture_name::kGrass1, asset_system::texture(texture_name::kGrass1));
+    engineCtx_.textureManager->load(texture_name::kTrunk, asset_system::texture(texture_name::kTrunk));
+    engineCtx_.textureManager->load(texture_name::kMainMenuTitle, asset_system::texture(texture_name::kMainMenuTitle));
 
     const float trunkParallax{ 0.15f };
-
     stalkerPoints_ = std::vector<component::MenuStalkerPoint>{
       component::MenuStalkerPoint{
           .position = glm::vec2{ -0.2f, 0.35f },
@@ -74,6 +71,191 @@ namespace ls {
       },
     };
 
+    serialization::SceneSerializer sceneSerializer(getSceneContext(), engineCtx_);
+    sceneSerializer.loadScene(asset_system::scene(scene::kMainMenu));
+    for (auto entity : registry_.view<component::EntityName>()) {
+      const auto& name{ registry_.getComponent<component::EntityName>(entity) };
+      if (name.name == "background") {
+        backgroundEntity_ = entity;
+      }
+      if (name.name == "camera") {
+        cameraEntity_ = entity;
+      }
+      if (name.name == "cursor_fov") {
+        fovEntity_ = entity;
+      }
+      if (name.name == "stalker") {
+        stalkerEntity_ = entity;
+        if (registry_.hasComponent<component::MenuStalker>(stalkerEntity_) &&
+            registry_.hasComponent<component::Transform>(stalkerEntity_)) {
+          auto& stalker{ registry_.getComponent<component::MenuStalker>(stalkerEntity_) };
+          auto& transform{ registry_.getComponent<component::Transform>(stalkerEntity_) };
+          stalker.hidePosition = stalkerPoints_[currentStalkerPointIndex_].position;
+          stalker.peekOffset = stalkerPoints_[currentStalkerPointIndex_].peekOffset;
+          stalker.currentPeek = 0.f;
+          transform.position = stalker.hidePosition;
+        }
+      }
+    }
+
+    // generateEntities();
+
+    worldFBO_ = std::make_shared<gfx::Framebuffer>();
+    fovFBO_ = std::make_shared<gfx::Framebuffer>();
+
+    renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
+    renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
+    renderPipeline_.addPass<renderer::ComposePass>(fovFBO_);
+
+    uiManager_.addPanel<ui::MainMenuPanel>(ui::panel::kMainMenu);
+    uiManager_.getPanel(ui::panel::kMainMenu).setVisible(true);
+  }
+
+  void MainMenuScene::onExit() {}
+
+  void MainMenuScene::onResize(int width, int height) {
+    worldFBO_->resize(width, height);
+    fovFBO_->resize(width, height);
+
+    float aspectRatio{ static_cast<float>(width) / static_cast<float>(height) };
+
+    if (registry_.hasComponent<component::Transform>(backgroundEntity_)) {
+      auto& transform{ registry_.getComponent<component::Transform>(backgroundEntity_) };
+      transform.scale = glm::vec2{ backgroundSize_.x * aspectRatio, backgroundSize_.y };
+    }
+  }
+
+  void MainMenuScene::handleInput() {
+    ImGuiIO& io{ ImGui::GetIO() };
+    inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
+  }
+
+  void MainMenuScene::update(float dt) {
+    processEvents();
+
+    UpdateContext ctx{
+      .registry = registry_,
+      .eventQueue = eventQueue_,
+      .textureManager = *engineCtx_.textureManager,
+      .inputManager = inputManager_,
+      .dt = dt,
+    };
+
+    glm::vec2 viewportSize{ render_system::getViewportSize() };
+
+    if (viewportSize.x > 0.f && viewportSize.y > 0.f) {
+      glm::vec2 mousePos{ inputManager_.getMousePosition() };
+      glm::vec2 center{ viewportSize * 0.5f };
+      glm::vec2 normalizedMouse{ (mousePos - center) / center };
+
+      normalizedMouse = glm::clamp(normalizedMouse, glm::vec2(-1.f), glm::vec2(1.f));
+      glm::vec2 targetCamPos{ normalizedMouse.x * maxBackgroundOffset_.x, -normalizedMouse.y * maxBackgroundOffset_.y };
+
+      const float smoothing{ 5.0f };
+      if (registry_.hasComponent<component::Transform>(cameraEntity_)) {
+        auto& transform{ registry_.getComponent<component::Transform>(cameraEntity_) };
+        transform.position = glm::mix(transform.position, targetCamPos, dt * smoothing);
+      }
+
+      parallax_system::update(ctx, targetCamPos);
+    }
+
+    if (registry_.hasComponent<component::Camera>(cameraEntity_) &&
+        registry_.hasComponent<component::FieldOfView>(fovEntity_)) {
+      const auto& camera{ registry_.getComponent<component::Camera>(cameraEntity_) };
+      const auto& fov{ registry_.getComponent<component::FieldOfView>(fovEntity_) };
+      glm::vec2 mouseWorldPos{
+        camera_system::screenToWorld(inputManager_.getMousePosition(), render_system::getViewportSize(), camera)
+      };
+
+      if (registry_.hasComponent<component::FieldOfView>(fovEntity_)) {
+        auto& transform{ registry_.getComponent<component::Transform>(fovEntity_) };
+        transform.position = mouseWorldPos;
+      }
+
+      updateMenuStalker(fov, mouseWorldPos, dt);
+    }
+
+    camera_system::update(ctx);
+
+    eventQueue_.clear();
+    registry_.purgeDestroyedEntities();
+  }
+
+  void MainMenuScene::render() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    for (auto entity : registry_.view<component::Camera>()) {
+      const auto& camera{ registry_.getComponent<component::Camera>(entity) };
+      renderPipeline_.execute(
+          renderer::RenderContext{
+              .registry = registry_,
+              .viewProjection = camera.projection * camera.view,
+              .textureManager = *engineCtx_.textureManager,
+          }
+      );
+      break;
+    }
+    uiManager_.render(getUIContext());
+  }
+
+  void MainMenuScene::processEvents() {
+    for (const auto& event : eventQueue_.getEvents<event::RequestSaveScene>()) {
+      serialization::SceneSerializer sceneSerializer(getSceneContext(), engineCtx_);
+      sceneSerializer.saveScene(asset_system::scene(scene::kMainMenu));
+    }
+  }
+
+  void MainMenuScene::updateMenuStalker(const component::FieldOfView& fov, glm::vec2 mouseWorldPos, float dt) {
+    if (glm::isnan(mouseWorldPos.x) || glm::isnan(mouseWorldPos.y)) {
+      return;
+    }
+
+    if (!registry_.hasComponent<component::Transform>(stalkerEntity_) ||
+        !registry_.hasComponent<component::MenuStalker>(stalkerEntity_) ||
+        !registry_.hasComponent<component::Parallax>(stalkerEntity_)) {
+      return;
+    }
+
+    auto& stalkerTransform{ registry_.getComponent<component::Transform>(stalkerEntity_) };
+    auto& stalker{ registry_.getComponent<component::MenuStalker>(stalkerEntity_) };
+    auto& parallax{ registry_.getComponent<component::Parallax>(stalkerEntity_) };
+
+    float distanceToMouse{ glm::distance(mouseWorldPos, stalker.hidePosition + stalker.peekOffset) };
+    float targetPeek{
+      glm::clamp((distanceToMouse - stalker.minDistance) / (stalker.maxDistance - stalker.minDistance), 0.0f, 1.0f)
+    };
+
+    stalker.currentPeek = glm::mix(stalker.currentPeek, targetPeek, dt * stalker.peekSpeed);
+    parallax.basePosition = stalker.hidePosition + (stalker.peekOffset * stalker.currentPeek);
+
+    float distanceToPhysicalStalker{ glm::distance(mouseWorldPos, stalkerTransform.position) };
+    bool isCurrentlyVisible{ distanceToPhysicalStalker <= fov.outerRadius };
+
+    if (isCurrentlyVisible && !wasStalkerSeen_) {
+      wasStalkerSeen_ = true;
+    } else if (wasStalkerSeen_ && (!isCurrentlyVisible || glm::abs(stalker.currentPeek) < 0.02f)) {
+      std::size_t newIndex{ currentStalkerPointIndex_ };
+      while (newIndex == currentStalkerPointIndex_ && stalkerPoints_.size() > 1) {
+        newIndex = static_cast<std::size_t>(random_system::getRangeRandom(0, stalkerPoints_.size() - 1));
+      }
+
+      currentStalkerPointIndex_ = newIndex;
+      const auto& newPoint{ stalkerPoints_[currentStalkerPointIndex_] };
+
+      stalker.hidePosition = newPoint.position;
+      stalker.peekOffset = newPoint.peekOffset;
+      stalker.currentPeek = 0.0f;
+
+      parallax.factor = newPoint.parallaxFactor;
+      parallax.basePosition = newPoint.position;
+      stalkerTransform.position = newPoint.position;
+
+      wasStalkerSeen_ = false;
+    }
+  }
+
+  void MainMenuScene::generateEntities() {
     {  // Entities
 
       {  // Camera
@@ -112,8 +294,8 @@ namespace ls {
             component::Sprite{
                 .color = glm::vec4(1.f),
                 .uvScale = glm::vec2(1.f),
-                .textureId = textureManager_.getId(texture_name::kMainMenuBackground),
-                .zIndex = renderer::Layer::Background,
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kMainMenuBackground),
+                .layer = renderer::Layer::Background,
             }
         );
       }
@@ -134,8 +316,8 @@ namespace ls {
             component::Sprite{
                 .color = glm::vec4(1.f),
                 .uvScale = glm::vec2(1.f),
-                .textureId = textureManager_.getId(texture_name::kSomething),
-                .zIndex = renderer::Layer::Entities,
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kStalker),
+                .layer = renderer::Layer::Entities,
             }
         );
         registry_.addComponent(
@@ -191,9 +373,9 @@ namespace ls {
             component::Sprite{
                 .color = glm::vec4{ 1.f },
                 .uvScale = glm::vec2{ 1.f },
-                .textureId = textureManager_.getId(texture_name::kMainMenuTitle),
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kMainMenuTitle),
                 .angleOffset = 0.f,
-                .zIndex = renderer::Layer::Entities,
+                .layer = renderer::Layer::Entities,
             }
         );
         registry_.addComponent(title, component::FovMasked{});
@@ -213,8 +395,10 @@ namespace ls {
           glm::vec2{ -1.5f, -0.1f }, glm::vec2{ 2.2f, -0.7f }, glm::vec2{ 1.6f, -0.6f }, glm::vec2{ 0.2f, -0.5f },
         };
 
+        int index{ 0 };
         for (const auto& position : positions) {
           auto grass{ registry_.createEntity() };
+          registry_.addComponent(grass, component::EntityName{ .name = std::format("grass_{}", index++) });
           registry_.addComponent(
               grass,
               component::Transform{
@@ -227,8 +411,8 @@ namespace ls {
               component::Sprite{
                   .color = glm::vec4(0.1f, 0.5f, 0.1f, 1.f),
                   .uvScale = glm::vec2(1.f),
-                  .textureId = textureManager_.getId(texture_name::kGrass1),
-                  .zIndex = renderer::Layer::Foreground,
+                  .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kGrass1),
+                  .layer = renderer::Layer::Foreground,
               }
           );
           registry_.addComponent(
@@ -247,8 +431,10 @@ namespace ls {
           glm::vec2{ 1.2f, 1.f }, glm::vec2{ -0.2f, 1.2f },
         };
 
+        int index{ 0 };
         for (const auto& position : positions) {
           auto trunk{ registry_.createEntity() };
+          registry_.addComponent(trunk, component::EntityName{ .name = std::format("trunt_{}", index++) });
           registry_.addComponent(
               trunk,
               component::Transform{
@@ -261,8 +447,8 @@ namespace ls {
               component::Sprite{
                   .color = glm::vec4(1.f),
                   .uvScale = glm::vec2(1.f),
-                  .textureId = textureManager_.getId(texture_name::kTrunk),
-                  .zIndex = renderer::Layer::Foreground,
+                  .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kTrunk),
+                  .layer = renderer::Layer::Foreground,
               }
           );
           registry_.addComponent(
@@ -282,6 +468,7 @@ namespace ls {
         };
         for (const auto& position : positions) {
           auto trunk{ registry_.createEntity() };
+          registry_.addComponent(trunk, component::EntityName{ .name = std::format("trunt_{}", index++) });
           registry_.addComponent(
               trunk,
               component::Transform{
@@ -294,8 +481,8 @@ namespace ls {
               component::Sprite{
                   .color = glm::vec4(1.f),
                   .uvScale = glm::vec2(1.f),
-                  .textureId = textureManager_.getId(texture_name::kTrunk),
-                  .zIndex = renderer::Layer::Ground,
+                  .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kTrunk),
+                  .layer = renderer::Layer::Ground,
               }
           );
           registry_.addComponent(
@@ -307,137 +494,6 @@ namespace ls {
           );
         }
       }
-    }
-  }
-
-  void MainMenuScene::onExit() {}
-
-  void MainMenuScene::onResize(int width, int height) {
-    worldFBO_->resize(width, height);
-    fovFBO_->resize(width, height);
-
-    float aspectRatio{ static_cast<float>(width) / static_cast<float>(height) };
-
-    if (registry_.hasComponent<component::Transform>(backgroundEntity_)) {
-      auto& transform{ registry_.getComponent<component::Transform>(backgroundEntity_) };
-      transform.scale = glm::vec2{ backgroundSize_.x * aspectRatio, backgroundSize_.y };
-    }
-  }
-
-  void MainMenuScene::handleInput() {
-    ImGuiIO& io{ ImGui::GetIO() };
-    inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
-  }
-
-  void MainMenuScene::update(float dt) {
-    UpdateContext ctx{
-      .registry = registry_,
-      .eventQueue = eventQueue_,
-      .textureManager = textureManager_,
-      .inputManager = inputManager_,
-      .dt = dt,
-    };
-
-    glm::vec2 viewportSize{ render_system::getViewportSize() };
-
-    if (viewportSize.x > 0.f && viewportSize.y > 0.f) {
-      glm::vec2 mousePos{ inputManager_.getMousePosition() };
-      glm::vec2 center{ viewportSize * 0.5f };
-      glm::vec2 normalizedMouse{ (mousePos - center) / center };
-
-      normalizedMouse = glm::clamp(normalizedMouse, glm::vec2(-1.f), glm::vec2(1.f));
-      glm::vec2 targetCamPos{ normalizedMouse.x * maxBackgroundOffset_.x, -normalizedMouse.y * maxBackgroundOffset_.y };
-
-      const float smoothing{ 5.0f };
-      if (registry_.hasComponent<component::Transform>(cameraEntity_)) {
-        auto& transform{ registry_.getComponent<component::Transform>(cameraEntity_) };
-        transform.position = glm::mix(transform.position, targetCamPos, dt * smoothing);
-      }
-
-      parallax_system::update(ctx, targetCamPos);
-    }
-
-    if (registry_.hasComponent<component::Camera>(cameraEntity_) &&
-        registry_.hasComponent<component::FieldOfView>(fovEntity_)) {
-      const auto& camera{ registry_.getComponent<component::Camera>(cameraEntity_) };
-      const auto& fov{ registry_.getComponent<component::FieldOfView>(fovEntity_) };
-      glm::vec2 mouseWorldPos{
-        camera_system::screenToWorld(inputManager_.getMousePosition(), render_system::getViewportSize(), camera)
-      };
-
-      if (registry_.hasComponent<component::FieldOfView>(fovEntity_)) {
-        auto& transform{ registry_.getComponent<component::Transform>(fovEntity_) };
-        transform.position = mouseWorldPos;
-      }
-
-      updateMenuStalker(fov, mouseWorldPos, dt);
-    }
-
-    camera_system::update(ctx);
-
-    eventQueue_.clear();
-    registry_.purgeDestroyedEntities();
-  }
-
-  void MainMenuScene::render() {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    for (auto entity : registry_.view<component::Camera>()) {
-      const auto& camera{ registry_.getComponent<component::Camera>(entity) };
-      renderPipeline_.execute(
-          renderer::RenderContext{
-              .registry = registry_,
-              .viewProjection = camera.projection * camera.view,
-              .textureManager = textureManager_,
-          }
-      );
-      break;
-    }
-    uiManager_.render(getUIContext());
-  }
-
-  void MainMenuScene::updateMenuStalker(const component::FieldOfView& fov, glm::vec2 mouseWorldPos, float dt) {
-    if (!registry_.hasComponent<component::Transform>(stalkerEntity_) ||
-        !registry_.hasComponent<component::MenuStalker>(stalkerEntity_) ||
-        !registry_.hasComponent<component::Parallax>(stalkerEntity_)) {
-      return;
-    }
-
-    auto& stalkerTransform{ registry_.getComponent<component::Transform>(stalkerEntity_) };
-    auto& stalker{ registry_.getComponent<component::MenuStalker>(stalkerEntity_) };
-    auto& parallax{ registry_.getComponent<component::Parallax>(stalkerEntity_) };
-
-    float distanceToMouse{ glm::distance(mouseWorldPos, stalker.hidePosition + stalker.peekOffset) };
-    float targetPeek{
-      glm::clamp((distanceToMouse - stalker.minDistance) / (stalker.maxDistance - stalker.minDistance), 0.0f, 1.0f)
-    };
-
-    stalker.currentPeek = glm::mix(stalker.currentPeek, targetPeek, dt * stalker.peekSpeed);
-    parallax.basePosition = stalker.hidePosition + (stalker.peekOffset * stalker.currentPeek);
-
-    float distanceToPhysicalStalker{ glm::distance(mouseWorldPos, stalkerTransform.position) };
-    bool isCurrentlyVisible{ distanceToPhysicalStalker <= fov.outerRadius };
-
-    if (isCurrentlyVisible && !wasStalkerSeen_) {
-      wasStalkerSeen_ = true;
-    } else if (wasStalkerSeen_ && (!isCurrentlyVisible || glm::abs(stalker.currentPeek) < 0.02f)) {
-      std::size_t newIndex{ currentStalkerPointIndex_ };
-      while (newIndex == currentStalkerPointIndex_ && stalkerPoints_.size() > 1) {
-        newIndex = static_cast<std::size_t>(random_system::getRangeRandom(0, stalkerPoints_.size() - 1));
-      }
-
-      currentStalkerPointIndex_ = newIndex;
-      const auto& newPoint{ stalkerPoints_[currentStalkerPointIndex_] };
-
-      stalker.hidePosition = newPoint.position;
-      stalker.peekOffset = newPoint.peekOffset;
-      stalker.currentPeek = 0.0f;
-
-      parallax.factor = newPoint.parallaxFactor;
-      parallax.basePosition = newPoint.position;
-      stalkerTransform.position = newPoint.position;
-
-      wasStalkerSeen_ = false;
     }
   }
 

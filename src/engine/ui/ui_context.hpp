@@ -10,7 +10,6 @@ namespace ls::dispatch {
 namespace ls::ui {
 
   struct UIContext {
-    dispatch::EventQueue& eventQueue;
     EngineContext engineCtx;
     SceneContext sceneCtx;
   };

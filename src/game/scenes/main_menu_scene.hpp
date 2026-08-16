@@ -3,11 +3,11 @@
 #include <glm/ext/vector_float2.hpp>
 #include <vector>
 
+#include "engine/core/engine_context.hpp"
 #include "engine/core/i_scene.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
-#include "engine/gfx/texture_manager.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/renderer/render_pipeline.hpp"
 #include "engine/ui/ui_manager.hpp"
@@ -18,8 +18,8 @@ namespace ls {
 
   class MainMenuScene : public IScene {
   public:
-    explicit MainMenuScene(dispatch::EventQueue& engineEventQueue)
-        : engineEventQueue_{ engineEventQueue } {}
+    explicit MainMenuScene(EngineContext engineCtx)
+        : IScene(engineCtx) {}
 
     void onEnter() override;
     void onExit() override;
@@ -36,22 +36,15 @@ namespace ls {
         .registry = &registry_,
         .eventQueue = &eventQueue_,
         .renderPipeline = &renderPipeline_,
-        .textureManager = &textureManager_,
       };
     }
 
   private:
-    ui::UIContext getUIContext() override {
-      return ui::UIContext{
-        .eventQueue = engineEventQueue_,
-        .sceneCtx = getSceneContext(),
-      };
-    }
-
+    void processEvents() override;
     void updateMenuStalker(const component::FieldOfView& fov, glm::vec2 mouseWorldPos, float dt);
+    void generateEntities();
 
     ecs::Registry registry_;
-    gfx::TextureManager textureManager_;
     ui::UIManager uiManager_;
     input::InputManager inputManager_;
 
@@ -60,7 +53,6 @@ namespace ls {
     std::shared_ptr<gfx::Framebuffer> fovFBO_{ nullptr };
 
     dispatch::EventQueue eventQueue_;
-    dispatch::EventQueue& engineEventQueue_;
 
     ecs::EntityId backgroundEntity_{ ecs::kNullEntity };
     const glm::vec2 backgroundSize_{ 8.f, 4.f };

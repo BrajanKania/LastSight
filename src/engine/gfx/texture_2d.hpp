@@ -9,7 +9,7 @@ namespace ls::gfx {
     explicit Texture2D(const std::filesystem::path& path);
     explicit Texture2D(int width, int height);
 
-    ~Texture2D();
+    ~Texture2D() { cleanup(); }
 
     Texture2D(const Texture2D&) = delete;
     Texture2D& operator=(const Texture2D&) = delete;
@@ -21,14 +21,14 @@ namespace ls::gfx {
     int getWidth() const { return width_; }
     int getHeight() const { return height_; }
 
-    void cleanup();
-
     void bind(uint32_t slot) const;
     void unbind() const;
 
     void resize(int width, int height);
 
   private:
+    void cleanup();
+
     uint32_t id_{ 0 };
     int width_{ 0 };
     int height_{ 0 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -7,26 +8,43 @@
 #include <vector>
 
 #include "engine/gfx/texture_2d.hpp"
+#include "engine/gfx/texture_handle.hpp"
 
 namespace ls::gfx {
 
   class TextureManager {
   public:
-    ~TextureManager();
+    TextureManager() {
+      textures_.push_back(nullptr);
+      names_.push_back("");
+    };
 
-    uint32_t load(const std::string& name, const std::filesystem::path& path);
+    ~TextureManager() = default;
 
-    const Texture2D* get(uint32_t id) const;
+    TextureManager(const TextureManager&) = delete;
+    TextureManager& operator=(const TextureManager&) = delete;
 
+    TextureManager(TextureManager&&) noexcept = default;
+    TextureManager& operator=(TextureManager&&) noexcept = default;
+
+    TextureHandle load(const std::string& name, const std::filesystem::path& path);
+
+    bool contains(const std::string& name) const;
+    bool contains(TextureHandle handle) const;
+
+    const Texture2D* get(TextureHandle handle) const;
     const Texture2D* get(const std::string& name) const;
 
-    uint32_t getId(const std::string& name) const;
+    TextureHandle getHandle(const std::string& name) const;
+    const std::string& getName(TextureHandle handle) const;
 
     std::size_t getTextureCount() const { return textures_.size(); }
+    void clear();
 
   private:
     std::vector<std::unique_ptr<Texture2D>> textures_;
-    std::unordered_map<std::string, uint32_t> nameToId_{};
+    std::vector<std::string> names_;
+    std::unordered_map<std::string, TextureHandle> nameToHandle_;
   };
 
 }  // namespace ls::gfx

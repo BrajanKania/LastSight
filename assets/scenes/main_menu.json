@@ -1,0 +1,1117 @@
+{
+  "entities": [
+    {
+      "components": {
+        "Camera": {
+          "Orthographic size": 2.0,
+          "Zoom": 1.0,
+          "projection": {},
+          "view": {}
+        },
+        "EntityName": {
+          "name": "camera"
+        },
+        "Transform": {
+          "Position": [
+            0.14177127182483673,
+            0.112852543592453
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "name": "camera"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "background"
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Background",
+          "textureHandle": "main_menu_background.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            0.0,
+            0.0
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            13.333333015441895,
+            4.0
+          ]
+        }
+      },
+      "name": "background"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "stalker"
+        },
+        "FovMasked": {},
+        "MenuStalker": {
+          "hidePosition": [
+            1.2000000476837158,
+            -0.5
+          ],
+          "maxDistance": 0.15000000596046448,
+          "minDistance": 0.10000000149011612,
+          "peekOffset": [
+            -0.10000000149011612,
+            0.0
+          ],
+          "peekSpeed": 4.0
+        },
+        "Parallax": {
+          "basePosition": [
+            1.1000001430511475,
+            -0.5
+          ],
+          "factor": [
+            0.15000000596046448,
+            0.15000000596046448
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Entities",
+          "textureHandle": "stalker.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            1.121260643005371,
+            -0.48305442929267883
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.20000000298023224,
+            0.4000000059604645
+          ]
+        }
+      },
+      "name": "stalker"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "cursor_fov"
+        },
+        "FieldOfView": {
+          "darkness": 0.4000000059604645,
+          "fovAngle": 360.0,
+          "innerRadius": 0.3499999940395355,
+          "outerRadius": 0.550000011920929,
+          "smoothnessAngle": 0.0,
+          "smoothnessDistance": 0.550000011920929
+        },
+        "Transform": {
+          "Position": [
+            0.6142308712005615,
+            0.6776946783065796
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "name": "cursor_fov"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "title"
+        },
+        "FovMasked": {},
+        "Parallax": {
+          "basePosition": [
+            0.0,
+            0.6000000238418579
+          ],
+          "factor": [
+            0.0,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Entities",
+          "textureHandle": "main_menu_title.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            0.0,
+            0.611297070980072
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            2.0,
+            0.4000000059604645
+          ]
+        }
+      },
+      "name": "title"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_0"
+        },
+        "Parallax": {
+          "basePosition": [
+            -3.0,
+            -0.800000011920929
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -2.985826253890991,
+            -0.7887029647827148
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_0"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_1"
+        },
+        "Parallax": {
+          "basePosition": [
+            -2.0,
+            -0.4000000059604645
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -1.9858262538909912,
+            -0.38870295882225037
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_1"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_2"
+        },
+        "Parallax": {
+          "basePosition": [
+            -1.0,
+            0.0
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -0.985826313495636,
+            0.01129704900085926
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_2"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_3"
+        },
+        "Parallax": {
+          "basePosition": [
+            3.0,
+            -0.5
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            3.014173746109009,
+            -0.4887029528617859
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_3"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_4"
+        },
+        "Parallax": {
+          "basePosition": [
+            2.0,
+            -0.20000000298023224
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            2.014173746109009,
+            -0.18870295584201813
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_4"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_5"
+        },
+        "Parallax": {
+          "basePosition": [
+            1.0,
+            0.0
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            1.0141737461090088,
+            0.01129704900085926
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_5"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_6"
+        },
+        "Parallax": {
+          "basePosition": [
+            -5.0,
+            -0.30000001192092896
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -4.98582649230957,
+            -0.28870296478271484
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_6"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_7"
+        },
+        "Parallax": {
+          "basePosition": [
+            -2.0,
+            -0.800000011920929
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -1.9858262538909912,
+            -0.7887029647827148
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_7"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_8"
+        },
+        "Parallax": {
+          "basePosition": [
+            -1.5,
+            -0.10000000149011612
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -1.4858262538909912,
+            -0.08870295435190201
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_8"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_9"
+        },
+        "Parallax": {
+          "basePosition": [
+            2.200000047683716,
+            -0.699999988079071
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            2.2141737937927246,
+            -0.6887029409408569
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_9"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_10"
+        },
+        "Parallax": {
+          "basePosition": [
+            1.600000023841858,
+            -0.6000000238418579
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            1.6141737699508667,
+            -0.5887029767036438
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_10"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "grass_11"
+        },
+        "Parallax": {
+          "basePosition": [
+            0.20000000298023224,
+            -0.5
+          ],
+          "factor": [
+            0.10000000149011612,
+            0.10000000149011612
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.10000000149011612,
+            0.5,
+            0.10000000149011612,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "grass_1.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            0.21417370438575745,
+            -0.4887029528617859
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ]
+        }
+      },
+      "name": "grass_11"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_0"
+        },
+        "Parallax": {
+          "basePosition": [
+            -2.0,
+            1.0
+          ],
+          "factor": [
+            0.15000000596046448,
+            0.15000000596046448
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -1.9787395000457764,
+            1.0169456005096436
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_0"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_1"
+        },
+        "Parallax": {
+          "basePosition": [
+            -1.0,
+            1.100000023841858
+          ],
+          "factor": [
+            0.15000000596046448,
+            0.15000000596046448
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -0.9787394404411316,
+            1.1169456243515015
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_1"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_2"
+        },
+        "Parallax": {
+          "basePosition": [
+            0.5,
+            0.8999999761581421
+          ],
+          "factor": [
+            0.15000000596046448,
+            0.15000000596046448
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            0.5212605595588684,
+            0.9169455766677856
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_2"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_3"
+        },
+        "Parallax": {
+          "basePosition": [
+            1.2000000476837158,
+            1.0
+          ],
+          "factor": [
+            0.15000000596046448,
+            0.15000000596046448
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            1.2212605476379395,
+            1.0169456005096436
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_3"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_4"
+        },
+        "Parallax": {
+          "basePosition": [
+            -0.20000000298023224,
+            1.2000000476837158
+          ],
+          "factor": [
+            0.15000000596046448,
+            0.15000000596046448
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Foreground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -0.17873945832252502,
+            1.2169456481933594
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.30000001192092896,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_4"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_5"
+        },
+        "Parallax": {
+          "basePosition": [
+            -1.5,
+            2.3499999046325684
+          ],
+          "factor": [
+            0.05000000074505806,
+            0.05000000074505806
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Ground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -1.4929131269454956,
+            2.3556485176086426
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.20000000298023224,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_5"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_6"
+        },
+        "Parallax": {
+          "basePosition": [
+            1.0,
+            2.0
+          ],
+          "factor": [
+            0.05000000074505806,
+            0.05000000074505806
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Ground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            1.0070868730545044,
+            2.005648612976074
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.20000000298023224,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_6"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_7"
+        },
+        "Parallax": {
+          "basePosition": [
+            0.0,
+            2.200000047683716
+          ],
+          "factor": [
+            0.05000000074505806,
+            0.05000000074505806
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Ground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            0.007086849305778742,
+            2.20564866065979
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.20000000298023224,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_7"
+    },
+    {
+      "components": {
+        "EntityName": {
+          "name": "trunt_8"
+        },
+        "Parallax": {
+          "basePosition": [
+            -0.30000001192092896,
+            2.299999952316284
+          ],
+          "factor": [
+            0.05000000074505806,
+            0.05000000074505806
+          ]
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "layer": "Ground",
+          "textureHandle": "trunk.png",
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "Position": [
+            -0.29291316866874695,
+            2.3056485652923584
+          ],
+          "Rotation": 0.0,
+          "Scale": [
+            0.20000000298023224,
+            4.0
+          ]
+        }
+      },
+      "name": "trunt_8"
+    }
+  ]
+}

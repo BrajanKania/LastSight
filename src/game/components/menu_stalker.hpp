@@ -14,7 +14,7 @@ namespace ls::component {
     float maxDistance{ 2.f };
     float peekSpeed{ 0.1f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     float currentPeek{ 0.f };
   };
 

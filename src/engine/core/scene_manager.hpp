@@ -4,9 +4,9 @@
 #include <memory>
 #include <unordered_map>
 
+#include "engine/core/engine_context.hpp"
 #include "engine/core/i_scene.hpp"
 #include "engine/core/scene_context.hpp"
-#include "engine/dispatch/event_queue.hpp"
 
 namespace ls {
 
@@ -14,14 +14,14 @@ namespace ls {
   public:
     using SceneFactory = std::function<std::unique_ptr<IScene>()>;
 
-    explicit SceneManager(dispatch::EventQueue& engineEventQueue, int width, int height)
-        : engineEventQueue_{ engineEventQueue },
+    explicit SceneManager(EngineContext engineCtx, int width, int height)
+        : engineCtx_{ engineCtx },
           width_{ width },
           height_{ height } {}
 
     template <typename TScene>
     void registerScene(const std::string& name) {
-      factories_[name] = [this]() -> std::unique_ptr<IScene> { return std::make_unique<TScene>(engineEventQueue_); };
+      factories_[name] = [this]() -> std::unique_ptr<IScene> { return std::make_unique<TScene>(engineCtx_); };
     }
 
     template <typename T>
@@ -58,10 +58,9 @@ namespace ls {
   private:
     void processPendingOperations();
 
+    EngineContext engineCtx_;
     int width_{ 0 };
     int height_{ 0 };
-
-    dispatch::EventQueue& engineEventQueue_;
 
     std::unordered_map<std::string, SceneFactory> factories_{};
     std::vector<std::unique_ptr<IScene>> scenes_{};

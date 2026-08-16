@@ -71,8 +71,8 @@ namespace ls::renderer {
     }
 
     std::stable_sort(renderQueue.begin(), renderQueue.end(), [&](ecs::EntityId a, ecs::EntityId b) {
-      return ctx.registry.getComponent<component::Sprite>(a).zIndex <
-             ctx.registry.getComponent<component::Sprite>(b).zIndex;
+      return ctx.registry.getComponent<component::Sprite>(a).layer <
+             ctx.registry.getComponent<component::Sprite>(b).layer;
     });
 
     shader_->use();
@@ -100,7 +100,7 @@ namespace ls::renderer {
       const auto& transform{ ctx.registry.getComponent<ls::component::Transform>(entity) };
       const auto& sprite{ ctx.registry.getComponent<ls::component::Sprite>(entity) };
 
-      const gfx::Texture2D* texture{ ctx.textureManager.get(sprite.textureId) };
+      const gfx::Texture2D* texture{ ctx.textureManager.get(sprite.textureHandle) };
       if (texture) {
         texture->bind(0);
       }
@@ -123,7 +123,7 @@ namespace ls::renderer {
       const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
       const auto& equipped{ ctx.registry.getComponent<component::EquippedSprite>(entity) };
 
-      const gfx::Texture2D* texture{ ctx.textureManager.get(equipped.textureId) };
+      const gfx::Texture2D* texture{ ctx.textureManager.get(equipped.textureHandle) };
       if (texture) {
         texture->bind(0);
       }

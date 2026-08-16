@@ -5,6 +5,7 @@
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/window.hpp"
 #include "engine/dispatch/event_queue.hpp"
+#include "engine/gfx/texture_manager.hpp"
 #include "engine/input/input_manager.hpp"
 
 namespace ls {
@@ -30,13 +31,16 @@ namespace ls {
       return EngineContext{
         .window = &window_,
         .sceneManager = &sceneManager_,
+        .eventQueue = &eventQueue_,
+        .textureManager = &textureManager_,
       };
     }
 
     Window window_;
-    SceneManager sceneManager_;
     input::InputManager inputManager_;
     dispatch::EventQueue eventQueue_;
+    gfx::TextureManager textureManager_;
+    SceneManager sceneManager_;
     EditorLayer editorLayer_;
   };
 

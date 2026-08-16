@@ -33,9 +33,9 @@ namespace ls::factory {
         component::Sprite{
             .color = glm::vec4(1.f),
             .uvScale = glm::vec2(1.f),
-            .textureId = config.textureId,
+            .textureHandle = config.textureHandle,
             .angleOffset = config.angleOffset,
-            .zIndex = renderer::Layer::Entities,
+            .layer = renderer::Layer::Entities,
         }
     );
     registry.addComponent(

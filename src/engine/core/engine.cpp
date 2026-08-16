@@ -16,8 +16,8 @@ namespace ls {
 
   Engine::Engine()
       : window_(1500, 900),
-        sceneManager_(eventQueue_, window_.getWidth(), window_.getHeight()) {
-    reflection::registerGeneratedTypes();
+        sceneManager_(getEngineContext(), window_.getWidth(), window_.getHeight()) {
+    reflection_system::registerGeneratedTypes();
 
     ui_system::init(window_.getSDLWindow(), window_.getOpengGlContext());
 
@@ -51,9 +51,9 @@ namespace ls {
       ui_system::beginFrame();
 
       sceneManager_.render();
-      editorLayer_.render(eventQueue_, getEngineContext(), sceneManager_.getActiveSceneContext());
+      editorLayer_.render(getEngineContext(), sceneManager_.getActiveSceneContext());
 
-      editorLayer_.update(eventQueue_, sceneManager_);
+      editorLayer_.update(getEngineContext());
       ui_system::endFrame();
 
       handleRequest();

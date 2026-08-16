@@ -57,7 +57,7 @@ namespace ls::combat_system {
         .position = muzzleWorldPos,
         .direction = bulletDirection,
         .speed = weapon.initialSpeed,
-        .textureId = ctx.textureManager.getId(texture_name::kBullet),
+        .textureHandle = ctx.textureManager.getHandle(texture_name::kBullet),
         .angleOffset = -90.f,
         .lifetime = weapon.bulletLifetime,
       };

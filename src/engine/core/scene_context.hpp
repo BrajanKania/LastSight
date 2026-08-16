@@ -14,16 +14,12 @@ namespace ls {
   namespace renderer {
     class RenderPipeline;
   }
-  namespace gfx {
-    class TextureManager;
-  }
 
   struct SceneContext {
     ecs::Registry* registry{ nullptr };
     dispatch::EventQueue* eventQueue{ nullptr };
     input::InputManager* inputManager{ nullptr };
     renderer::RenderPipeline* renderPipeline{ nullptr };
-    gfx::TextureManager* textureManager{ nullptr };
   };
 
 }  // namespace ls

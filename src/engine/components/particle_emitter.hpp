@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include "engine/particles/particle.hpp"
@@ -12,14 +13,20 @@ namespace ls::component {
   struct ParticleEmitter {
     particle::ParticleEmitterConfig config;
 
+    PROPERTY(ReadOnly, Transient)
     float elapsedTime{ 0.f };
 
     bool isPaused{ false };
     bool isEmitting{ true };
+
+    PROPERTY(ReadOnly, Transient)
     float spawnTimer{ 0.f };
 
+    PROPERTY(Transient)
     std::vector<particle::Particle> particles;
-    std::size_t activeParticlesCount{ 0 };
+
+    PROPERTY(ReadOnly)
+    std::uint32_t activeParticlesCount{ 0 };
 
     ParticleEmitter() = default;
 

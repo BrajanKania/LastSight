@@ -29,12 +29,12 @@ namespace ls::component {
 
     bool isAutomatic{ false };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     bool isAiming{ false };
 
     float fireRate{ 0.5f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     float cooldown{ 0.f };
 
     float initialSpeed{ 5.f };
@@ -44,23 +44,28 @@ namespace ls::component {
     float transitionSpeed{ 1.f };
     float baseAngleOffset{ 0.f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     glm::vec2 offset{ 0.f };
 
+    PROPERTY(ReadOnly)
     glm::vec2 muzzleOffset{ 0.f };
+
+    PROPERTY(ReadOnly)
     glm::vec2 hipOffset{ 0.f };
+
+    PROPERTY(ReadOnly)
     glm::vec2 aimOffset{ 0.f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     glm::vec2 springOffset{ 0.f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     glm::vec2 springVelocity{ 0.f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     float springRotation{ 0.f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     float springAngularVelocity{ 0.f };
 
     PROPERTY(Name = "Hip recoil config")

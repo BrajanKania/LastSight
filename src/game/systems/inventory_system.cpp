@@ -1,5 +1,7 @@
 #include "game/systems/inventory_system.hpp"
 
+#include <cstdint>
+
 #include "engine/events/interact_with_entity.hpp"
 #include "game/components/inventory.hpp"
 #include "game/components/item_pickup.hpp"
@@ -25,8 +27,8 @@ namespace ls::inventory_system {
       if (itemDef->canStack) {
         for (auto& stack : inventory.slots) {
           if (stack.itemId == itemDef->id && stack.count < itemDef->maxStackSize) {
-            std::size_t spaceLeft{ itemDef->maxStackSize - stack.count };
-            std::size_t amountToAdd{ std::min(spaceLeft, itemPickup.itemStack.count) };
+            std::uint32_t spaceLeft{ itemDef->maxStackSize - stack.count };
+            std::uint32_t amountToAdd{ std::min(spaceLeft, itemPickup.itemStack.count) };
 
             stack.count += amountToAdd;
             itemPickup.itemStack.count -= amountToAdd;

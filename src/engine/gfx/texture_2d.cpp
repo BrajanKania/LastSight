@@ -56,11 +56,6 @@ namespace ls::gfx {
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
-  Texture2D::~Texture2D() {
-    if (id_)
-      glDeleteTextures(1, &id_);
-  }
-
   Texture2D::Texture2D(Texture2D&& other)
       : id_{ other.id_ },
         width_{ other.width_ },
@@ -87,16 +82,6 @@ namespace ls::gfx {
     }
     return *this;
   }
-  void Texture2D::cleanup() {
-    if (id_) {
-      glDeleteTextures(1, &id_);
-      id_ = 0;
-    }
-
-    width_ = 0;
-    height_ = 0;
-    channels_ = 0;
-  }
 
   void Texture2D::bind(uint32_t slot) const {
     glActiveTexture(GL_TEXTURE0 + slot);
@@ -112,4 +97,16 @@ namespace ls::gfx {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     unbind();
   }
+
+  void Texture2D::cleanup() {
+    if (id_) {
+      glDeleteTextures(1, &id_);
+      id_ = 0;
+    }
+
+    width_ = 0;
+    height_ = 0;
+    channels_ = 0;
+  }
+
 }  // namespace ls::gfx

@@ -2,10 +2,12 @@
 
 #include <glm/ext/vector_float2.hpp>
 
+#include "engine/reflection/reflection_macros.hpp"
 #include "game/components/weapon.hpp"
 
 namespace ls::item {
 
+  STRUCT()
   struct WeaponConfig {
     bool isAutomatic{ false };
 

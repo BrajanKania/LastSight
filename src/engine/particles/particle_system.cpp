@@ -107,6 +107,10 @@ namespace ls::particle_system {
       auto& emitter{ ctx.registry.getComponent<component::ParticleEmitter>(entity) };
       const auto& transform{ ctx.registry.getComponent<component::Transform>(entity) };
 
+      if (emitter.particles.capacity() < emitter.config.maxParticles) {
+        emitter.particles.resize(emitter.config.maxParticles);
+      }
+
       emitter.elapsedTime += ctx.dt;
 
       updateParticles(emitter, ctx.dt);

@@ -23,27 +23,23 @@ find_package(SDL3 REQUIRED COMPONENTS SDL3-static)
 find_package(glm REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Python3 REQUIRED)
 
-set(REFLECTION_INPUT_DIRS
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/components"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/game/components"
-)
-
+set(REFLECTION_INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(GENERATE_REFLECTION_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/reflection/generate_reflection.py")
 set(GENERATED_REFLECTION_FILE "${CMAKE_CURRENT_BINARY_DIR}/generated/engine/reflection/generated_reflection.cpp")
 
-file(GLOB_RECURSE COMPONENT_HEADERS
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/components/*.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/game/components/*.hpp"
+file(GLOB_RECURSE ALL_HEADERS
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
 )
 
 add_custom_command(
   OUTPUT "${GENERATED_REFLECTION_FILE}"
   COMMAND Python3::Interpreter "${GENERATE_REFLECTION_SCRIPT}"
-    --input-dir ${REFLECTION_INPUT_DIRS}
+    --input-dir ${REFLECTION_INPUT_DIR}
     --output-file "${GENERATED_REFLECTION_FILE}"
-  DEPENDS "${GENERATE_REFLECTION_SCRIPT}" ${COMPONENT_HEADERS}
+  DEPENDS "${GENERATE_REFLECTION_SCRIPT}" ${ALL_HEADERS}
   VERBATIM
 )
 
@@ -81,12 +77,15 @@ add_executable(LastSight
 
   src/engine/renderer/render_system.cpp
 
+  src/engine/serialization/scene_serializer.cpp
+  src/engine/serialization/serialization_system.cpp
+
+  src/engine/systems/parallax_system.cpp
+
   src/engine/ui/panels/toolbox_panel.cpp
   src/engine/ui/panels/entity_inspector_panel.cpp
   src/engine/ui/panels/render_pipeline_debug_panel.cpp
   src/engine/ui/panels/scene_browser_panel.cpp
-
-  src/engine/systems/parallax_system.cpp
 
   src/engine/ui/ui_manager.cpp
   src/engine/ui/ui_system.cpp
@@ -126,6 +125,7 @@ target_link_libraries(
     SDL3::SDL3
     imgui::imgui
     EnTT::EnTT
+    nlohmann_json::nlohmann_json
 )
 
 target_include_directories(

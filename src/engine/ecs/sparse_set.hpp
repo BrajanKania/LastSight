@@ -3,6 +3,7 @@
 #include <cassert>
 #include <entt/core/fwd.hpp>
 #include <entt/core/type_info.hpp>
+#include <entt/meta/meta.hpp>
 #include <vector>
 
 #include "engine/ecs/types.hpp"
@@ -15,6 +16,8 @@ namespace ls::ecs {
     virtual void destroyComponent(EntityId entity) = 0;
     virtual entt::id_type getTypeId() const = 0;
     virtual void* getRawComponent(EntityId entity) = 0;
+    virtual bool emplaceMeta(EntityId entity, const entt::meta_any& componentAny) = 0;
+    virtual void clear() = 0;
   };
 
   template <typename TComponent>
@@ -68,6 +71,30 @@ namespace ls::ecs {
 
     void* getRawComponent(EntityId entity) override {
       return hasComponent(entity) ? &components_[sparse_[entity]] : nullptr;
+    }
+
+    bool emplaceMeta(EntityId entity, const entt::meta_any& componentAny) override {
+      if (hasComponent(entity)) {
+        destroyComponent(entity);
+      }
+
+      if (const auto* ptr{ componentAny.try_cast<TComponent>() }) {
+        addComponent(entity, *ptr);
+        return true;
+      }
+
+      if (auto copy{ componentAny.allow_cast<TComponent>() }) {
+        addComponent(entity, copy.template cast<TComponent>());
+        return true;
+      }
+
+      return false;
+    }
+
+    void clear() override {
+      sparse_.clear();
+      dense_.clear();
+      components_.clear();
     }
 
   private:

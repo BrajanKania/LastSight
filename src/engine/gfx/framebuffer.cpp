@@ -44,17 +44,6 @@ namespace ls::gfx {
     return *this;
   }
 
-  void Framebuffer::cleanup() {
-    if (fbo_) {
-      glDeleteFramebuffers(1, &fbo_);
-      fbo_ = 0;
-    }
-
-    colorTexture_.cleanup();
-    width_ = 0;
-    height_ = 0;
-  }
-
   void Framebuffer::bind() const { render_system::bindFramebuffer(fbo_); }
   void Framebuffer::unbind() const { render_system::bindFramebuffer(0); }
 
@@ -63,4 +52,15 @@ namespace ls::gfx {
     height_ = height;
     colorTexture_.resize(width_, height_);
   }
+
+  void Framebuffer::cleanup() {
+    if (fbo_) {
+      glDeleteFramebuffers(1, &fbo_);
+      fbo_ = 0;
+    }
+
+    width_ = 0;
+    height_ = 0;
+  }
+
 }  // namespace ls::gfx

@@ -17,8 +17,6 @@ namespace ls::gfx {
     Framebuffer(Framebuffer&& other) noexcept;
     Framebuffer& operator=(Framebuffer&& other) noexcept;
 
-    void cleanup();
-
     uint32_t getId() const { return fbo_; }
     uint32_t getColorBufferId() const { return colorTexture_.getId(); }
     const Texture2D& getColorTexture() const { return colorTexture_; }
@@ -32,6 +30,8 @@ namespace ls::gfx {
     void resize(int width, int height);
 
   private:
+    void cleanup();
+
     uint32_t fbo_{ 0 };
     Texture2D colorTexture_;
 

@@ -31,9 +31,34 @@ class StructData:
 
 
 @dataclass
+class EnumMemberData:
+    name: str
+
+
+@dataclass
+class EnumData:
+    name: str
+    namespace: str = ""
+    parent_prefix: str = ""
+    members: list[EnumMemberData] = field(default_factory=list)
+    attributes: dict[str, str] = field(default_factory=dict)
+
+    @property
+    def full_name(self) -> str:
+        parts = []
+        if self.namespace:
+            parts.append(self.namespace)
+        if self.parent_prefix:
+            parts.append(self.parent_prefix)
+        parts.append(self.name)
+        return "::".join(parts)
+
+
+@dataclass
 class HeaderInfo:
     include_path: str
     structs: list[StructData]
+    enums: list[EnumData] = field(default_factory=list)
 
 
 def remove_comments(code: str) -> str:
@@ -198,6 +223,85 @@ def process_code(
     return found_structs
 
 
+def parse_enum_body(body: str) -> list[EnumMemberData]:
+    members = []
+    clean_body = remove_comments(body)
+    for item in clean_body.split(","):
+        item_clean = item.strip()
+        if not item_clean:
+            continue
+        name_part = item_clean.split("=")[0].strip()
+        m = re.search(r"\b([a-zA-Z_]\w*)\b", name_part)
+        if m:
+            members.append(EnumMemberData(name=m.group(1)))
+    return members
+
+
+def process_enums(
+    code: str, namespace: str = "", parent_prefix: str = ""
+) -> list[EnumData]:
+    clean_code = remove_comments(code) if not parent_prefix else code
+    found_enums: list[EnumData] = []
+
+    combined_pattern = re.compile(
+        r"(?:(?P<is_struct>STRUCT\((?P<struct_attr>.*?)\)\s*(?:struct|class)\s+(?P<struct_name>\w+))|"
+        r"(?P<is_enum>ENUM\((?P<enum_attr>.*?)\)\s*enum\s+(?:class\s+)?(?P<enum_name>\w+)\s*(?::\s*[\w:]+\s*)?))\s*\{"
+    )
+
+    pos = 0
+    while pos < len(clean_code):
+        match = combined_pattern.search(clean_code, pos)
+        if not match:
+            break
+
+        start_pos = match.end() - 1
+
+        brace_count = 0
+        end_pos = -1
+        for i in range(start_pos, len(clean_code)):
+            if clean_code[i] == "{":
+                brace_count += 1
+            elif clean_code[i] == "}":
+                brace_count -= 1
+                if brace_count == 0:
+                    end_pos = i
+                    break
+
+        if end_pos == -1:
+            pos = match.end()
+            continue
+
+        raw_body = clean_code[start_pos + 1 : end_pos]
+        curr_ns = (
+            namespace
+            if parent_prefix
+            else find_enclosing_namespace(clean_code, match.start())
+        )
+
+        if match.group("is_struct"):
+            struct_name = match.group("struct_name")
+            next_parent_prefix = (
+                f"{parent_prefix}::{struct_name}" if parent_prefix else struct_name
+            )
+            nested_enums = process_enums(raw_body, curr_ns, next_parent_prefix)
+            found_enums.extend(nested_enums)
+        elif match.group("is_enum"):
+            enum_name = match.group("enum_name")
+            enum_attr_raw = match.group("enum_attr")
+            current_enum = EnumData(
+                name=enum_name,
+                namespace=curr_ns,
+                parent_prefix=parent_prefix,
+                attributes=parse_attributes(enum_attr_raw),
+                members=parse_enum_body(raw_body),
+            )
+            found_enums.append(current_enum)
+
+        pos = end_pos + 1
+
+    return found_enums
+
+
 def resolve_include_path(header_path: Path, input_dirs: list[str]) -> str:
     path_str = header_path.as_posix()
     for root in ["src/", "include/", "engine/"]:
@@ -222,7 +326,7 @@ def generate_cpp_code(headers_info: list[HeaderInfo]) -> str:
     blocks: list[str] = []
 
     for info in headers_info:
-        if not info.structs:
+        if not info.structs and not info.enums:
             continue
 
         includes.append(f'#include "{info.include_path}"')
@@ -231,6 +335,7 @@ def generate_cpp_code(headers_info: list[HeaderInfo]) -> str:
             lines = [
                 f"    entt::meta_factory<{s.full_name}>{{}}",
                 f'        .type("{s.name}"_hs, "{s.name}")',
+                f'        .func<&ls::ecs::Registry::ensureSparseSet<{s.full_name}>>("ensureSparseSet"_hs)',
             ]
 
             for p in s.properties:
@@ -248,10 +353,25 @@ def generate_cpp_code(headers_info: list[HeaderInfo]) -> str:
                     else "false"
                 )
 
+                is_transient = "true" if "Transient" in p.attributes else "false"
+
                 lines.append(
-                    f'        .custom<ls::reflection::PropertyInfo>("{display_name}", {is_readonly})'
+                    f'        .custom<ls::reflection_system::PropertyInfo>("{display_name}", {is_readonly}, {is_transient})'
                 )
 
+            if len(lines) > 1:
+                lines[-1] += ";"
+            blocks.append("\n".join(lines))
+
+        for e in info.enums:
+            lines = [
+                f"    entt::meta_factory<{e.full_name}>{{}}",
+                f'        .type("{e.name}"_hs, "{e.name}")',
+            ]
+            for m in e.members:
+                lines.append(
+                    f'        .data<{e.full_name}::{m.name}>("{m.name}"_hs, "{m.name}")'
+                )
             if len(lines) > 1:
                 lines[-1] += ";"
             blocks.append("\n".join(lines))
@@ -260,11 +380,12 @@ def generate_cpp_code(headers_info: list[HeaderInfo]) -> str:
 
     cpp_content = f"""// AUTOMATICALLY GENERATED FILE - DO NOT EDIT MANUALLY
 #include "engine/reflection/reflection_system.hpp"
+#include "engine/ecs/registry.hpp"
 #include <entt/meta/factory.hpp>
 
 {"\n".join(unique_includes)}
 
-namespace ls::reflection {{
+namespace ls::reflection_system {{
 
   void registerGeneratedTypes() {{
     using namespace entt::literals;
@@ -272,7 +393,7 @@ namespace ls::reflection {{
 {"\n\n".join(blocks)}
   }}
 
-}} // namespace ls::reflection
+}} // namespace ls::reflection_system
 """
     return cpp_content
 
@@ -293,10 +414,13 @@ def main():
         for header_path in dir_path.rglob("*.hpp"):
             code = header_path.read_text(encoding="utf-8")
             structs = process_code(code)
+            enums = process_enums(code)
 
-            if structs:
+            if structs or enums:
                 inc_path = resolve_include_path(header_path.resolve(), args.input_dir)
-                headers_info.append(HeaderInfo(include_path=inc_path, structs=structs))
+                headers_info.append(
+                    HeaderInfo(include_path=inc_path, structs=structs, enums=enums)
+                )
 
     cpp_content = generate_cpp_code(headers_info)
 

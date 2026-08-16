@@ -6,7 +6,8 @@
 
 namespace ls::component {
 
-  enum class ColliderType { Circle, AABB, OBB };
+  ENUM()
+  enum class ColliderType : int { Circle, AABB, OBB };
 
   STRUCT()
   struct Collider {

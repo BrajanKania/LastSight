@@ -27,14 +27,14 @@ namespace ls::equip_system {
 
       const auto* itemDef{ itemRegistry.get(currentStack.itemId) };
       if (itemDef != nullptr) {
-        if (itemDef->equippedTextureId != 0) {
+        if (itemDef->equippedTextureHandle.id != 0) {
           ctx.registry.addComponent(
               entity,
               component::EquippedSprite{
-                  .textureId = itemDef->equippedTextureId,
+                  .textureHandle = itemDef->equippedTextureHandle,
                   .scale = itemDef->equippedScale,
                   .offset = itemDef->weaponConfig->hipOffset,
-                  .zIndex = renderer::Layer::Entities,
+                  .layer = renderer::Layer::Entities,
               }
           );
         }

@@ -18,7 +18,7 @@ namespace ls::texture_name {
   inline constexpr const char* kEquippedRifle{ "equipped_rifle.png" };
 
   inline constexpr const char* kMainMenuBackground{ "main_menu_background.png" };
-  inline constexpr const char* kSomething{ "something.png" };
+  inline constexpr const char* kStalker{ "stalker.png" };
   inline constexpr const char* kGrass1{ "grass_1.png" };
   inline constexpr const char* kTrunk{ "trunk.png" };
   inline constexpr const char* kMainMenuTitle{ "main_menu_title.png" };

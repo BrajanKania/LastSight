@@ -4,6 +4,7 @@
 #include <glad/gl.h>
 #include <imgui.h>
 
+#include <cassert>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,6 +19,8 @@
 #include "engine/components/velocity.hpp"
 #include "engine/core/asset_system.hpp"
 #include "engine/core/update_context.hpp"
+#include "engine/ecs/registry.hpp"
+#include "engine/events/request_save_scene.hpp"
 #include "engine/events/set_panel_visibility.hpp"
 #include "engine/events/toggle_panel.hpp"
 #include "engine/gfx/framebuffer.hpp"
@@ -31,6 +34,7 @@
 #include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
 #include "engine/renderer/passes/post_process_pass.hpp"
+#include "engine/serialization/scene_serializer.hpp"
 #include "game/actions/aim.hpp"
 #include "game/actions/interact.hpp"
 #include "game/actions/move.hpp"
@@ -61,6 +65,7 @@
 #include "game/components/weapon.hpp"
 #include "game/items/weapon_config.hpp"
 #include "game/particles/fire.hpp"
+#include "game/scenes/scene_names.hpp"
 #include "game/scenes/texture_names.hpp"
 #include "game/systems/camera_system.hpp"
 #include "game/systems/combat_system.hpp"
@@ -77,28 +82,262 @@
 namespace ls {
 
   void WorldScene::onEnter() {
-    textureManager_.load(texture_name::kWhite, asset_system::texture(texture_name::kWhite));
-    textureManager_.load(texture_name::kGrass, asset_system::texture(texture_name::kGrass));
-    textureManager_.load(texture_name::kContainer, asset_system::texture(texture_name::kContainer));
-    textureManager_.load(texture_name::kPlayer, asset_system::texture(texture_name::kPlayer));
-    textureManager_.load(texture_name::kWorldPistol, asset_system::texture(texture_name::kWorldPistol));
-    textureManager_.load(texture_name::kEquippedPistol, asset_system::texture(texture_name::kEquippedPistol));
-    textureManager_.load(texture_name::kBullet, asset_system::texture(texture_name::kBullet));
-    textureManager_.load(texture_name::kWorldRifle, asset_system::texture(texture_name::kWorldRifle));
-    textureManager_.load(texture_name::kEquippedRifle, asset_system::texture(texture_name::kEquippedRifle));
-    textureManager_.load(texture_name::kEnemy, asset_system::texture(texture_name::kEnemy));
+    assert(engineCtx_.eventQueue != nullptr && "World Scene requires a valid EventQueue!");
+    assert(engineCtx_.textureManager != nullptr && "World Scene requires a valid TextureManager!");
 
+    engineCtx_.textureManager->load(texture_name::kWhite, asset_system::texture(texture_name::kWhite));
+    engineCtx_.textureManager->load(texture_name::kGrass, asset_system::texture(texture_name::kGrass));
+    engineCtx_.textureManager->load(texture_name::kContainer, asset_system::texture(texture_name::kContainer));
+    engineCtx_.textureManager->load(texture_name::kPlayer, asset_system::texture(texture_name::kPlayer));
+    engineCtx_.textureManager->load(texture_name::kWorldPistol, asset_system::texture(texture_name::kWorldPistol));
+    engineCtx_.textureManager->load(
+        texture_name::kEquippedPistol, asset_system::texture(texture_name::kEquippedPistol)
+    );
+    engineCtx_.textureManager->load(texture_name::kBullet, asset_system::texture(texture_name::kBullet));
+    engineCtx_.textureManager->load(texture_name::kWorldRifle, asset_system::texture(texture_name::kWorldRifle));
+    engineCtx_.textureManager->load(texture_name::kEquippedRifle, asset_system::texture(texture_name::kEquippedRifle));
+    engineCtx_.textureManager->load(texture_name::kEnemy, asset_system::texture(texture_name::kEnemy));
+
+    serialization::SceneSerializer serializer(getSceneContext(), engineCtx_);
+    serializer.loadScene(asset_system::scene(scene::kWorld));
+    for (auto entity : registry_.view<component::Player>()) {
+      player_ = entity;
+      break;
+    }
+
+    // genereteEntities();
+
+    worldFBO_ = std::make_shared<gfx::Framebuffer>();
+    fovFBO_ = std::make_shared<gfx::Framebuffer>();
+    processedFBO_ = std::make_shared<gfx::Framebuffer>();
+
+    renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
+    renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
+    renderPipeline_.addPass<renderer::PostProcessPass>(processedFBO_, fovFBO_);
+    renderPipeline_.addPass<renderer::ComposePass>(processedFBO_);
+
+    uiManager_.addPanel<ui::InventoryPanel>(ui::panel::kInventory, itemRegistry_);
+
+    inputManager_.bindAxis2D<action::Move>(input::Key::W, input::Key::S, input::Key::A, input::Key::D);
+    inputManager_.bindButton<action::Shoot>(input::Button::Left);
+    inputManager_.bindKey<action::Sprint>(input::Key::LShift);
+    inputManager_.bindKey<action::Interact>(input::Key::E);
+    inputManager_.bindKey<action::SelectSlot0>(input::Key::Num1);
+    inputManager_.bindKey<action::SelectSlot1>(input::Key::Num2);
+    inputManager_.bindKey<action::SelectSlot2>(input::Key::Num3);
+    inputManager_.bindKey<action::SelectSlot3>(input::Key::Num4);
+    inputManager_.bindKey<action::SelectSlot4>(input::Key::Num5);
+    inputManager_.bindKey<action::SelectSlot5>(input::Key::Num6);
+    inputManager_.bindButton<action::Aim>(input::Button::Right);
+
+    {  // Items
+
+      itemRegistry_.registerItem(
+          item::ItemDefinition{
+              .id = "weapon_pistol",
+              .iconTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldPistol),
+              .worldTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldPistol),
+              .equippedTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kEquippedPistol),
+              .equippedScale = glm::vec2(0.5f),
+              .equippedOffset = glm::vec2(0.f, 0.2f),
+              .equippedAngleOffset = -90.f,
+              .canStack = false,
+              .maxStackSize = 1,
+              .weaponConfig =
+                  item::WeaponConfig{
+                      .isAutomatic = false,
+                      .fireRate = 0.1f,
+                      .initialSpeed = 6.f,
+                      .bulletScale = glm::vec2(0.025f),
+                      .bulletLifetime = 3.f,
+                      .transitionSpeed = 8.f,
+                      .muzzleOffset = glm::vec2(0.f, 0.14f),
+                      .hipOffset = glm::vec2(0.12f, 0.21f),
+                      .aimOffset = glm::vec2(0.f, 0.27f),
+                      .hipRecoil =
+                          component::Weapon::RecoilConfig{
+                              .baseSpread = 10.f,
+                              .weaponImpulse = 5.f,
+                              .weaponAngularImpulse = 150.f,
+                              .cameraImpulse = 1.f,
+                              .cameraTrauma = 0.1f,
+                              .maxSpringOffset = 0.15f,
+                              .springStiffness = 400.f,
+                              .damping = 30.f,
+                              .maxSpringRotation = 90.f,
+                              .angularSpringStiffness = 80.f,
+                              .angularDamping = 8.f,
+                          },
+                      .aimRecoil =
+                          component::Weapon::RecoilConfig{
+                              .baseSpread = 5.f,
+                              .weaponImpulse = 8.f,
+                              .weaponAngularImpulse = 100.f,
+                              .cameraImpulse = 1.2f,
+                              .cameraTrauma = 0.1f,
+                              .maxSpringOffset = 0.15f,
+                              .springStiffness = 400.f,
+                              .damping = 40.f,
+                              .maxSpringRotation = 30.f,
+                              .angularSpringStiffness = 100.f,
+                              .angularDamping = 8.f,
+                          },
+                  },
+          }
+      );
+
+      itemRegistry_.registerItem(
+          item::ItemDefinition{
+              .id = "weapon_rifle",
+              .iconTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldRifle),
+              .worldTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldRifle),
+              .equippedTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kEquippedRifle),
+              .equippedScale = glm::vec2(1.2f),
+              .equippedOffset = glm::vec2(0.08f, 0.3f),
+              .equippedAngleOffset = -90.f,
+              .canStack = false,
+              .maxStackSize = 1,
+              .weaponConfig =
+                  item::WeaponConfig{
+                      .isAutomatic = true,
+                      .fireRate = 0.12f,
+                      .initialSpeed = 10.f,
+                      .bulletScale = glm::vec2(0.025f),
+                      .bulletLifetime = 3.f,
+                      .transitionSpeed = 4.f,
+                      .muzzleOffset = glm::vec2(0.f, 0.3f),
+                      .hipOffset = glm::vec2(0.12f, 0.27f),
+                      .aimOffset = glm::vec2(0.f, 0.38f),
+                      .hipRecoil =
+                          component::Weapon::RecoilConfig{
+                              .baseSpread = 10.f,
+                              .weaponImpulse = 12.f,
+                              .weaponAngularImpulse = 150.f,
+                              .cameraImpulse = 1.2f,
+                              .cameraTrauma = 0.18f,
+                              .maxSpringOffset = 0.15f,
+                              .springStiffness = 200.f,
+                              .damping = 30.f,
+                              .maxSpringRotation = 120.f,
+                              .angularSpringStiffness = 150.f,
+                              .angularDamping = 10.f,
+                          },
+                      .aimRecoil =
+                          component::Weapon::RecoilConfig{
+                              .baseSpread = 3.f,
+                              .weaponImpulse = 12.f,
+                              .weaponAngularImpulse = 80.f,
+                              .cameraImpulse = 1.5f,
+                              .cameraTrauma = 0.13f,
+                              .maxSpringOffset = 0.15f,
+                              .springStiffness = 400.f,
+                              .damping = 40.f,
+                              .maxSpringRotation = 30.f,
+                              .angularSpringStiffness = 150.f,
+                              .angularDamping = 10.f,
+                          },
+                  },
+          }
+      );
+    }  // namespace ls
+  }
+
+  void WorldScene::onExit() {}
+
+  void WorldScene::onResize(int width, int height) {
+    worldFBO_->resize(width, height);
+    fovFBO_->resize(width, height);
+    processedFBO_->resize(width, height);
+  }
+
+  void WorldScene::handleInput() {
+    ImGuiIO& io{ ImGui::GetIO() };
+    inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
+  }
+
+  void WorldScene::update(float dt) {
+    processEvents();
+
+    UpdateContext ctx{
+      .registry = registry_,
+      .eventQueue = eventQueue_,
+      .textureManager = *engineCtx_.textureManager,
+      .inputManager = inputManager_,
+      .dt = dt,
+    };
+
+    player_system::update(ctx);
+    interaction_system::update(ctx);
+
+    combat_system::update(ctx);
+    inventory_system::update(ctx, itemRegistry_);
+    equip_system::update(ctx, itemRegistry_);
+
+    physics_system::update(ctx);
+
+    projectile_system::update(ctx);
+    lamp_system::update(ctx);
+
+    particle_system::update(ctx);
+
+    camera_system::follow(ctx, player_);
+    camera_system::update(ctx);
+
+    fov_system::update(ctx);
+    post_process_system::update(ctx);
+
+    registry_.purgeDestroyedEntities();
+    eventQueue_.clear();
+  }
+
+  void WorldScene::render() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    for (auto entity : registry_.view<component::Camera>()) {
+      const auto& camera{ registry_.getComponent<component::Camera>(entity) };
+      glm::mat4 viewProjection{ camera.projection * camera.view };
+      renderPipeline_.execute(
+          renderer::RenderContext{
+              .registry = registry_,
+              .viewProjection = viewProjection,
+              .textureManager = *engineCtx_.textureManager,
+          }
+      );
+      break;
+    }
+
+    uiManager_.render(getUIContext());
+  }
+
+  void WorldScene::processEvents() {
+    for (const auto& event : eventQueue_.getEvents<event::TogglePanel>()) {
+      uiManager_.getPanel(event.name).toggleVisible();
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::SetPanelVisibility>()) {
+      uiManager_.getPanel(event.name).setVisible(event.visible);
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestSaveScene>()) {
+      serialization::SceneSerializer serializer(getSceneContext(), engineCtx_);
+      serializer.saveScene(asset_system::scene(scene::kWorld));
+    }
+  }
+
+  void WorldScene::genereteEntities() {
     {  // world entities
 
       {  // Background
         auto background{ registry_.createEntity() };
+        registry_.addComponent(background, component::EntityName{ .name = "background" });
         registry_.addComponent(background, component::Transform{ .scale = glm::vec2(5.f) });
         registry_.addComponent(
             background,
             component::Sprite{
                 .uvScale = glm::vec2(2.5f),
-                .textureId = textureManager_.getId(texture_name::kGrass),
-                .zIndex = renderer::Layer::Background,
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kGrass),
+                .layer = renderer::Layer::Background,
             }
         );
       }
@@ -122,9 +361,9 @@ namespace ls {
             player_,
             component::Sprite{
                 .uvScale = glm::vec2(1.f),
-                .textureId = textureManager_.getId(texture_name::kPlayer),
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kPlayer),
                 .angleOffset = -90.f,
-                .zIndex = renderer::Layer::Entities,
+                .layer = renderer::Layer::Entities,
             }
         );
         registry_.addComponent(player_, component::Velocity{});
@@ -164,12 +403,7 @@ namespace ls {
                 .radius = 0.5f,
             }
         );
-        registry_.addComponent(
-            player_,
-            component::Inventory{
-                .maxSlots = 6,
-            }
-        );
+        registry_.addComponent(player_, component::Inventory{ 6 });
         registry_.addComponent(
             player_,
             component::Health{
@@ -247,6 +481,7 @@ namespace ls {
 
       {  // Container
         auto container{ registry_.createEntity() };
+        registry_.addComponent(container, component::EntityName{ .name = "container" });
         registry_.addComponent(
             container,
             component::Transform{
@@ -258,8 +493,8 @@ namespace ls {
             container,
             component::Sprite{
                 .uvScale = glm::vec2(1.f),
-                .textureId = textureManager_.getId(texture_name::kContainer),
-                .zIndex = renderer::Layer::Entities,
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kContainer),
+                .layer = renderer::Layer::Entities,
             }
         );
         registry_.addComponent(
@@ -281,6 +516,7 @@ namespace ls {
 
       {  // Enemy
         auto enemy{ registry_.createEntity() };
+        registry_.addComponent(enemy, component::EntityName{ .name = "enemy" });
         registry_.addComponent(enemy, component::Enemy{});
         registry_.addComponent(
             enemy,
@@ -293,8 +529,8 @@ namespace ls {
             enemy,
             component::Sprite{
                 .uvScale = glm::vec2(1.f),
-                .textureId = textureManager_.getId(texture_name::kEnemy),
-                .zIndex = renderer::Layer::Entities,
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kEnemy),
+                .layer = renderer::Layer::Entities,
             }
         );
         registry_.addComponent(
@@ -309,6 +545,7 @@ namespace ls {
 
       {  // Container 2
         auto container2{ registry_.createEntity() };
+        registry_.addComponent(container2, component::EntityName{ .name = "container_2" });
         registry_.addComponent(
             container2,
             component::Transform{
@@ -321,8 +558,8 @@ namespace ls {
             container2,
             component::Sprite{
                 .uvScale = glm::vec2(1.f),
-                .textureId = textureManager_.getId(texture_name::kContainer),
-                .zIndex = renderer::Layer::Entities,
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kContainer),
+                .layer = renderer::Layer::Entities,
             }
         );
         registry_.addComponent(
@@ -336,6 +573,7 @@ namespace ls {
 
       {  // Pistol
         auto pistol{ registry_.createEntity() };
+        registry_.addComponent(pistol, component::EntityName{ .name = "pistol" });
         registry_.addComponent(
             pistol,
             component::Transform{
@@ -348,20 +586,20 @@ namespace ls {
             pistol,
             component::Sprite{
                 .uvScale = glm::vec2(1.f),
-                .textureId = textureManager_.getId(texture_name::kWorldPistol),
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldPistol),
                 .angleOffset = -90.f,
-                .zIndex = renderer::Layer::Ground,
+                .layer = renderer::Layer::Ground,
             }
         );
         registry_.addComponent(
-            pistol,
-          component::ItemPickup{
-            .itemStack = {
-              .itemId = "weapon_pistol",
-              .count = 1,
-            },
-          }
-        );
+                  pistol,
+                component::ItemPickup{
+                  .itemStack = {
+                    .itemId = "weapon_pistol",
+                    .count = 1,
+                  },
+                }
+              );
         registry_.addComponent(
             pistol,
             component::Interactable{
@@ -372,6 +610,7 @@ namespace ls {
 
       {  // Rifle
         auto rifle{ registry_.createEntity() };
+        registry_.addComponent(rifle, component::EntityName{ .name = "rifle" });
         registry_.addComponent(
             rifle,
             component::Transform{
@@ -384,20 +623,20 @@ namespace ls {
             rifle,
             component::Sprite{
                 .uvScale = glm::vec2(1.f),
-                .textureId = textureManager_.getId(texture_name::kWorldRifle),
+                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldRifle),
                 .angleOffset = -90.f,
-                .zIndex = renderer::Layer::Ground,
+                .layer = renderer::Layer::Ground,
             }
         );
         registry_.addComponent(
-            rifle,
-          component::ItemPickup{
-            .itemStack = {
-              .itemId = "weapon_rifle",
-              .count = 1,
-            },
-          }
-        );
+                  rifle,
+                component::ItemPickup{
+                  .itemStack = {
+                    .itemId = "weapon_rifle",
+                    .count = 1,
+                  },
+                }
+              );
         registry_.addComponent(
             rifle,
             component::Interactable{
@@ -406,214 +645,6 @@ namespace ls {
         );
       }
     }
-
-    worldFBO_ = std::make_shared<gfx::Framebuffer>();
-    fovFBO_ = std::make_shared<gfx::Framebuffer>();
-    processedFBO_ = std::make_shared<gfx::Framebuffer>();
-
-    renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
-    renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
-    renderPipeline_.addPass<renderer::PostProcessPass>(processedFBO_, fovFBO_);
-    renderPipeline_.addPass<renderer::ComposePass>(processedFBO_);
-
-    uiManager_.addPanel<ui::InventoryPanel>(ui::panel::kInventory, itemRegistry_);
-
-    inputManager_.bindAxis2D<action::Move>(input::Key::W, input::Key::S, input::Key::A, input::Key::D);
-    inputManager_.bindButton<action::Shoot>(input::Button::Left);
-    inputManager_.bindKey<action::Sprint>(input::Key::LShift);
-    inputManager_.bindKey<action::Interact>(input::Key::E);
-    inputManager_.bindKey<action::SelectSlot0>(input::Key::Num1);
-    inputManager_.bindKey<action::SelectSlot1>(input::Key::Num2);
-    inputManager_.bindKey<action::SelectSlot2>(input::Key::Num3);
-    inputManager_.bindKey<action::SelectSlot3>(input::Key::Num4);
-    inputManager_.bindKey<action::SelectSlot4>(input::Key::Num5);
-    inputManager_.bindKey<action::SelectSlot5>(input::Key::Num6);
-    inputManager_.bindButton<action::Aim>(input::Button::Right);
-
-    {  // Items
-
-      itemRegistry_.registerItem(
-          item::ItemDefinition{
-              .id = "weapon_pistol",
-              .iconTextureId = textureManager_.getId(texture_name::kWorldPistol),
-              .worldTextureId = textureManager_.getId(texture_name::kWorldPistol),
-              .equippedTextureId = textureManager_.getId(texture_name::kEquippedPistol),
-              .equippedScale = glm::vec2(0.5f),
-              .equippedOffset = glm::vec2(0.f, 0.2f),
-              .equippedAngleOffset = -90.f,
-              .canStack = false,
-              .maxStackSize = 1,
-              .weaponConfig =
-                  item::WeaponConfig{
-                      .isAutomatic = false,
-                      .fireRate = 0.1f,
-                      .initialSpeed = 6.f,
-                      .bulletScale = glm::vec2(0.025f),
-                      .bulletLifetime = 3.f,
-                      .transitionSpeed = 8.f,
-                      .muzzleOffset = glm::vec2(0.f, 0.14f),
-                      .hipOffset = glm::vec2(0.12f, 0.21f),
-                      .aimOffset = glm::vec2(0.f, 0.27f),
-                      .hipRecoil =
-                          component::Weapon::RecoilConfig{
-                              .baseSpread = 10.f,
-                              .weaponImpulse = 5.f,
-                              .weaponAngularImpulse = 150.f,
-                              .cameraImpulse = 1.f,
-                              .cameraTrauma = 0.1f,
-                              .maxSpringOffset = 0.15f,
-                              .springStiffness = 400.f,
-                              .damping = 30.f,
-                              .maxSpringRotation = 90.f,
-                              .angularSpringStiffness = 80.f,
-                              .angularDamping = 8.f,
-                          },
-                      .aimRecoil =
-                          component::Weapon::RecoilConfig{
-                              .baseSpread = 5.f,
-                              .weaponImpulse = 8.f,
-                              .weaponAngularImpulse = 100.f,
-                              .cameraImpulse = 1.2f,
-                              .cameraTrauma = 0.1f,
-                              .maxSpringOffset = 0.15f,
-                              .springStiffness = 400.f,
-                              .damping = 40.f,
-                              .maxSpringRotation = 30.f,
-                              .angularSpringStiffness = 100.f,
-                              .angularDamping = 8.f,
-                          },
-                  },
-          }
-      );
-
-      itemRegistry_.registerItem(
-          item::ItemDefinition{
-              .id = "weapon_rifle",
-              .iconTextureId = textureManager_.getId(texture_name::kWorldRifle),
-              .worldTextureId = textureManager_.getId(texture_name::kWorldRifle),
-              .equippedTextureId = textureManager_.getId(texture_name::kEquippedRifle),
-              .equippedScale = glm::vec2(1.2f),
-              .equippedOffset = glm::vec2(0.08f, 0.3f),
-              .equippedAngleOffset = -90.f,
-              .canStack = false,
-              .maxStackSize = 1,
-              .weaponConfig =
-                  item::WeaponConfig{
-                      .isAutomatic = true,
-                      .fireRate = 0.12f,
-                      .initialSpeed = 10.f,
-                      .bulletScale = glm::vec2(0.025f),
-                      .bulletLifetime = 3.f,
-                      .transitionSpeed = 4.f,
-                      .muzzleOffset = glm::vec2(0.f, 0.3f),
-                      .hipOffset = glm::vec2(0.12f, 0.27f),
-                      .aimOffset = glm::vec2(0.f, 0.38f),
-                      .hipRecoil =
-                          component::Weapon::RecoilConfig{
-                              .baseSpread = 10.f,
-                              .weaponImpulse = 12.f,
-                              .weaponAngularImpulse = 150.f,
-                              .cameraImpulse = 1.2f,
-                              .cameraTrauma = 0.18f,
-                              .maxSpringOffset = 0.15f,
-                              .springStiffness = 200.f,
-                              .damping = 30.f,
-                              .maxSpringRotation = 120.f,
-                              .angularSpringStiffness = 150.f,
-                              .angularDamping = 10.f,
-                          },
-                      .aimRecoil =
-                          component::Weapon::RecoilConfig{
-                              .baseSpread = 3.f,
-                              .weaponImpulse = 12.f,
-                              .weaponAngularImpulse = 80.f,
-                              .cameraImpulse = 1.5f,
-                              .cameraTrauma = 0.13f,
-                              .maxSpringOffset = 0.15f,
-                              .springStiffness = 400.f,
-                              .damping = 40.f,
-                              .maxSpringRotation = 30.f,
-                              .angularSpringStiffness = 150.f,
-                              .angularDamping = 10.f,
-                          },
-                  },
-          }
-      );
-    }  // namespace ls
-  }
-
-  void WorldScene::onExit() {}
-
-  void WorldScene::onResize(int width, int height) {
-    worldFBO_->resize(width, height);
-    fovFBO_->resize(width, height);
-    processedFBO_->resize(width, height);
-  }
-
-  void WorldScene::handleInput() {
-    ImGuiIO& io{ ImGui::GetIO() };
-    inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
-  }
-
-  void WorldScene::update(float dt) {
-    for (const auto& event : eventQueue_.getEvents<event::TogglePanel>()) {
-      uiManager_.getPanel(event.name).toggleVisible();
-    }
-
-    for (const auto& event : eventQueue_.getEvents<event::SetPanelVisibility>()) {
-      uiManager_.getPanel(event.name).setVisible(event.visible);
-    }
-
-    UpdateContext ctx{
-      .registry = registry_,
-      .eventQueue = eventQueue_,
-      .textureManager = textureManager_,
-      .inputManager = inputManager_,
-      .dt = dt,
-    };
-
-    player_system::update(ctx);
-    interaction_system::update(ctx);
-
-    combat_system::update(ctx);
-    inventory_system::update(ctx, itemRegistry_);
-    equip_system::update(ctx, itemRegistry_);
-
-    physics_system::update(ctx);
-
-    projectile_system::update(ctx);
-    lamp_system::update(ctx);
-
-    particle_system::update(ctx);
-
-    camera_system::follow(ctx, player_);
-    camera_system::update(ctx);
-
-    fov_system::update(ctx);
-    post_process_system::update(ctx);
-
-    registry_.purgeDestroyedEntities();
-    eventQueue_.clear();
-  }
-
-  void WorldScene::render() {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    for (auto entity : registry_.view<component::Camera>()) {
-      const auto& camera{ registry_.getComponent<component::Camera>(entity) };
-      glm::mat4 viewProjection{ camera.projection * camera.view };
-      renderPipeline_.execute(
-          renderer::RenderContext{
-              .registry = registry_,
-              .viewProjection = viewProjection,
-              .textureManager = textureManager_,
-          }
-      );
-      break;
-    }
-
-    uiManager_.render(getUIContext());
   }
 
 }  // namespace ls

@@ -12,6 +12,7 @@
         "docking-experimental"
       ]
     },
-    "entt"
+    "entt",
+    "nlohmann-json"
   ]
 }

@@ -2,13 +2,13 @@
 
 #include <memory>
 
+#include "engine/core/engine_context.hpp"
 #include "engine/core/i_scene.hpp"
 #include "engine/core/scene_context.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/gfx/framebuffer.hpp"
-#include "engine/gfx/texture_manager.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/renderer/render_pipeline.hpp"
 #include "engine/ui/ui_manager.hpp"
@@ -18,8 +18,8 @@ namespace ls {
 
   class WorldScene : public IScene {
   public:
-    explicit WorldScene(dispatch::EventQueue& engineEventQueue)
-        : engineEventQueue_{ engineEventQueue } {}
+    explicit WorldScene(EngineContext engineCtx)
+        : IScene(engineCtx) {}
 
     void onEnter() override;
     void onExit() override;
@@ -37,23 +37,16 @@ namespace ls {
         .eventQueue = &eventQueue_,
         .inputManager = &inputManager_,
         .renderPipeline = &renderPipeline_,
-        .textureManager = &textureManager_,
       };
     }
 
   private:
-    ui::UIContext getUIContext() override {
-      return ui::UIContext{
-        .eventQueue = eventQueue_,
-        .sceneCtx = getSceneContext(),
-      };
-    }
+    void processEvents() override;
+    void genereteEntities();
 
     ecs::Registry registry_;
     dispatch::EventQueue eventQueue_;
-    dispatch::EventQueue& engineEventQueue_;
     ui::UIManager uiManager_;
-    gfx::TextureManager textureManager_;
     input::InputManager inputManager_;
     renderer::RenderPipeline renderPipeline_;
 

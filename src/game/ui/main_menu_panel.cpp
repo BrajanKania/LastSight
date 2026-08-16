@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include <cassert>
+
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/events/request_change_scene.hpp"
 #include "engine/events/request_quit_engine.hpp"
@@ -10,6 +12,8 @@
 namespace ls::ui {
 
   void MainMenuPanel::render(const UIContext& ctx) {
+    assert(ctx.engineCtx.eventQueue != nullptr && "MainMenuPanel requires a valid EventQueue!");
+
     ImGuiIO& io{ ImGui::GetIO() };
 
     ImGui::SetNextWindowPos(
@@ -30,7 +34,7 @@ namespace ls::ui {
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
 
       if (ImGui::Button("Play", buttonSize)) {
-        ctx.eventQueue.publish(
+        ctx.engineCtx.eventQueue->publish(
             event::RequestChangeScene{
                 .name = scene::kWorld,
             }
@@ -46,7 +50,7 @@ namespace ls::ui {
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.9f, 0.1f, 0.1f, 1.0f));
 
       if (ImGui::Button("Exit", buttonSize)) {
-        ctx.eventQueue.publish(event::RequestQuitEngine{});
+        ctx.engineCtx.eventQueue->publish(event::RequestQuitEngine{});
       }
 
       ImGui::PopStyleColor(3);
