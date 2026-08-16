@@ -2,6 +2,6 @@
 
 namespace ls::action {
 
-  struct ToggleDebug {};
+  struct ToggleEngineMode {};
 
 }  // namespace ls::action

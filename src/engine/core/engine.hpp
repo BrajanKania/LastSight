@@ -2,6 +2,7 @@
 
 #include "engine/core/editor_layer.hpp"
 #include "engine/core/engine_context.hpp"
+#include "engine/core/engine_mode.hpp"
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/window.hpp"
 #include "engine/dispatch/event_queue.hpp"
@@ -33,6 +34,7 @@ namespace ls {
         .sceneManager = &sceneManager_,
         .eventQueue = &eventQueue_,
         .textureManager = &textureManager_,
+        .engineMode = &engineMode_,
       };
     }
 
@@ -42,6 +44,8 @@ namespace ls {
     gfx::TextureManager textureManager_;
     SceneManager sceneManager_;
     EditorLayer editorLayer_;
+
+    EngineMode engineMode_{ EngineMode::Play };
   };
 
 }  // namespace ls

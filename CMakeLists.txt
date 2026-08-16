@@ -70,7 +70,6 @@ add_executable(LastSight
 
   src/engine/physics/physics_system.cpp
 
-  src/engine/renderer/passes/compose_pass.cpp
   src/engine/renderer/passes/fov_pass.cpp
   src/engine/renderer/passes/lit_pass.cpp
   src/engine/renderer/passes/post_process_pass.cpp
@@ -82,10 +81,13 @@ add_executable(LastSight
 
   src/engine/systems/parallax_system.cpp
 
-  src/engine/ui/panels/toolbox_panel.cpp
+  src/engine/ui/panels/asset_browser.cpp
   src/engine/ui/panels/entity_inspector_panel.cpp
+  src/engine/ui/panels/main_menu_bar_panel.cpp
   src/engine/ui/panels/render_pipeline_debug_panel.cpp
   src/engine/ui/panels/scene_browser_panel.cpp
+  src/engine/ui/panels/scene_hierarchy_panel.cpp
+  src/engine/ui/panels/viewport_panel.cpp
 
   src/engine/ui/ui_manager.cpp
   src/engine/ui/ui_system.cpp

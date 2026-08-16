@@ -41,9 +41,10 @@ namespace ls {
     void changeScene(const std::string& name);
     void popScene();
 
-    void handleInput();
+    void handleInput(bool blockKeyboard, bool blockMouse);
     void update(float dt);
     void render();
+    void renderUI();
     void onResize(int width, int height);
 
     std::vector<std::string> getRegisteredSceneNames() const;

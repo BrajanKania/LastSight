@@ -2,14 +2,20 @@
 
 #include <imgui.h>
 
+#include <glm/ext/vector_float4.hpp>
+
 #include "engine/actions/quit_engine.hpp"
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/time_system.hpp"
 #include "engine/core/window.hpp"
+#include "engine/events/engine_mode_changed.hpp"
+#include "engine/events/request_change_engine_mode.hpp"
 #include "engine/events/request_change_scene.hpp"
 #include "engine/events/request_quit_engine.hpp"
+#include "engine/events/viewport_resized.hpp"
 #include "engine/input/types.hpp"
 #include "engine/reflection/reflection_system.hpp"
+#include "engine/renderer/render_system.hpp"
 #include "engine/ui/ui_system.hpp"
 
 namespace ls {
@@ -31,6 +37,9 @@ namespace ls {
     uint64_t lastTime{ ls::time_system::ms() };
 
     while (!window_.shouldClose()) {
+      render_system::bindFramebuffer(0);
+      render_system::clearColorBuffer();
+
       uint64_t currentTime{ ls::time_system::ms() };
       float dt{ static_cast<float>(currentTime - lastTime) / 1000.f };
       dt = std::min(dt, 0.1f);
@@ -40,23 +49,18 @@ namespace ls {
 
       handleInput();
 
-      if (window_.wasResized()) {
-        sceneManager_.onResize(window_.getWidth(), window_.getHeight());
-      }
-
-      sceneManager_.handleInput();
-
       sceneManager_.update(dt);
+      sceneManager_.render();
 
       ui_system::beginFrame();
 
-      sceneManager_.render();
       editorLayer_.render(getEngineContext(), sceneManager_.getActiveSceneContext());
+      sceneManager_.renderUI();
+
+      handleRequest();
 
       editorLayer_.update(getEngineContext());
       ui_system::endFrame();
-
-      handleRequest();
 
       window_.swapBuffers();
       eventQueue_.clear();
@@ -64,21 +68,40 @@ namespace ls {
   }
 
   void Engine::handleRequest() {
-    for (auto event : eventQueue_.getEvents<event::RequestQuitEngine>()) {
+    for (const auto& event : eventQueue_.getEvents<event::RequestQuitEngine>()) {
       window_.close();
     }
 
-    for (auto event : eventQueue_.getEvents<event::RequestChangeScene>()) {
+    for (const auto& event : eventQueue_.getEvents<event::RequestChangeScene>()) {
       sceneManager_.changeScene(event.name);
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestChangeEngineMode>()) {
+      if (engineMode_ != event.newMode) {
+        engineMode_ = event.newMode;
+        eventQueue_.publish(
+            event::EngineModeChanged{
+                .newMode = engineMode_,
+            }
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::ViewportResized>()) {
+      sceneManager_.onResize(event.newSize.x, event.newSize.y);
     }
   }
 
   void Engine::handleInput() {
     ImGuiIO& io{ ImGui::GetIO() };
 
-    editorLayer_.handleInput(eventQueue_, io.WantCaptureKeyboard, io.WantCaptureMouse);
+    const bool isPlayMode{ engineMode_ == EngineMode::Play };
+    const bool blockKeyboard = !isPlayMode && io.WantCaptureKeyboard && !editorLayer_.isViewportFocused();
+    const bool blockMouse = !isPlayMode && io.WantCaptureMouse && !editorLayer_.isViewportHovered();
 
-    inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
+    editorLayer_.handleInput(getEngineContext(), blockKeyboard, blockMouse);
+    inputManager_.update(blockKeyboard, blockMouse);
+    sceneManager_.handleInput(blockKeyboard, blockMouse);
 
     auto actionQuitEngineState{ inputManager_.getActionState<action::QuitEngine>() };
     if (actionQuitEngineState == input::ActionState::JustPressed) {

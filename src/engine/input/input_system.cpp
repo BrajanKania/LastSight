@@ -4,6 +4,9 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 
+#include <algorithm>
+#include <glm/ext/vector_float2.hpp>
+
 #include "engine/input/types.hpp"
 
 namespace ls::input_system {
@@ -56,6 +59,8 @@ namespace ls::input_system {
     }
 
     float scrollDeltaY{ 0.f };
+    glm::vec2 viewportPosition{ 0.f, 0.f };
+    glm::vec2 viewportSize{ 0.f, 0.f };
   }  // namespace
 
   bool isKeyPressed(input::Key key) {
@@ -67,6 +72,27 @@ namespace ls::input_system {
     glm::vec2 pos{ 0.f };
     SDL_GetMouseState(&pos.x, &pos.y);
     return pos;
+  }
+
+  glm::vec2 getViewportPosition() { return viewportPosition; }
+
+  glm::vec2 getViewportSize() { return viewportSize; }
+
+  void setViewportBounds(const glm::vec2& position, const glm::vec2& size) {
+    viewportPosition = position;
+    viewportSize = size;
+  }
+
+  glm::vec2 getViewportMousePosition() {
+    glm::vec2 globalMouse{ getMousePosition() };
+    glm::vec2 localMouse{ globalMouse - viewportPosition };
+
+    if (viewportSize.x > 0.f && viewportSize.y > 0.f) {
+      localMouse.x = std::clamp(localMouse.x, 0.f, viewportSize.x);
+      localMouse.y = std::clamp(localMouse.y, 0.f, viewportSize.y);
+    }
+
+    return localMouse;
   }
 
   bool isButtonPressed(input::Button button) {

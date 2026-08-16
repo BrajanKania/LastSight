@@ -40,12 +40,26 @@ namespace ls::ui {
       return *panels_[itName->second];
     }
 
+    const IUIPanel& getPanel(const std::string& name) const {
+      auto itName{ nameToIndex_.find(name) };
+      assert(itName != nameToIndex_.end() && "Attempted to get non-existent panel.");
+      return *panels_[itName->second];
+    }
+
     template <typename TPanel>
     TPanel& getPanel(const std::string& name) {
       IUIPanel& panel{ getPanel(name) };
       assert(dynamic_cast<TPanel*>(&panel) != nullptr && "Panel type mismatch.");
 
       return static_cast<TPanel&>(panel);
+    }
+
+    template <typename TPanel>
+    const TPanel& getPanel(const std::string& name) const {
+      const IUIPanel& panel{ getPanel(name) };
+      assert(dynamic_cast<const TPanel*>(&panel) != nullptr && "Panel type mismatch.");
+
+      return static_cast<const TPanel&>(panel);
     }
 
     void render(const UIContext& ctx);

@@ -20,12 +20,11 @@
 #include "engine/events/request_save_scene.hpp"
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/input/input_manager.hpp"
+#include "engine/input/input_system.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/layer.hpp"
-#include "engine/renderer/passes/compose_pass.hpp"
 #include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
-#include "engine/renderer/render_system.hpp"
 #include "engine/serialization/scene_serializer.hpp"
 #include "engine/systems/parallax_system.hpp"
 #include "game/components/camera.hpp"
@@ -105,7 +104,6 @@ namespace ls {
 
     renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
     renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
-    renderPipeline_.addPass<renderer::ComposePass>(fovFBO_);
 
     uiManager_.addPanel<ui::MainMenuPanel>(ui::panel::kMainMenu);
     uiManager_.getPanel(ui::panel::kMainMenu).setVisible(true);
@@ -125,9 +123,8 @@ namespace ls {
     }
   }
 
-  void MainMenuScene::handleInput() {
-    ImGuiIO& io{ ImGui::GetIO() };
-    inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
+  void MainMenuScene::handleInput(bool blockKeyboard, bool blockMouse) {
+    inputManager_.update(blockKeyboard, blockMouse);
   }
 
   void MainMenuScene::update(float dt) {
@@ -141,7 +138,7 @@ namespace ls {
       .dt = dt,
     };
 
-    glm::vec2 viewportSize{ render_system::getViewportSize() };
+    glm::vec2 viewportSize{ input_system::getViewportSize() };
 
     if (viewportSize.x > 0.f && viewportSize.y > 0.f) {
       glm::vec2 mousePos{ inputManager_.getMousePosition() };
@@ -165,7 +162,7 @@ namespace ls {
       const auto& camera{ registry_.getComponent<component::Camera>(cameraEntity_) };
       const auto& fov{ registry_.getComponent<component::FieldOfView>(fovEntity_) };
       glm::vec2 mouseWorldPos{
-        camera_system::screenToWorld(inputManager_.getMousePosition(), render_system::getViewportSize(), camera)
+        camera_system::screenToWorld(input_system::getViewportMousePosition(), input_system::getViewportSize(), camera)
       };
 
       if (registry_.hasComponent<component::FieldOfView>(fovEntity_)) {
@@ -196,8 +193,9 @@ namespace ls {
       );
       break;
     }
-    uiManager_.render(getUIContext());
   }
+
+  void MainMenuScene::renderUI() { uiManager_.render(getUIContext()); }
 
   void MainMenuScene::processEvents() {
     for (const auto& event : eventQueue_.getEvents<event::RequestSaveScene>()) {

@@ -7,6 +7,7 @@
 
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/renderer/render_pipeline.hpp"
+#include "engine/ui/panels/panel_names.hpp"
 
 namespace ls::ui {
 
@@ -25,7 +26,7 @@ namespace ls::ui {
       return;
     }
 
-    if (ImGui::Begin("Render Pipeline Debugger", &visible_)) {
+    if (ImGui::Begin(ui::panel::kRenderPipelineDebug, &visible_)) {
       {  // render pass list
         ImGui::SeparatorText("Render Passes");
 

@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include "engine/renderer/render_system.hpp"
+
 namespace ls {
 
   void SceneManager::changeScene(const std::string& name) {
@@ -35,9 +37,9 @@ namespace ls {
     });
   }
 
-  void SceneManager::handleInput() {
+  void SceneManager::handleInput(bool blockKeyboard, bool blockMouse) {
     if (!scenes_.empty()) {
-      scenes_.back()->handleInput();
+      scenes_.back()->handleInput(blockKeyboard, blockMouse);
     }
   }
 
@@ -50,30 +52,41 @@ namespace ls {
   }
 
   void SceneManager::render() {
-    if (!scenes_.empty()) {
-      auto firstToRender{ scenes_.size() - 1 };
-      while (firstToRender > 0 && !scenes_[firstToRender]->isOpaque())
-        firstToRender--;
+    if (scenes_.empty())
+      return;
 
-      for (size_t i{ firstToRender }; i < scenes_.size(); i++) {
-        scenes_[i]->render();
-      }
+    render_system::setViewport(0, 0, width_, height_);
+
+    auto firstToRender{ scenes_.size() - 1 };
+    while (firstToRender > 0 && !scenes_[firstToRender]->isOpaque())
+      firstToRender--;
+
+    for (size_t i{ firstToRender }; i < scenes_.size(); i++) {
+      scenes_[i]->render();
     }
   }
 
-  void SceneManager::processPendingOperations() {
-    for (auto& op : pendingOperations_) {
-      op();
+  void SceneManager::renderUI() {
+    if (scenes_.empty())
+      return;
+
+    auto firstToRender{ scenes_.size() - 1 };
+    while (firstToRender > 0 && !scenes_[firstToRender]->isOpaque())
+      firstToRender--;
+
+    for (size_t i{ firstToRender }; i < scenes_.size(); i++) {
+      scenes_[i]->renderUI();
     }
-    pendingOperations_.clear();
   }
 
   void SceneManager::onResize(int width, int height) {
-    for (auto& scene : scenes_) {
-      scene->onResize(width, height);
-    }
-    width_ = width;
-    height_ = height;
+    pendingOperations_.push_back([this, width, height]() {
+      width_ = width;
+      height_ = height;
+      for (auto& scene : scenes_) {
+        scene->onResize(width_, height_);
+      }
+    });
   }
 
   std::vector<std::string> SceneManager::getRegisteredSceneNames() const {
@@ -84,4 +97,12 @@ namespace ls {
     }
     return names;
   }
+
+  void SceneManager::processPendingOperations() {
+    for (auto& op : pendingOperations_) {
+      op();
+    }
+    pendingOperations_.clear();
+  }
+
 }  // namespace ls

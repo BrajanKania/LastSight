@@ -16,8 +16,8 @@
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/events/request_interaction.hpp"
+#include "engine/input/input_system.hpp"
 #include "engine/input/types.hpp"
-#include "engine/renderer/render_system.hpp"
 #include "game/actions/aim.hpp"
 #include "game/actions/interact.hpp"
 #include "game/actions/move.hpp"
@@ -79,9 +79,9 @@ namespace ls::player_system {
       for (auto entity : ctx.registry.view<component::Camera>()) {
         const auto& camera{ ctx.registry.getComponent<component::Camera>(entity) };
 
-        glm::vec2 mouseWorldPos{
-          camera_system::screenToWorld(ctx.inputManager.getMousePosition(), render_system::getViewportSize(), camera)
-        };
+        glm::vec2 mouseWorldPos{ camera_system::screenToWorld(
+            input_system::getViewportMousePosition(), input_system::getViewportSize(), camera
+        ) };
 
         glm::vec2 direction{ mouseWorldPos - transform.position };
         if (glm::length(direction) > 0.001f) {

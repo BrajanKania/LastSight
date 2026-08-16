@@ -7,24 +7,27 @@
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/events/request_change_scene.hpp"
 #include "engine/events/request_quit_engine.hpp"
+#include "engine/input/input_system.hpp"
 #include "game/scenes/scene_names.hpp"
+#include "game/ui/panel_names.hpp"
 
 namespace ls::ui {
 
   void MainMenuPanel::render(const UIContext& ctx) {
-    assert(ctx.engineCtx.eventQueue != nullptr && "MainMenuPanel requires a valid EventQueue!");
+    assert(ctx.engineCtx.eventQueue != nullptr && "[MainMenuPanel] requires a valid EventQueue!");
 
-    ImGuiIO& io{ ImGui::GetIO() };
+    glm::vec2 vpPosition{ input_system::getViewportPosition() };
+    glm::vec2 vpSize{ input_system::getViewportSize() };
 
     ImGui::SetNextWindowPos(
-        ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f)
+        ImVec2(vpPosition.x + vpSize.x * 0.5f, vpPosition.y + vpSize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f)
     );
     ImGui::SetNextWindowSize(ImVec2(300.f, 220.f));
 
     ImGuiWindowFlags windowFlags{ ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
                                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground };
 
-    if (ImGui::Begin("Main Menu", nullptr, windowFlags)) {
+    if (ImGui::Begin(ui::panel::kMainMenu, nullptr, windowFlags)) {
       ImVec2 buttonSize{ 260.f, 80.f };
 
       ImGui::Dummy(ImVec2(0.f, 15.f));

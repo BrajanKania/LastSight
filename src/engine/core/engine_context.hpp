@@ -1,5 +1,7 @@
 #pragma once
 
+#include "engine/core/engine_mode.hpp"
+
 namespace ls {
 
   class Window;
@@ -16,6 +18,7 @@ namespace ls {
     SceneManager* sceneManager{ nullptr };
     dispatch::EventQueue* eventQueue{ nullptr };
     gfx::TextureManager* textureManager{ nullptr };
+    const EngineMode* engineMode{ nullptr };
   };
 
 }  // namespace ls

@@ -20,6 +20,7 @@ namespace ls::ui_system {
     ImGuiIO& io{ ImGui::GetIO() };
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.IniFilename = nullptr;
 
     ImGui::StyleColorsDark();
 

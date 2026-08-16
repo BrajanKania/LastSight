@@ -4,9 +4,9 @@
 
 namespace ls::ui {
 
-  class ToolboxPanel : public IUIPanel {
+  class MainMenuBarPanel : public IUIPanel {
   public:
-    ToolboxPanel() = default;
+    MainMenuBarPanel() = default;
     void render(const UIContext& ctx) override;
   };
 

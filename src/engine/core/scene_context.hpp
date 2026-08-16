@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 namespace ls {
 
@@ -14,12 +15,16 @@ namespace ls {
   namespace renderer {
     class RenderPipeline;
   }
+  namespace gfx {
+    class Framebuffer;
+  }
 
   struct SceneContext {
     ecs::Registry* registry{ nullptr };
     dispatch::EventQueue* eventQueue{ nullptr };
     input::InputManager* inputManager{ nullptr };
     renderer::RenderPipeline* renderPipeline{ nullptr };
+    std::shared_ptr<gfx::Framebuffer> sceneFBO{ nullptr };
   };
 
 }  // namespace ls

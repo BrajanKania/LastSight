@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <entt/core/fwd.hpp>
@@ -12,27 +13,15 @@
 #include <string>
 
 #include "engine/components/entity_name.hpp"
-#include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
-#include "engine/events/request_save_scene.hpp"
 #include "engine/reflection/reflection_system.hpp"
+#include "engine/ui/panels/panel_names.hpp"
 #include "engine/ui/ui_context.hpp"
 
 namespace ls::ui {
 
   namespace {
-
-    std::string getEntityLabel(ecs::Registry& registry, const ecs::EntityId entity) {
-      std::string label{ std::format("[{}]", entity) };
-
-      if (registry.hasComponent<component::EntityName>(entity)) {
-        const std::string& name{ registry.getComponent<component::EntityName>(entity).name };
-        label += std::format(" {}", name);
-      }
-
-      return label;
-    }
 
     bool inspectComponentProperty(entt::meta_any& owner, entt::meta_data data) {
       const ls::reflection_system::PropertyInfo* propInfo{ data.custom() };
@@ -185,70 +174,23 @@ namespace ls::ui {
   }  // namespace
 
   void EntityInspectorPanel::render(const UIContext& ctx) {
-    if (!ctx.sceneCtx.registry || !ctx.engineCtx.textureManager) {
-      hideNameless_ = true;
-      selectedEntity_ = ecs::kNullEntity;
-      return;
+    assert(ctx.selectionCtx != nullptr && "[EntityInspectorPanel] Requires a valid SelectionContext!");
+    assert(ctx.sceneCtx.registry != nullptr && "[EntityInspectorPanel] Requires a valid Registry!");
+    assert(ctx.engineCtx.textureManager != nullptr && "[EntityInspectorPanel] Requires a valid TextureManager!");
+
+    if (!ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
+      ctx.selectionCtx->selectedEntity = ecs::kNullEntity;
     }
 
-    if (!ctx.sceneCtx.registry->isValidEntity(selectedEntity_))
-      selectedEntity_ = ecs::kNullEntity;
-
-    if (ImGui::Begin("Entity Inspector", &visible_)) {
-      if (ImGui::Button("Save scene")) {
-        ctx.sceneCtx.eventQueue->publish(event::RequestSaveScene{});
-      }
-
-      ImGui::Columns(2, "ExplorerSpliter", true);
-
-      {  // Entities
-        ImGui::Text("Entities");
-
-        {  // Filter
-          ImGui::SeparatorText("Filter");
-          ImGui::Checkbox("With name", &hideNameless_);
-        }
-
-        {  // Entity Tree
-          ImGui::BeginChild("EntityListRegion");
-
-          ImGui::SeparatorText("Entities");
-
-          for (ecs::EntityId entity{ 0 }; entity < ctx.sceneCtx.registry->getMaxEntityId(); entity++) {
-            if (!filterEntity(*ctx.sceneCtx.registry, entity))
-              continue;
-
-            {  // Entity
-              ImGuiTreeNodeFlags flags{ ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen };
-              if (entity == selectedEntity_) {
-                flags |= ImGuiTreeNodeFlags_Selected;
-              }
-
-              std::string label{ getEntityLabel(*ctx.sceneCtx.registry, entity) };
-              ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(entity)), flags, "%s", label.c_str());
-
-              if (ImGui::IsItemClicked()) {
-                selectedEntity_ = entity;
-              }
-            }
-          }
-
-          ImGui::EndChild();
-        }
-      }
-
-      ImGui::NextColumn();
-
+    if (ImGui::Begin(ui::panel::kEntityInspector, &visible_)) {
       {  // Inspector
-        ImGui::Text("Inspector");
-        ImGui::Separator();
 
         ImGui::BeginChild("InspectorRegion");
 
-        if (ctx.sceneCtx.registry->isValidEntity(selectedEntity_)) {
+        if (ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
           ImGui::PushItemWidth(120.f);
 
-          inspectEntity(*ctx.sceneCtx.registry, selectedEntity_);
+          inspectEntity(*ctx.sceneCtx.registry, ctx.selectionCtx->selectedEntity);
 
           ImGui::PopItemWidth();
         } else {
@@ -257,22 +199,8 @@ namespace ls::ui {
 
         ImGui::EndChild();
       }
-
-      ImGui::Columns(1);
     }
     ImGui::End();
-  }
-
-  bool EntityInspectorPanel::filterEntity(const ecs::Registry& registry, const ecs::EntityId entity) {
-    if (!registry.isValidEntity(entity))
-      return false;
-
-    if (hideNameless_) {
-      if (!registry.hasComponent<component::EntityName>(entity))
-        return false;
-    }
-
-    return true;
   }
 
 }  // namespace ls::ui

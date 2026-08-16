@@ -14,7 +14,7 @@
 
 #include "engine/components/transform.hpp"
 #include "engine/core/update_context.hpp"
-#include "engine/renderer/render_system.hpp"
+#include "engine/input/input_system.hpp"
 #include "game/components/camera.hpp"
 #include "game/components/camera_shake.hpp"
 #include "game/components/player.hpp"
@@ -24,7 +24,7 @@
 namespace ls::camera_system {
 
   void update(const UpdateContext& ctx) {
-    glm::vec2 viewportSize{ render_system::getViewportSize() };
+    glm::vec2 viewportSize{ input_system::getViewportSize() };
     float aspectRatio{ (viewportSize.y > 0.f ? viewportSize.x / viewportSize.y : 1.f) };
 
     for (auto entity : ctx.registry.view<component::Camera, component::Transform>()) {
@@ -115,7 +115,7 @@ namespace ls::camera_system {
 
         if (playerState.isAiming) {
           glm::vec2 mouseWorldPostion{
-            screenToWorld(ctx.inputManager.getMousePosition(), render_system::getViewportSize(), camera)
+            screenToWorld(input_system::getViewportMousePosition(), input_system::getViewportSize(), camera)
           };
 
           glm::vec2 toCursor{ mouseWorldPostion - targetTransform.position };
@@ -141,6 +141,10 @@ namespace ls::camera_system {
   }
 
   glm::vec2 screenToWorld(glm::vec2 mousePosition, glm::vec2 viewportSize, const component::Camera& camera) {
+    if (viewportSize.x <= 0.0f || viewportSize.y <= 0.0f) {
+      return glm::vec2(0.0f);
+    }
+
     float ndcX{ (2.0f * mousePosition.x) / viewportSize.x - 1.0f };
     float ndcY{ 1.0f - (2.0f * mousePosition.y) / viewportSize.y };
 

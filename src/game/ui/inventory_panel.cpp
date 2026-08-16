@@ -4,8 +4,10 @@
 
 #include "engine/ecs/registry.hpp"
 #include "engine/gfx/texture_manager.hpp"
+#include "engine/input/input_system.hpp"
 #include "game/components/inventory.hpp"
 #include "game/components/player.hpp"
+#include "game/ui/panel_names.hpp"
 
 namespace ls::ui {
 
@@ -22,8 +24,10 @@ namespace ls::ui {
     for (auto entity : ctx.sceneCtx.registry->view<component::Player, component::Inventory>()) {
       const auto& inventory{ ctx.sceneCtx.registry->getComponent<component::Inventory>(entity) };
 
-      ImGuiIO& io{ ImGui::GetIO() };
-      ImVec2 windowPos(10.f, io.DisplaySize.y * 0.5f);
+      glm::vec2 vpPosition{ input_system::getViewportPosition() };
+      glm::vec2 vpSize{ input_system::getViewportSize() };
+
+      ImVec2 windowPos(vpPosition.x + 10.f, vpPosition.y + vpSize.y * 0.5f);
       ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2(0.f, 0.5f));
 
       ImGuiWindowFlags flags{ ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
@@ -32,7 +36,7 @@ namespace ls::ui {
 
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.f, 8.f));
 
-      if (ImGui::Begin("##InventoryHUD", nullptr, flags)) {
+      if (ImGui::Begin(ui::panel::kInventory, nullptr, flags)) {
         for (std::size_t i{ 0 }; i < inventory.slots.size(); ++i) {
           bool isActive{ i == inventory.activeSlotIndex };
           const auto& slot{ inventory.slots[i] };
@@ -52,8 +56,8 @@ namespace ls::ui {
           if (itemDef && itemDef->iconTextureHandle) {
             const auto* texture{ ctx.engineCtx.textureManager->get(itemDef->iconTextureHandle) };
             if (texture) {
-              ImTextureID texHandle{ (ImTextureID)(uintptr_t)texture->getId() };
-              ImGui::Image(texHandle, ImVec2(40.f, 40.f));
+              ImTextureID textureHandle{ (ImTextureID)(uintptr_t)texture->getId() };
+              ImGui::Image(textureHandle, ImVec2(40.f, 40.f));
             }
           }
 

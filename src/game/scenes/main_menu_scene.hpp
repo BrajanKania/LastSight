@@ -25,9 +25,10 @@ namespace ls {
     void onExit() override;
     void onResize(int width, int height) override;
 
-    void handleInput() override;
+    void handleInput(bool blockKeyboard, bool blockMouse) override;
     void update(float dt) override;
     void render() override;
+    void renderUI() override;
 
     bool isOpaque() const override { return true; }
 
@@ -36,6 +37,7 @@ namespace ls {
         .registry = &registry_,
         .eventQueue = &eventQueue_,
         .renderPipeline = &renderPipeline_,
+        .sceneFBO = fovFBO_,
       };
     }
 

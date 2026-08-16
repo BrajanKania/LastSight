@@ -30,7 +30,6 @@
 #include "engine/physics/physics_system.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/layer.hpp"
-#include "engine/renderer/passes/compose_pass.hpp"
 #include "engine/renderer/passes/fov_pass.hpp"
 #include "engine/renderer/passes/lit_pass.hpp"
 #include "engine/renderer/passes/post_process_pass.hpp"
@@ -114,7 +113,6 @@ namespace ls {
     renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
     renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
     renderPipeline_.addPass<renderer::PostProcessPass>(processedFBO_, fovFBO_);
-    renderPipeline_.addPass<renderer::ComposePass>(processedFBO_);
 
     uiManager_.addPanel<ui::InventoryPanel>(ui::panel::kInventory, itemRegistry_);
 
@@ -250,10 +248,7 @@ namespace ls {
     processedFBO_->resize(width, height);
   }
 
-  void WorldScene::handleInput() {
-    ImGuiIO& io{ ImGui::GetIO() };
-    inputManager_.update(io.WantCaptureKeyboard, io.WantCaptureMouse);
-  }
+  void WorldScene::handleInput(bool blockKeyboard, bool blockMouse) { inputManager_.update(blockKeyboard, blockMouse); }
 
   void WorldScene::update(float dt) {
     processEvents();
@@ -306,9 +301,9 @@ namespace ls {
       );
       break;
     }
-
-    uiManager_.render(getUIContext());
   }
+
+  void WorldScene::renderUI() { uiManager_.render(getUIContext()); }
 
   void WorldScene::processEvents() {
     for (const auto& event : eventQueue_.getEvents<event::TogglePanel>()) {
