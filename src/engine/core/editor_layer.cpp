@@ -11,6 +11,7 @@
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/events/engine_mode_changed.hpp"
 #include "engine/events/request_change_engine_mode.hpp"
+#include "engine/events/request_change_ui_style.hpp"
 #include "engine/events/set_panel_visibility.hpp"
 #include "engine/events/toggle_panel.hpp"
 #include "engine/input/types.hpp"
@@ -22,6 +23,7 @@
 #include "engine/ui/panels/scene_browser_panel.hpp"
 #include "engine/ui/panels/scene_hierarchy_panel.hpp"
 #include "engine/ui/panels/viewport_panel.hpp"
+#include "engine/ui/ui_system.hpp"
 
 namespace ls {
 
@@ -72,6 +74,7 @@ namespace ls {
             .engineCtx = engineCtx,
             .sceneCtx = sceneCtx,
             .selectionCtx = &selectionCtx_,
+            .uiStyle = &uiStyle_,
         }
     );
   }
@@ -104,6 +107,13 @@ namespace ls {
     for (const auto& event : engineEventQueue.getEvents<event::SetPanelVisibility>()) {
       uiManager_.getPanel(event.name).setVisible(event.visible);
     }
+
+    for (const auto& event : engineEventQueue.getEvents<event::RequestChangeUIStyle>()) {
+      if (event.newStyle != uiStyle_) {
+        uiStyle_ = event.newStyle;
+        ui_system::changeUIStyle(uiStyle_);
+      }
+    }
   }
 
   void EditorLayer::renderDockSpace() {
@@ -118,7 +128,7 @@ namespace ls {
 
       ImGuiID dockMain{ dockspaceId };
       ImGuiID dockRight{ ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.25f, nullptr, &dockMain) };
-      ImGuiID dockBottom{ ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.25f, nullptr, &dockMain) };
+      ImGuiID dockBottom{ ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.3f, nullptr, &dockMain) };
 
       ImGuiID dockRightTop;
       ImGuiID dockRightBottom{ ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.6f, nullptr, &dockRightTop) };

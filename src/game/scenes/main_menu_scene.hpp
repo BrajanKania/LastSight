@@ -13,6 +13,7 @@
 #include "engine/ui/ui_manager.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/menu_stalker_point.hpp"
+#include "game/scenes/scene_names.hpp"
 
 namespace ls {
 
@@ -40,6 +41,8 @@ namespace ls {
         .sceneFBO = fovFBO_,
       };
     }
+
+    const char* getName() const override { return scene::kMainMenu; }
 
   private:
     void processEvents() override;

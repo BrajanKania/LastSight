@@ -56,6 +56,13 @@ namespace ls {
       return scenes_.back()->getSceneContext();
     }
 
+    const char* getActiveSceneName() const {
+      if (scenes_.empty())
+        return "";
+
+      return scenes_.back()->getName();
+    }
+
   private:
     void processPendingOperations();
 

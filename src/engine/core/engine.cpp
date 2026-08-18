@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include <filesystem>
 #include <glm/ext/vector_float4.hpp>
 
 #include "engine/actions/quit_engine.hpp"
@@ -12,6 +13,7 @@
 #include "engine/events/request_change_engine_mode.hpp"
 #include "engine/events/request_change_scene.hpp"
 #include "engine/events/request_quit_engine.hpp"
+#include "engine/events/request_reload_textures.hpp"
 #include "engine/events/viewport_resized.hpp"
 #include "engine/input/types.hpp"
 #include "engine/reflection/reflection_system.hpp"
@@ -29,6 +31,8 @@ namespace ls {
 
     inputManager_.bindKey<action::QuitEngine>(input::Key::Escape);
     sceneManager_.onResize(window_.getWidth(), window_.getHeight());
+
+    loadTextures();
   }
 
   Engine::~Engine() { ui_system::shutdown(); }
@@ -90,6 +94,11 @@ namespace ls {
     for (const auto& event : eventQueue_.getEvents<event::ViewportResized>()) {
       sceneManager_.onResize(event.newSize.x, event.newSize.y);
     }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestReloadTextures>()) {
+      textureManager_.clear();
+      loadTextures();
+    }
   }
 
   void Engine::handleInput() {
@@ -107,6 +116,11 @@ namespace ls {
     if (actionQuitEngineState == input::ActionState::JustPressed) {
       eventQueue_.publish(event::RequestQuitEngine{});
     }
+  }
+
+  void Engine::loadTextures() {
+    textureManager_.loadFromDir(std::filesystem::path("src/engine/assets/textures"));
+    textureManager_.loadFromDir(std::filesystem::path("assets/textures"));
   }
 
 }  // namespace ls

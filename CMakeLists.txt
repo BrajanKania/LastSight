@@ -149,13 +149,32 @@ if(USE_LINK_TO_ASSETS_DIR)
           "${CMAKE_BINARY_DIR}/assets"
           SYMBOLIC
       )
-    message(STATUS "Created symlink to assets: ${CMAKE_BINARY_DIR}/assets")
+    message(STATUS "Created symlink to game assets: ${CMAKE_BINARY_DIR}/assets")
   endif()
+
+  file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/engine")
+
+  if(EXISTS "${CMAKE_BINARY_DIR}/engine/assets" AND NOT IS_SYMLINK "${CMAKE_BINARY_DIR}/engine/assets")
+    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/engine/assets")
+  endif()
+
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/engine/assets")
+    file(CREATE_LINK
+          "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/assets"
+          "${CMAKE_BINARY_DIR}/engine/assets"
+          SYMBOLIC
+      )
+    message(STATUS "Created symlink to engine assets: ${CMAKE_BINARY_DIR}/engine/assets")
+  endif()
+
 else()
   add_custom_target(copy_assets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/assets"
             "${CMAKE_BINARY_DIR}/assets"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/assets"
+            "${CMAKE_BINARY_DIR}/engine/assets"
   )
   add_dependencies(LastSight copy_assets)
 endif()

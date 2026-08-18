@@ -13,6 +13,7 @@
 #include "engine/renderer/render_pipeline.hpp"
 #include "engine/ui/ui_manager.hpp"
 #include "game/items/item_registry.hpp"
+#include "game/scenes/scene_names.hpp"
 
 namespace ls {
 
@@ -41,6 +42,8 @@ namespace ls {
         .sceneFBO = processedFBO_,
       };
     }
+
+    const char* getName() const override { return scene::kWorld; }
 
   private:
     void processEvents() override;

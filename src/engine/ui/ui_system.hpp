@@ -3,9 +3,13 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_video.h>
 
+#include "engine/ui/ui_style.hpp"
+
 namespace ls::ui_system {
 
   void init(SDL_Window* window, SDL_GLContext glContext);
+
+  void changeUIStyle(ui::UIStyle uiStyle);
 
   void shutdown();
 

@@ -5,6 +5,7 @@
 #include <imgui_impl_sdl3.h>
 
 #include "engine/renderer/render_system.hpp"
+#include "engine/ui/ui_style.hpp"
 
 namespace ls::ui_system {
 
@@ -27,6 +28,20 @@ namespace ls::ui_system {
     ImGui_ImplSDL3_InitForOpenGL(window, glContext);
     ImGui_ImplOpenGL3_Init("#version 460");
     isImGuiInit = true;
+  }
+
+  void changeUIStyle(ui::UIStyle uiStyle) {
+    switch (uiStyle) {
+      case ui::UIStyle::Dark:
+        ImGui::StyleColorsDark();
+        break;
+      case ui::UIStyle::Classic:
+        ImGui::StyleColorsClassic();
+        break;
+      case ui::UIStyle::Light:
+        ImGui::StyleColorsLight();
+        break;
+    }
   }
 
   void shutdown() {

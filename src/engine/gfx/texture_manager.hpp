@@ -41,6 +41,8 @@ namespace ls::gfx {
     std::size_t getTextureCount() const { return textures_.size(); }
     void clear();
 
+    void loadFromDir(const std::filesystem::path& path, bool recursive = false);
+
   private:
     std::vector<std::unique_ptr<Texture2D>> textures_;
     std::vector<std::string> names_;

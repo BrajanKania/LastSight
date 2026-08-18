@@ -25,6 +25,7 @@ namespace ls {
     virtual bool isOpaque() const { return true; }
 
     virtual SceneContext getSceneContext() = 0;
+    virtual const char* getName() const = 0;
 
   protected:
     virtual void processEvents() = 0;

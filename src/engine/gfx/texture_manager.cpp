@@ -1,10 +1,19 @@
 #include "engine/gfx/texture_manager.hpp"
 
+#include <filesystem>
 #include <memory>
 
 #include "engine/gfx/texture_handle.hpp"
 
 namespace ls::gfx {
+
+  namespace {
+    bool isSupportedExtension(const std::filesystem::path& ext) {
+      std::string extStr{ ext.string() };
+      static constexpr std::array kSupportedExtensions{ ".png", ".jpg" };
+      return std::ranges::find(kSupportedExtensions, extStr) != kSupportedExtensions.end();
+    }
+  }  // namespace
 
   bool TextureManager::contains(const std::string& name) const {
     return nameToHandle_.find(name) != nameToHandle_.end();
@@ -67,6 +76,29 @@ namespace ls::gfx {
 
     textures_.push_back(nullptr);
     names_.push_back("");
+  }
+
+  void TextureManager::loadFromDir(const std::filesystem::path& path, bool recursive) {
+    if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
+      return;
+    }
+
+    auto processEntry{ [this](const std::filesystem::directory_entry& entry) {
+      if (entry.is_regular_file() && isSupportedExtension(entry.path().extension())) {
+        std::string filename{ entry.path().filename().string() };
+        load(filename, entry.path());
+      }
+    } };
+
+    if (recursive) {
+      for (const auto& entry : std::filesystem::recursive_directory_iterator(path)) {
+        processEntry(entry);
+      }
+    } else {
+      for (const auto& entry : std::filesystem::directory_iterator(path)) {
+        processEntry(entry);
+      }
+    }
   }
 
 }  // namespace ls::gfx

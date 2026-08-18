@@ -84,18 +84,21 @@ namespace ls {
     assert(engineCtx_.eventQueue != nullptr && "World Scene requires a valid EventQueue!");
     assert(engineCtx_.textureManager != nullptr && "World Scene requires a valid TextureManager!");
 
-    engineCtx_.textureManager->load(texture_name::kWhite, asset_system::texture(texture_name::kWhite));
-    engineCtx_.textureManager->load(texture_name::kGrass, asset_system::texture(texture_name::kGrass));
-    engineCtx_.textureManager->load(texture_name::kContainer, asset_system::texture(texture_name::kContainer));
-    engineCtx_.textureManager->load(texture_name::kPlayer, asset_system::texture(texture_name::kPlayer));
-    engineCtx_.textureManager->load(texture_name::kWorldPistol, asset_system::texture(texture_name::kWorldPistol));
-    engineCtx_.textureManager->load(
-        texture_name::kEquippedPistol, asset_system::texture(texture_name::kEquippedPistol)
-    );
-    engineCtx_.textureManager->load(texture_name::kBullet, asset_system::texture(texture_name::kBullet));
-    engineCtx_.textureManager->load(texture_name::kWorldRifle, asset_system::texture(texture_name::kWorldRifle));
-    engineCtx_.textureManager->load(texture_name::kEquippedRifle, asset_system::texture(texture_name::kEquippedRifle));
-    engineCtx_.textureManager->load(texture_name::kEnemy, asset_system::texture(texture_name::kEnemy));
+    /*
+      engineCtx_.textureManager->load(texture_name::kWhite, asset_system::texture(texture_name::kWhite));
+      engineCtx_.textureManager->load(texture_name::kGrass, asset_system::texture(texture_name::kGrass));
+      engineCtx_.textureManager->load(texture_name::kContainer, asset_system::texture(texture_name::kContainer));
+      engineCtx_.textureManager->load(texture_name::kPlayer, asset_system::texture(texture_name::kPlayer));
+      engineCtx_.textureManager->load(texture_name::kWorldPistol, asset_system::texture(texture_name::kWorldPistol));
+      engineCtx_.textureManager->load(
+          texture_name::kEquippedPistol, asset_system::texture(texture_name::kEquippedPistol)
+      );
+      engineCtx_.textureManager->load(texture_name::kBullet, asset_system::texture(texture_name::kBullet));
+      engineCtx_.textureManager->load(texture_name::kWorldRifle, asset_system::texture(texture_name::kWorldRifle));
+      engineCtx_.textureManager->load(texture_name::kEquippedRifle,
+      asset_system::texture(texture_name::kEquippedRifle)); engineCtx_.textureManager->load(texture_name::kEnemy,
+      asset_system::texture(texture_name::kEnemy));
+    */
 
     serialization::SceneSerializer serializer(getSceneContext(), engineCtx_);
     serializer.loadScene(asset_system::scene(scene::kWorld));

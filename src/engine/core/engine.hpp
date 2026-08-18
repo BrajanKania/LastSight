@@ -27,6 +27,7 @@ namespace ls {
   private:
     void handleRequest();
     void handleInput();
+    void loadTextures();
 
     EngineContext getEngineContext() {
       return EngineContext{

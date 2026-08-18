@@ -1,5 +1,9 @@
 #pragma once
 
+#include <imgui.h>
+
+#include <glm/ext/vector_float2.hpp>
+
 #include "engine/ui/i_ui_panel.hpp"
 
 namespace ls::ui {
@@ -12,6 +16,9 @@ namespace ls::ui {
   private:
     int selectedPassIndex_{ -1 };
     float imageScale_{ 0.2f };
+
+    ImVec2 canvasPan_{ 10.0f, 10.0f };
+    float canvasZoom_{ 0.3f };
   };
 
 }  // namespace ls::ui

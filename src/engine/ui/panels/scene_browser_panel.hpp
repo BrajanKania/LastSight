@@ -9,6 +9,9 @@ namespace ls::ui {
     SceneBrowserPanel() = default;
 
     virtual void render(const UIContext& ctx) override;
+
+  private:
+    char filterBuffer_[256]{};
   };
 
 }  // namespace ls::ui

@@ -43,13 +43,16 @@ namespace ls {
   void MainMenuScene::onEnter() {
     assert(engineCtx_.textureManager != nullptr && "MainMenuScene requires a valid TextureManager!");
 
-    engineCtx_.textureManager->load(
-        texture_name::kMainMenuBackground, asset_system::texture(texture_name::kMainMenuBackground)
-    );
-    engineCtx_.textureManager->load(texture_name::kStalker, asset_system::texture(texture_name::kStalker));
-    engineCtx_.textureManager->load(texture_name::kGrass1, asset_system::texture(texture_name::kGrass1));
-    engineCtx_.textureManager->load(texture_name::kTrunk, asset_system::texture(texture_name::kTrunk));
-    engineCtx_.textureManager->load(texture_name::kMainMenuTitle, asset_system::texture(texture_name::kMainMenuTitle));
+    /*
+      engineCtx_.textureManager->load(
+          texture_name::kMainMenuBackground, asset_system::texture(texture_name::kMainMenuBackground)
+      );
+      engineCtx_.textureManager->load(texture_name::kStalker, asset_system::texture(texture_name::kStalker));
+      engineCtx_.textureManager->load(texture_name::kGrass1, asset_system::texture(texture_name::kGrass1));
+      engineCtx_.textureManager->load(texture_name::kTrunk, asset_system::texture(texture_name::kTrunk));
+      engineCtx_.textureManager->load(texture_name::kMainMenuTitle,
+      asset_system::texture(texture_name::kMainMenuTitle));
+    */
 
     const float trunkParallax{ 0.15f };
     stalkerPoints_ = std::vector<component::MenuStalkerPoint>{

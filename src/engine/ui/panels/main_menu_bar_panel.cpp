@@ -4,10 +4,15 @@
 
 #include <cassert>
 
+#include "engine/core/engine_mode.hpp"
 #include "engine/dispatch/event_queue.hpp"
+#include "engine/events/request_change_engine_mode.hpp"
+#include "engine/events/request_change_ui_style.hpp"
 #include "engine/events/request_quit_engine.hpp"
+#include "engine/events/request_reload_textures.hpp"
 #include "engine/events/set_panel_visibility.hpp"
 #include "engine/ui/panels/panel_names.hpp"
+#include "engine/ui/ui_style.hpp"
 
 namespace ls::ui {
 
@@ -16,67 +21,133 @@ namespace ls::ui {
 
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("Engine")) {
-        if (ImGui::MenuItem("Close")) {
+        if (ImGui::BeginMenu("Reload")) {
+          if (ImGui::MenuItem("Textures")) {
+            ctx.engineCtx.eventQueue->publish(event::RequestReloadTextures{});
+          }
+          ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Style") && ctx.uiStyle != nullptr) {
+          const bool isDark{ *ctx.uiStyle == UIStyle::Dark };
+          const bool isClassic{ *ctx.uiStyle == UIStyle::Classic };
+          const bool isLight{ *ctx.uiStyle == UIStyle::Light };
+
+          if (ImGui::MenuItem("Dark", nullptr, isDark)) {
+            ctx.engineCtx.eventQueue->publish(
+                event::RequestChangeUIStyle{
+                    .newStyle = UIStyle::Dark,
+                }
+            );
+          }
+
+          if (ImGui::MenuItem("Classic", nullptr, isClassic)) {
+            ctx.engineCtx.eventQueue->publish(
+                event::RequestChangeUIStyle{
+                    .newStyle = UIStyle::Classic,
+                }
+            );
+          }
+
+          if (ImGui::MenuItem("Light", nullptr, isLight)) {
+            ctx.engineCtx.eventQueue->publish(
+                event::RequestChangeUIStyle{
+                    .newStyle = UIStyle::Light,
+                }
+            );
+          }
+
+          ImGui::EndMenu();
+        }
+
+        ImGui::Separator();
+
+        if (ImGui::MenuItem("Close", "Ecs")) {
           ctx.engineCtx.eventQueue->publish(event::RequestQuitEngine{});
         }
+
         ImGui::EndMenu();
       }
 
       if (ImGui::BeginMenu("Panels")) {
-        if (ImGui::MenuItem(ui::panel::kSceneBrowser)) {
-          if (ctx.engineCtx.sceneManager) {
-            ctx.engineCtx.eventQueue->publish(
-                event::SetPanelVisibility{
-                    .name = ui::panel::kSceneBrowser,
-                    .visible = true,
-                }
-            );
-          }
+        const bool hasSceneManager{ ctx.engineCtx.sceneManager != nullptr };
+        const bool hasRegistry{ ctx.sceneCtx.registry != nullptr };
+
+        if (ImGui::MenuItem(ui::panel::kSceneBrowser, nullptr, false, hasSceneManager)) {
+          ctx.engineCtx.eventQueue->publish(
+              event::SetPanelVisibility{
+                  .name = ui::panel::kSceneBrowser,
+                  .visible = true,
+              }
+          );
         }
-        if (ImGui::MenuItem(ui::panel::kAssetBrowser)) {
-          if (ctx.engineCtx.sceneManager) {
-            ctx.engineCtx.eventQueue->publish(
-                event::SetPanelVisibility{
-                    .name = ui::panel::kAssetBrowser,
-                    .visible = true,
-                }
-            );
-          }
+
+        if (ImGui::MenuItem(ui::panel::kAssetBrowser, nullptr, false, hasSceneManager)) {
+          ctx.engineCtx.eventQueue->publish(
+              event::SetPanelVisibility{
+                  .name = ui::panel::kAssetBrowser,
+                  .visible = true,
+              }
+          );
         }
-        if (ImGui::MenuItem(ui::panel::kSceneHierarchy)) {
-          if (ctx.sceneCtx.registry) {
-            ctx.engineCtx.eventQueue->publish(
-                event::SetPanelVisibility{
-                    .name = ui::panel::kSceneHierarchy,
-                    .visible = true,
-                }
-            );
-          }
+
+        ImGui::Separator();
+
+        if (ImGui::MenuItem(ui::panel::kSceneHierarchy, nullptr, false, hasRegistry)) {
+          ctx.engineCtx.eventQueue->publish(
+              event::SetPanelVisibility{
+                  .name = ui::panel::kSceneHierarchy,
+                  .visible = true,
+              }
+          );
         }
-        if (ImGui::MenuItem(ui::panel::kEntityInspector)) {
-          if (ctx.sceneCtx.registry && ctx.engineCtx.textureManager) {
-            ctx.engineCtx.eventQueue->publish(
-                event::SetPanelVisibility{
-                    .name = ui::panel::kEntityInspector,
-                    .visible = true,
-                }
-            );
-          }
+
+        const bool hasInspectorDeps{ hasRegistry && ctx.engineCtx.textureManager != nullptr };
+        if (ImGui::MenuItem(ui::panel::kEntityInspector, nullptr, false, hasInspectorDeps)) {
+          ctx.engineCtx.eventQueue->publish(
+              event::SetPanelVisibility{
+                  .name = ui::panel::kEntityInspector,
+                  .visible = true,
+              }
+          );
         }
+
         ImGui::EndMenu();
       }
 
       if (ImGui::BeginMenu("Debug")) {
-        if (ImGui::MenuItem(ui::panel::kRenderPipelineDebug)) {
-          if (ctx.sceneCtx.renderPipeline) {
-            ctx.engineCtx.eventQueue->publish(
-                event::SetPanelVisibility{
-                    .name = ui::panel::kRenderPipelineDebug,
-                    .visible = true,
-                }
-            );
-          }
+        const bool hasRenderPipeline{ ctx.sceneCtx.renderPipeline != nullptr };
+        if (ImGui::MenuItem(ui::panel::kRenderPipelineDebug, nullptr, false, hasRenderPipeline)) {
+          ctx.engineCtx.eventQueue->publish(
+              event::SetPanelVisibility{
+                  .name = ui::panel::kRenderPipelineDebug,
+                  .visible = true,
+              }
+          );
         }
+        ImGui::EndMenu();
+      }
+
+      if (ImGui::BeginMenu("Mode") && ctx.engineCtx.engineMode != nullptr) {
+        const bool isEditMode{ *ctx.engineCtx.engineMode == EngineMode::Edit };
+        const bool isPlayMode{ *ctx.engineCtx.engineMode == EngineMode::Play };
+
+        if (ImGui::MenuItem("Play", nullptr, isPlayMode)) {
+          ctx.engineCtx.eventQueue->publish(
+              event::RequestChangeEngineMode{
+                  .newMode = EngineMode::Play,
+              }
+          );
+        }
+
+        if (ImGui::MenuItem("Edit", nullptr, isEditMode)) {
+          ctx.engineCtx.eventQueue->publish(
+              event::RequestChangeEngineMode{
+                  .newMode = EngineMode::Edit,
+              }
+          );
+        }
+
         ImGui::EndMenu();
       }
 
