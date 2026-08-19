@@ -6,6 +6,7 @@
 
 #include "engine/core/engine_mode.hpp"
 #include "engine/dispatch/event_queue.hpp"
+#include "engine/events/request_change_console_auto_scroll.hpp"
 #include "engine/events/request_change_engine_mode.hpp"
 #include "engine/events/request_change_ui_style.hpp"
 #include "engine/events/request_quit_engine.hpp"
@@ -28,33 +29,49 @@ namespace ls::ui {
           ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Style") && ctx.uiStyle != nullptr) {
-          const bool isDark{ *ctx.uiStyle == UIStyle::Dark };
-          const bool isClassic{ *ctx.uiStyle == UIStyle::Classic };
-          const bool isLight{ *ctx.uiStyle == UIStyle::Light };
+        if (ImGui::BeginMenu("Preferences") && ctx.editorPreferences != nullptr) {
+          if (ImGui::BeginMenu("Style")) {
+            const bool isDark{ ctx.editorPreferences->uiStyle == UIStyle::Dark };
+            const bool isClassic{ ctx.editorPreferences->uiStyle == UIStyle::Classic };
+            const bool isLight{ ctx.editorPreferences->uiStyle == UIStyle::Light };
 
-          if (ImGui::MenuItem("Dark", nullptr, isDark)) {
-            ctx.engineCtx.eventQueue->publish(
-                event::RequestChangeUIStyle{
-                    .newStyle = UIStyle::Dark,
-                }
-            );
+            if (ImGui::MenuItem("Dark", nullptr, isDark)) {
+              ctx.engineCtx.eventQueue->publish(
+                  event::RequestChangeUIStyle{
+                      .newStyle = UIStyle::Dark,
+                  }
+              );
+            }
+
+            if (ImGui::MenuItem("Classic", nullptr, isClassic)) {
+              ctx.engineCtx.eventQueue->publish(
+                  event::RequestChangeUIStyle{
+                      .newStyle = UIStyle::Classic,
+                  }
+              );
+            }
+
+            if (ImGui::MenuItem("Light", nullptr, isLight)) {
+              ctx.engineCtx.eventQueue->publish(
+                  event::RequestChangeUIStyle{
+                      .newStyle = UIStyle::Light,
+                  }
+              );
+            }
+
+            ImGui::EndMenu();
           }
 
-          if (ImGui::MenuItem("Classic", nullptr, isClassic)) {
-            ctx.engineCtx.eventQueue->publish(
-                event::RequestChangeUIStyle{
-                    .newStyle = UIStyle::Classic,
-                }
-            );
-          }
-
-          if (ImGui::MenuItem("Light", nullptr, isLight)) {
-            ctx.engineCtx.eventQueue->publish(
-                event::RequestChangeUIStyle{
-                    .newStyle = UIStyle::Light,
-                }
-            );
+          if (ImGui::BeginMenu("Console")) {
+            bool enableAutoScroll{ ctx.editorPreferences->consoleAutoScroll };
+            if (ImGui::MenuItem("Auto Scroll", nullptr, &enableAutoScroll)) {
+              ctx.engineCtx.eventQueue->publish(
+                  event::RequestChangeConsoleAutoScroll{
+                      .enable = enableAutoScroll,
+                  }
+              );
+            }
+            ImGui::EndMenu();
           }
 
           ImGui::EndMenu();

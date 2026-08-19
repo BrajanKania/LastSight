@@ -4,9 +4,9 @@
 #include "engine/core/scene_context.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/input/input_manager.hpp"
+#include "engine/ui/editor_preferences.hpp"
 #include "engine/ui/selection_context.hpp"
 #include "engine/ui/ui_manager.hpp"
-#include "engine/ui/ui_style.hpp"
 
 namespace ls {
 
@@ -30,7 +30,7 @@ namespace ls {
     ui::UIManager uiManager_;
     input::InputManager inputManager_;
     ui::SelectionContext selectionCtx_;
-    ui::UIStyle uiStyle_{ ui::UIStyle::Dark };
+    ui::EditorPreferences editorPreferences_{};
   };
 
 }  // namespace ls

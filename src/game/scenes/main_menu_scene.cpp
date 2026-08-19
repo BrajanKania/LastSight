@@ -17,7 +17,6 @@
 #include "engine/core/asset_system.hpp"
 #include "engine/core/random_system.hpp"
 #include "engine/ecs/registry.hpp"
-#include "engine/events/request_save_scene.hpp"
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/input/input_system.hpp"
@@ -200,12 +199,7 @@ namespace ls {
 
   void MainMenuScene::renderUI() { uiManager_.render(getUIContext()); }
 
-  void MainMenuScene::processEvents() {
-    for (const auto& event : eventQueue_.getEvents<event::RequestSaveScene>()) {
-      serialization::SceneSerializer sceneSerializer(getSceneContext(), engineCtx_);
-      sceneSerializer.saveScene(asset_system::scene(scene::kMainMenu));
-    }
-  }
+  void MainMenuScene::processEvents() {}
 
   void MainMenuScene::updateMenuStalker(const component::FieldOfView& fov, glm::vec2 mouseWorldPos, float dt) {
     if (glm::isnan(mouseWorldPos.x) || glm::isnan(mouseWorldPos.y)) {

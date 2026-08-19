@@ -37,6 +37,7 @@ namespace ls::gfx {
 
     TextureHandle getHandle(const std::string& name) const;
     const std::string& getName(TextureHandle handle) const;
+    const std::vector<std::string>& getNames() const;
 
     std::size_t getTextureCount() const { return textures_.size(); }
     void clear();

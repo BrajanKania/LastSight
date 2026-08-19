@@ -13,7 +13,10 @@ namespace ls::ecs {
   class ISparseSet {
   public:
     virtual ~ISparseSet() = default;
+    virtual void addComponent(EntityId entity) = 0;
     virtual void destroyComponent(EntityId entity) = 0;
+    virtual void copyComponent(EntityId sourceEntity, EntityId targetEntity) = 0;
+    virtual bool hasComponent(EntityId entity) const = 0;
     virtual entt::id_type getTypeId() const = 0;
     virtual void* getRawComponent(EntityId entity) = 0;
     virtual bool emplaceMeta(EntityId entity, const entt::meta_any& componentAny) = 0;
@@ -23,6 +26,8 @@ namespace ls::ecs {
   template <typename TComponent>
   class SparseSet : public ISparseSet {
   public:
+    void addComponent(EntityId entity) override { addComponent(entity, TComponent{}); }
+
     void destroyComponent(EntityId entity) override {
       if (!hasComponent(entity))
         return;
@@ -44,6 +49,9 @@ namespace ls::ecs {
     }
 
     void addComponent(EntityId entity, TComponent component) {
+      if (hasComponent(entity))
+        return;
+
       if (sparse_.size() <= entity) {
         sparse_.resize(entity + 1, kNullEntity);
       }
@@ -53,7 +61,15 @@ namespace ls::ecs {
       components_.push_back(std::move(component));
     }
 
-    bool hasComponent(EntityId entity) const { return (entity < sparse_.size() && sparse_[entity] != kNullEntity); }
+    void copyComponent(EntityId sourceEntity, EntityId targetEntity) override {
+      if (hasComponent(sourceEntity)) {
+        addComponent(targetEntity, getComponent(sourceEntity));
+      }
+    }
+
+    bool hasComponent(EntityId entity) const override {
+      return (entity < sparse_.size() && sparse_[entity] != kNullEntity);
+    }
 
     TComponent& getComponent(EntityId entity) {
       assert(hasComponent(entity) && "Attempted to get component that entity does not have.");

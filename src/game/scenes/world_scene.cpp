@@ -20,9 +20,6 @@
 #include "engine/core/asset_system.hpp"
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/registry.hpp"
-#include "engine/events/request_save_scene.hpp"
-#include "engine/events/set_panel_visibility.hpp"
-#include "engine/events/toggle_panel.hpp"
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/input/types.hpp"
 #include "engine/interactions/interaction_system.hpp"
@@ -308,20 +305,7 @@ namespace ls {
 
   void WorldScene::renderUI() { uiManager_.render(getUIContext()); }
 
-  void WorldScene::processEvents() {
-    for (const auto& event : eventQueue_.getEvents<event::TogglePanel>()) {
-      uiManager_.getPanel(event.name).toggleVisible();
-    }
-
-    for (const auto& event : eventQueue_.getEvents<event::SetPanelVisibility>()) {
-      uiManager_.getPanel(event.name).setVisible(event.visible);
-    }
-
-    for (const auto& event : eventQueue_.getEvents<event::RequestSaveScene>()) {
-      serialization::SceneSerializer serializer(getSceneContext(), engineCtx_);
-      serializer.saveScene(asset_system::scene(scene::kWorld));
-    }
-  }
+  void WorldScene::processEvents() {}
 
   void WorldScene::genereteEntities() {
     {  // world entities

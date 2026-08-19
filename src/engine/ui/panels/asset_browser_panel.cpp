@@ -1,4 +1,4 @@
-#include "engine/ui/panels/asset_browser.hpp"
+#include "engine/ui/panels/asset_browser_panel.hpp"
 
 #include <imgui.h>
 
@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <string>
 
+#include "engine/dispatch/event_queue.hpp"
+#include "engine/events/request_open_asset.hpp"
 #include "engine/gfx/texture_2d.hpp"
 #include "engine/gfx/texture_manager.hpp"
 #include "engine/gfx/texture_names.hpp"
@@ -16,30 +18,41 @@
 
 namespace ls::ui {
 
-  const gfx::Texture2D* getIcon(
-      const std::filesystem::directory_entry& entry, const gfx::TextureManager& textureManager
-  ) {
-    if (entry.is_directory()) {
-      return textureManager.get(gfx::texture_name::kDirectory);
+  namespace {
+
+    const gfx::Texture2D* getIcon(
+        const std::filesystem::directory_entry& entry, const gfx::TextureManager& textureManager
+    ) {
+      if (entry.is_directory()) {
+        return textureManager.get(gfx::texture_name::kDirectory);
+      }
+
+      static constexpr std::array kSupportedTextureExtensions{ ".jpg", ".png" };
+      if (std::ranges::find(kSupportedTextureExtensions, entry.path().extension()) !=
+          kSupportedTextureExtensions.end()) {
+        return textureManager.get(entry.path().filename().string());
+      }
+
+      if (entry.path().extension().string().find(".glsl") != std::string::npos) {
+        return textureManager.get(gfx::texture_name::kGLSL);
+      }
+
+      if (entry.path().extension().string().find(".json") != std::string::npos) {
+        return textureManager.get(gfx::texture_name::kJSON);
+      }
+
+      return nullptr;
     }
 
-    static constexpr std::array kSupportedTextureExtensions{ ".jpg", ".png" };
-    if (std::ranges::find(kSupportedTextureExtensions, entry.path().extension()) != kSupportedTextureExtensions.end()) {
-      return textureManager.get(entry.path().filename().string());
+    bool isEditTextFileSupported(const std::filesystem::path& path) {
+      static constexpr std::array kSupportedFileExtensions{ ".glsl", ".json" };
+      return std::ranges::find(kSupportedFileExtensions, path.filename().extension()) != kSupportedFileExtensions.end();
     }
 
-    if (entry.path().extension().string().find(".glsl") != std::string::npos) {
-      return textureManager.get(gfx::texture_name::kGLSL);
-    }
-
-    if (entry.path().extension().string().find(".json") != std::string::npos) {
-      return textureManager.get(gfx::texture_name::kJSON);
-    }
-
-    return nullptr;
-  }
+  }  // namespace
 
   void AssetBrowserPanel::render(const UIContext& ctx) {
+    assert(ctx.engineCtx.eventQueue != nullptr && "[AssetBrowserPanel] Requires a valid EventQueue!");
     assert(ctx.engineCtx.textureManager != nullptr && "[AssetBrowserPanel] Requires a valid TextureManager!");
 
     if (ImGui::Begin(ui::panel::kAssetBrowser, &visible_)) {
@@ -178,6 +191,12 @@ namespace ls::ui {
             if (isCardHovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
               if (entry.is_directory()) {
                 currentPath_ /= entry.path().filename();
+              } else if (isEditTextFileSupported(entry)) {
+                ctx.engineCtx.eventQueue->publish(
+                    event::RequestOpenAsset{
+                        .path = entry.path(),
+                    }
+                );
               }
             }
 

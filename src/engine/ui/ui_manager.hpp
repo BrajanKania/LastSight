@@ -34,6 +34,8 @@ namespace ls::ui {
       }
     }
 
+    bool hasPanel(const std::string& name) const { return nameToIndex_.find(name) != nameToIndex_.end(); }
+
     IUIPanel& getPanel(const std::string& name) {
       auto itName{ nameToIndex_.find(name) };
       assert(itName != nameToIndex_.end() && "Attempted to get non-existent panel.");

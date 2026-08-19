@@ -69,6 +69,8 @@ namespace ls::gfx {
     return names_[handle.id];
   }
 
+  const std::vector<std::string>& TextureManager::getNames() const { return names_; }
+
   void TextureManager::clear() {
     textures_.clear();
     names_.clear();

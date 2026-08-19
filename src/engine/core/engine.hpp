@@ -5,9 +5,11 @@
 #include "engine/core/engine_mode.hpp"
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/window.hpp"
+#include "engine/debug/console.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/gfx/texture_manager.hpp"
 #include "engine/input/input_manager.hpp"
+#include "engine/platform/external_tool_manager.hpp"
 
 namespace ls {
 
@@ -28,6 +30,7 @@ namespace ls {
     void handleRequest();
     void handleInput();
     void loadTextures();
+    void registerConsoleCommands();
 
     EngineContext getEngineContext() {
       return EngineContext{
@@ -36,6 +39,7 @@ namespace ls {
         .eventQueue = &eventQueue_,
         .textureManager = &textureManager_,
         .engineMode = &engineMode_,
+        .console = &console_,
       };
     }
 
@@ -45,6 +49,8 @@ namespace ls {
     gfx::TextureManager textureManager_;
     SceneManager sceneManager_;
     EditorLayer editorLayer_;
+    platform::ExternalToolManager externalToolManager_;
+    debug::Console console_;
 
     EngineMode engineMode_{ EngineMode::Play };
   };

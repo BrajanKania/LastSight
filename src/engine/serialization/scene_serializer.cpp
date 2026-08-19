@@ -3,9 +3,10 @@
 #include <cassert>
 #include <format>
 #include <fstream>
-#include <iostream>
 
 #include "engine/components/entity_name.hpp"
+#include "engine/debug/console.hpp"
+#include "engine/debug/log_level.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/serialization/serialization_system.hpp"
 
@@ -17,7 +18,11 @@ namespace ls::serialization {
 
     std::ifstream file(path);
     if (!file.is_open()) {
-      std::cerr << std::format("[SceneSerializer] Failed to open scene file: {}\n", path.string());
+      if (engineCtx_.console) {
+        engineCtx_.console->log(
+            std::format("[SceneSerializer] Failed to open scene file: {}", path.string()), debug::LogLevel::Error
+        );
+      }
       return false;
     }
 
@@ -25,14 +30,24 @@ namespace ls::serialization {
     try {
       file >> sceneJson;
     } catch (const nlohmann::json::parse_error& e) {
-      std::cerr << std::format("[SceneSerializer]  Failed to parse file: {}. Error: {}\n", path.string(), e.what());
+      if (engineCtx_.console) {
+        engineCtx_.console->log(
+            std::format("[SceneSerializer]  Failed to parse file: {}. Error: {}\n", path.string(), e.what()),
+            debug::LogLevel::Error
+        );
+      }
       return false;
     }
 
     if (!sceneJson.contains("entities") || !sceneJson["entities"].is_array()) {
-      std::cerr << std::format(
-          "[SceneSerializer] Incorrect scene format, lacking \"entities\" array, file: {}\n", path.string()
-      );
+      if (engineCtx_.console) {
+        engineCtx_.console->log(
+            std::format(
+                "[SceneSerializer] Incorrect scene format, lacking \"entities\" array, file: {}\n", path.string()
+            ),
+            debug::LogLevel::Error
+        );
+      }
       return false;
     }
 
@@ -66,9 +81,12 @@ namespace ls::serialization {
         }
 
         if (!componentType) {
-          std::cerr << std::format(
-              "[SceneSerializer] Non valid component type: {}, file: {}\n", componentName, path.string()
-          );
+          if (engineCtx_.console) {
+            engineCtx_.console->log(
+                std::format("[SceneSerializer] Non valid component type: {}, file: {}\n", componentName, path.string()),
+                debug::LogLevel::Error
+            );
+          }
           continue;
         }
 
@@ -84,9 +102,14 @@ namespace ls::serialization {
         }
 
         if (!componentInstance) {
-          std::cerr << std::format(
-              "[SceneSerializer] Failed to create component: {}, file: {}\n", componentName, path.string()
-          );
+          if (engineCtx_.console) {
+            engineCtx_.console->log(
+                std::format(
+                    "[SceneSerializer] Failed to create component: {}, file: {}\n", componentName, path.string()
+                ),
+                debug::LogLevel::Error
+            );
+          }
           continue;
         }
 
@@ -94,10 +117,16 @@ namespace ls::serialization {
         if (set) {
           set->emplaceMeta(entity, componentInstance);
         } else {
-          std::cerr << "[Serialization] Błąd: Brak SparseSet w rejestrze dla: " << componentName << "\n";
-          std::cerr << std::format(
-              "[SceneSerializer] Failed to get SparseSet for component: {}, file: {}\n", componentName, path.string()
-          );
+          if (engineCtx_.console) {
+            engineCtx_.console->log(
+                std::format(
+                    "[SceneSerializer] Failed to get SparseSet for component: {}, file: {}\n",
+                    componentName,
+                    path.string()
+                ),
+                debug::LogLevel::Error
+            );
+          }
         }
       }
     }
@@ -148,8 +177,14 @@ namespace ls::serialization {
     }
 
     std::ofstream file(path);
-    if (!file.is_open())
+    if (!file.is_open()) {
+      if (engineCtx_.console) {
+        engineCtx_.console->log(
+            std::format("[SceneSerializer] Failed to open scene file: {}", path.string()), debug::LogLevel::Error
+        );
+      }
       return false;
+    }
 
     file << sceneJson.dump(2);
     return true;

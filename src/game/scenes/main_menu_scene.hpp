@@ -38,6 +38,7 @@ namespace ls {
         .registry = &registry_,
         .eventQueue = &eventQueue_,
         .renderPipeline = &renderPipeline_,
+        .uiManager = &uiManager_,
         .sceneFBO = fovFBO_,
       };
     }

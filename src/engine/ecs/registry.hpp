@@ -4,6 +4,7 @@
 #include <cassert>
 #include <entt/core/fwd.hpp>
 #include <entt/entt.hpp>
+#include <entt/meta/resolve.hpp>
 #include <memory>
 
 #include "engine/ecs/sparse_set.hpp"
@@ -37,7 +38,7 @@ namespace ls::ecs {
     }
 
     void destroyEntity(EntityId entity) {
-      if (isEntityPendingDestroy(entity))
+      if (!isValidEntity(entity) || isEntityPendingDestroy(entity))
         return;
 
       entitiesToDestroy_.push_back(entity);
@@ -161,6 +162,20 @@ namespace ls::ecs {
     template <typename TComponent>
     ISparseSet* ensureSparseSet() {
       return getSparseSetPointer<TComponent>();
+    }
+
+    EntityId duplicateEntity(const EntityId entityToDuplicate) {
+      if (!isValidEntity(entityToDuplicate))
+        return kNullEntity;
+
+      EntityId entity{ createEntity() };
+      for (auto& set : sparseSets_) {
+        if (set && set->hasComponent(entityToDuplicate)) {
+          set->copyComponent(entityToDuplicate, entity);
+        }
+      }
+
+      return entity;
     }
 
   private:

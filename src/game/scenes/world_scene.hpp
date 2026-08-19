@@ -39,6 +39,7 @@ namespace ls {
         .eventQueue = &eventQueue_,
         .inputManager = &inputManager_,
         .renderPipeline = &renderPipeline_,
+        .uiManager = &uiManager_,
         .sceneFBO = processedFBO_,
       };
     }

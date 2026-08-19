@@ -18,12 +18,16 @@ namespace ls {
   namespace gfx {
     class Framebuffer;
   }
+  namespace ui {
+    class UIManager;
+  }
 
   struct SceneContext {
     ecs::Registry* registry{ nullptr };
     dispatch::EventQueue* eventQueue{ nullptr };
     input::InputManager* inputManager{ nullptr };
     renderer::RenderPipeline* renderPipeline{ nullptr };
+    ui::UIManager* uiManager{ nullptr };
     std::shared_ptr<gfx::Framebuffer> sceneFBO{ nullptr };
   };
 

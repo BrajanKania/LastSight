@@ -55,6 +55,8 @@ add_executable(LastSight
   src/engine/core/stb_impl.cpp
   src/engine/core/window.cpp
 
+  src/engine/debug/console.cpp
+
   src/engine/gfx/framebuffer.cpp
   src/engine/gfx/shader.cpp
   src/engine/gfx/shader_exception.cpp
@@ -70,6 +72,8 @@ add_executable(LastSight
 
   src/engine/physics/physics_system.cpp
 
+  src/engine/platform/external_tool_manager.cpp
+
   src/engine/renderer/passes/fov_pass.cpp
   src/engine/renderer/passes/lit_pass.cpp
   src/engine/renderer/passes/post_process_pass.cpp
@@ -81,7 +85,8 @@ add_executable(LastSight
 
   src/engine/systems/parallax_system.cpp
 
-  src/engine/ui/panels/asset_browser.cpp
+  src/engine/ui/panels/asset_browser_panel.cpp
+  src/engine/ui/panels/console_panel.cpp
   src/engine/ui/panels/entity_inspector_panel.cpp
   src/engine/ui/panels/main_menu_bar_panel.cpp
   src/engine/ui/panels/render_pipeline_debug_panel.cpp

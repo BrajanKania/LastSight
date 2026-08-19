@@ -14,7 +14,12 @@ namespace ls::ui {
   private:
     bool filterEntity(const ecs::Registry& registry, const ecs::EntityId entity) const;
 
+    std::string getEntityLabel(ecs::Registry& registry, const ecs::EntityId entity);
+
     bool hideNameless_{ true };
+    bool hideEntityIndex_{ true };
+    char filterBuffer_[256]{};
+    std::string lowerFilterBuffer_;
   };
 
 }  // namespace ls::ui

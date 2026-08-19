@@ -9,5 +9,6 @@ namespace ls::ui::panel {
   inline constexpr const char* kSceneBrowser{ "Scene Browser###scene_browser_panel" };
   inline constexpr const char* kAssetBrowser{ "Asset Browser###asset_browser_panel" };
   inline constexpr const char* kViewport{ "Viewport###viewport_panel" };
+  inline constexpr const char* kConsole{ "Console###console_panel" };
 
 }  // namespace ls::ui::panel

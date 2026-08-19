@@ -12,6 +12,9 @@ namespace ls {
   namespace gfx {
     class TextureManager;
   }
+  namespace debug {
+    class Console;
+  }
 
   struct EngineContext {
     Window* window{ nullptr };
@@ -19,6 +22,7 @@ namespace ls {
     dispatch::EventQueue* eventQueue{ nullptr };
     gfx::TextureManager* textureManager{ nullptr };
     const EngineMode* engineMode{ nullptr };
+    debug::Console* console{ nullptr };
   };
 
 }  // namespace ls

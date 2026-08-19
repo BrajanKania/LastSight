@@ -334,7 +334,7 @@ def generate_cpp_code(headers_info: list[HeaderInfo]) -> str:
         for s in info.structs:
             lines = [
                 f"    entt::meta_factory<{s.full_name}>{{}}",
-                f'        .type("{s.name}"_hs, "{s.name}")',
+                f'        .type(entt::type_id<{s.full_name}>().hash(), "{s.name}")',
                 f'        .func<&ls::ecs::Registry::ensureSparseSet<{s.full_name}>>("ensureSparseSet"_hs)',
             ]
 
@@ -366,7 +366,7 @@ def generate_cpp_code(headers_info: list[HeaderInfo]) -> str:
         for e in info.enums:
             lines = [
                 f"    entt::meta_factory<{e.full_name}>{{}}",
-                f'        .type("{e.name}"_hs, "{e.name}")',
+                f'        .type(entt::type_id<{e.full_name}>().hash(), "{e.name}")',
             ]
             for m in e.members:
                 lines.append(

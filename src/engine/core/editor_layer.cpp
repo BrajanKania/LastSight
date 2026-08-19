@@ -9,13 +9,17 @@
 #include "engine/core/engine_context.hpp"
 #include "engine/core/engine_mode.hpp"
 #include "engine/dispatch/event_queue.hpp"
+#include "engine/ecs/types.hpp"
 #include "engine/events/engine_mode_changed.hpp"
+#include "engine/events/entity_duplicated.hpp"
+#include "engine/events/request_change_console_auto_scroll.hpp"
 #include "engine/events/request_change_engine_mode.hpp"
 #include "engine/events/request_change_ui_style.hpp"
 #include "engine/events/set_panel_visibility.hpp"
 #include "engine/events/toggle_panel.hpp"
 #include "engine/input/types.hpp"
-#include "engine/ui/panels/asset_browser.hpp"
+#include "engine/ui/panels/asset_browser_panel.hpp"
+#include "engine/ui/panels/console_panel.hpp"
 #include "engine/ui/panels/entity_inspector_panel.hpp"
 #include "engine/ui/panels/main_menu_bar_panel.hpp"
 #include "engine/ui/panels/panel_names.hpp"
@@ -33,6 +37,7 @@ namespace ls {
     uiManager_.addPanel<ui::MainMenuBarPanel>(ui::panel::kMainMenuBar);
     uiManager_.addPanel<ui::SceneBrowserPanel>(ui::panel::kSceneBrowser);
     uiManager_.addPanel<ui::AssetBrowserPanel>(ui::panel::kAssetBrowser);
+    uiManager_.addPanel<ui::ConsolePanel>(ui::panel::kConsole);
     uiManager_.addPanel<ui::RenderPipelineDebugPanel>(ui::panel::kRenderPipelineDebug);
     uiManager_.addPanel<ui::SceneHierarchyPanel>(ui::panel::kSceneHierarchy);
     uiManager_.addPanel<ui::EntityInspectorPanel>(ui::panel::kEntityInspector);
@@ -74,7 +79,7 @@ namespace ls {
             .engineCtx = engineCtx,
             .sceneCtx = sceneCtx,
             .selectionCtx = &selectionCtx_,
-            .uiStyle = &uiStyle_,
+            .editorPreferences = &editorPreferences_,
         }
     );
   }
@@ -96,6 +101,7 @@ namespace ls {
       uiManager_.getPanel(ui::panel::kSceneHierarchy).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kEntityInspector).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kRenderPipelineDebug).setVisible(isEditMode);
+      uiManager_.getPanel(ui::panel::kConsole).setVisible(isEditMode);
 
       shouldResetLayout_ = isEditMode;
     }
@@ -109,9 +115,21 @@ namespace ls {
     }
 
     for (const auto& event : engineEventQueue.getEvents<event::RequestChangeUIStyle>()) {
-      if (event.newStyle != uiStyle_) {
-        uiStyle_ = event.newStyle;
-        ui_system::changeUIStyle(uiStyle_);
+      if (event.newStyle != editorPreferences_.uiStyle) {
+        editorPreferences_.uiStyle = event.newStyle;
+        ui_system::changeUIStyle(editorPreferences_.uiStyle);
+      }
+    }
+
+    for (const auto& event : engineEventQueue.getEvents<event::RequestChangeConsoleAutoScroll>()) {
+      if (event.enable != editorPreferences_.consoleAutoScroll) {
+        editorPreferences_.consoleAutoScroll = event.enable;
+      }
+    }
+
+    for (const auto& event : engineEventQueue.getEvents<event::EntityDuplicated>()) {
+      if (event.newEntity != ecs::kNullEntity) {
+        selectionCtx_.selectedEntity = event.newEntity;
       }
     }
   }
@@ -138,6 +156,7 @@ namespace ls {
       ImGui::DockBuilderDockWindow(ui::panel::kSceneBrowser, dockBottom);
       ImGui::DockBuilderDockWindow(ui::panel::kAssetBrowser, dockBottom);
       ImGui::DockBuilderDockWindow(ui::panel::kRenderPipelineDebug, dockBottom);
+      ImGui::DockBuilderDockWindow(ui::panel::kConsole, dockBottom);
 
       ImGui::DockBuilderDockWindow(ui::panel::kSceneHierarchy, dockRightTop);
       ImGui::DockBuilderDockWindow(ui::panel::kEntityInspector, dockRightBottom);
