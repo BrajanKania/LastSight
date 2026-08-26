@@ -9,33 +9,61 @@ namespace ls::particle {
 
   STRUCT()
   struct ParticleEmitterConfig {
+    PROPERTY()
     std::size_t maxParticles{ 10 };
 
+    PROPERTY()
     float minSpeed{ 0.f };
+
+    PROPERTY()
     float maxSpeed{ 1.f };
 
+    PROPERTY()
     glm::vec2 minScale{ 0.5f };
+
+    PROPERTY()
     glm::vec2 maxScale{ 1.f };
+
+    PROPERTY()
     glm::vec2 endScale{ 0.f };
 
+    PROPERTY()
     float minRotation{ -180.f };
+
+    PROPERTY()
     float maxRotation{ 180.f };
 
+    PROPERTY()
     float minAngularSpeed{ 0.f };
+
+    PROPERTY()
     float maxAngularSpeed{ 90.f };
 
+    PROPERTY(color)
     glm::vec4 startColor{ 1.f };
+
+    PROPERTY(color)
     glm::vec4 endColor{ 0.f };
 
+    PROPERTY()
     float minBrightness{ 0.7f };
+
+    PROPERTY()
     float maxBrightness{ 1.3f };
 
+    PROPERTY()
     float minLifetime{ 0.1f };
+
+    PROPERTY()
     float maxLifetime{ 1.f };
 
+    PROPERTY()
     bool isLooping{ false };
+
+    PROPERTY()
     float spawnRate{ 1.f };
 
+    PROPERTY()
     float duration{ 10.f };
   };
 

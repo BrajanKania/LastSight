@@ -6,10 +6,15 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct MenuStalkerPoint {
+    PROPERTY()
     glm::vec2 position{ 0.f };
+
+    PROPERTY()
     glm::vec2 peekOffset{ -0.2f, 0.f };
+
+    PROPERTY()
     glm::vec2 parallaxFactor{ 0.f };
   };
 

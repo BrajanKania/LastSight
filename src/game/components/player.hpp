@@ -4,7 +4,7 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Player {};
 
 }  // namespace ls::component

@@ -6,9 +6,12 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Velocity {
+    PROPERTY()
     glm::vec2 linear{ 0.f, 0.f };
+
+    PROPERTY()
     float angular{ 0.f };
   };
 

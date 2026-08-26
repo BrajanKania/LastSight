@@ -8,12 +8,21 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Sprite {
+    PROPERTY(DisplayName("Color"), Color)
     glm::vec4 color{ 1.f };
+
+    PROPERTY(DisplayName("UV Scale"))
     glm::vec2 uvScale{ 1.f };
+
+    PROPERTY(DisplayName("Texture"))
     gfx::TextureHandle textureHandle{ 0 };
+
+    PROPERTY(DisplayName("Angle Offset"), Step(0.5f))
     float angleOffset{ 0.f };
+
+    PROPERTY(DisplayName("Layer"))
     renderer::Layer layer{ renderer::Layer::Ground };
   };
 

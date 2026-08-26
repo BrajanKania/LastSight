@@ -6,8 +6,9 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT(DisplayName("Entity Name"))
   struct EntityName {
+    PROPERTY(DisplayName("Name"))
     std::string name{};
   };
 

@@ -6,12 +6,21 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct MenuStalker {
+    PROPERTY()
     glm::vec2 hidePosition{ 0.f };
+
+    PROPERTY()
     glm::vec2 peekOffset{ 0.2f, 0.f };
+
+    PROPERTY()
     float minDistance{ 1.f };
+
+    PROPERTY()
     float maxDistance{ 2.f };
+
+    PROPERTY()
     float peekSpeed{ 0.1f };
 
     PROPERTY(ReadOnly, Transient)

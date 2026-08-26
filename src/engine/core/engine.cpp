@@ -8,6 +8,7 @@
 
 #include "engine/actions/quit_engine.hpp"
 #include "engine/components/entity_name.hpp"
+#include "engine/core/asset_system.hpp"
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/time_system.hpp"
 #include "engine/core/window.hpp"
@@ -163,7 +164,9 @@ namespace ls {
 
     for (const auto& event : eventQueue_.getEvents<event::RequestSaveScene>()) {
       serialization::SceneSerializer serializer(sceneCtx, getEngineContext());
-      serializer.saveScene(sceneManager_.getActiveSceneName());
+      if (!serializer.saveScene(asset_system::scene(sceneManager_.getActiveSceneName()))) {
+        console_.log("Failed to save scene!", debug::LogLevel::Error);
+      }
     }
 
     if (sceneCtx.uiManager != nullptr) {
@@ -222,9 +225,11 @@ namespace ls {
 
   void Engine::registerConsoleCommands() {
     console_.registerCommand("clear", "clear", [this](debug::CommandArgs) { console_.clear(); });
+
     console_.registerCommand("exit", "exit", [this](debug::CommandArgs) {
       eventQueue_.publish(event::RequestQuitEngine{});
     });
+
     console_.registerCommand("set_ui_style", "set_ui_style <int>", [this](debug::CommandArgs args) {
       if (args.size() == 0) {
         return;
@@ -238,6 +243,7 @@ namespace ls {
         return;
       }
     });
+
     console_.registerCommand("help", "help", [this](debug::CommandArgs) {
       console_.log("Command list:", debug::LogLevel::Info);
       const auto& commands{ console_.getCommands() };

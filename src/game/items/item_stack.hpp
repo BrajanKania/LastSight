@@ -9,7 +9,10 @@ namespace ls::item {
 
   STRUCT()
   struct ItemStack {
+    PROPERTY()
     ItemId itemId;
+
+    PROPERTY()
     std::uint32_t count{ 0 };
   };
 

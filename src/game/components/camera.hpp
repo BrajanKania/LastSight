@@ -6,18 +6,18 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Camera {
-    PROPERTY(Name = "Orthographic size")
+    PROPERTY(DisplayName("Orthographic size"))
     float orthographicSize{ 10.f };
 
-    PROPERTY(Name = "Zoom")
+    PROPERTY(DisplayName("Zoom"))
     float zoom{ 1.f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(Transient)
     glm::mat4 view{ 1.f };
 
-    PROPERTY(ReadOnly)
+    PROPERTY(Transient)
     glm::mat4 projection{ 1.f };
   };
 

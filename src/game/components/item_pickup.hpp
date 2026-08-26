@@ -5,8 +5,9 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct ItemPickup {
+    PROPERTY()
     item::ItemStack itemStack;
   };
 

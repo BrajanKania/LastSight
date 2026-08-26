@@ -4,9 +4,12 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Health {
+    PROPERTY()
     float max{ 100.f };
+
+    PROPERTY()
     float current{ 100.f };
   };
 

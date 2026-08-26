@@ -27,7 +27,10 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Python3 REQUIRED)
 
 set(REFLECTION_INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(GENERATE_REFLECTION_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/reflection/generate_reflection.py")
+
+set(REFLECTION_GENERATOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/reflection/generator")
+set(GENERATE_REFLECTION_SCRIPT "${REFLECTION_GENERATOR_DIR}/main.py")
+
 set(GENERATED_REFLECTION_FILE "${CMAKE_CURRENT_BINARY_DIR}/generated/engine/reflection/generated_reflection.cpp")
 
 file(GLOB_RECURSE ALL_HEADERS
@@ -37,7 +40,7 @@ file(GLOB_RECURSE ALL_HEADERS
 add_custom_command(
   OUTPUT "${GENERATED_REFLECTION_FILE}"
   COMMAND Python3::Interpreter "${GENERATE_REFLECTION_SCRIPT}"
-    --input-dir ${REFLECTION_INPUT_DIR}
+    --dirs ${REFLECTION_INPUT_DIR}
     --output-file "${GENERATED_REFLECTION_FILE}"
   DEPENDS "${GENERATE_REFLECTION_SCRIPT}" ${ALL_HEADERS}
   VERBATIM

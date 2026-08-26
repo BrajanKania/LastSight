@@ -4,3 +4,5 @@ build/
 imgui.ini
 
 .cache/
+
+__pycache__/

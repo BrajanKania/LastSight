@@ -83,7 +83,7 @@ namespace ls::serialization {
         if (!componentType) {
           if (engineCtx_.console) {
             engineCtx_.console->log(
-                std::format("[SceneSerializer] Non valid component type: {}, file: {}\n", componentName, path.string()),
+                std::format("[SceneSerializer] Invalid component type: {}, file: {}\n", componentName, path.string()),
                 debug::LogLevel::Error
             );
           }
@@ -177,6 +177,7 @@ namespace ls::serialization {
     }
 
     std::ofstream file(path);
+
     if (!file.is_open()) {
       if (engineCtx_.console) {
         engineCtx_.console->log(
@@ -187,6 +188,7 @@ namespace ls::serialization {
     }
 
     file << sceneJson.dump(2);
+    file.close();
     return true;
   }
 

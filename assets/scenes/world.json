@@ -21,12 +21,12 @@
           ]
         },
         "Transform": {
-          "Position": [
+          "position": [
             0.0,
             0.0
           ],
-          "Rotation": 0.0,
-          "Scale": [
+          "rotation": 0.0,
+          "scale": [
             5.0,
             5.0
           ]
@@ -53,11 +53,11 @@
           "name": "Player"
         },
         "FieldOfView": {
-          "darkness": 0.6000173687934875,
+          "darkness": 0.6000001430511475,
           "fovAngle": 60.0,
           "innerRadius": 1.0,
           "outerRadius": 6.0,
-          "smoothnessAngle": 39.99843215942383,
+          "smoothnessAngle": 40.000003814697266,
           "smoothnessDistance": 2.0
         },
         "Health": {
@@ -129,8 +129,6 @@
           "isSprinting": false
         },
         "PostProcessSettings": {
-          "currentDamageIntensity": 0.0,
-          "currentStaminaIntensity": 0.0,
           "damageInnerRadius": 0.10000000149011612,
           "damageOuterRadius": 0.699999988079071,
           "damageVignetteColor": [
@@ -168,12 +166,12 @@
           "sprintCostRate": 20.0
         },
         "Transform": {
-          "Position": [
-            0.0,
-            0.0
+          "position": [
+            -0.38756704330444336,
+            -0.2255670428276062
           ],
-          "Rotation": 58.184635162353516,
-          "Scale": [
+          "rotation": 23.462705612182617,
+          "scale": [
             0.5,
             0.5
           ]
@@ -191,13 +189,10 @@
     {
       "components": {
         "Camera": {
-          "Orthographic size": 6.0,
-          "Zoom": 1.0,
-          "projection": {},
-          "view": {}
+          "orthographicSize": 6.0,
+          "zoom": 1.0
         },
         "CameraShake": {
-          "Trauma decay": 1.0,
           "damping": 20.0,
           "maxSpringOffset": 0.4000000059604645,
           "maxTraumaOffset": 0.3499999940395355,
@@ -208,6 +203,7 @@
           "stiffness": 180.0,
           "timeAccumulator": 0.0,
           "trauma": 0.0,
+          "traumaDecay": 2.0,
           "traumaFrequency": 8.0,
           "velocity": [
             0.0,
@@ -218,12 +214,12 @@
           "name": "Camera"
         },
         "Transform": {
-          "Position": [
-            0.0,
-            0.0
+          "position": [
+            -0.38756635785102844,
+            -0.22556661069393158
           ],
-          "Rotation": 0.0,
-          "Scale": [
+          "rotation": 0.0,
+          "scale": [
             1.0,
             1.0
           ]
@@ -316,12 +312,12 @@
           ]
         },
         "Transform": {
-          "Position": [
+          "position": [
             1.0,
             1.0
           ],
-          "Rotation": 0.0,
-          "Scale": [
+          "rotation": 0.0,
+          "scale": [
             0.5,
             0.5
           ]
@@ -365,12 +361,12 @@
           ]
         },
         "Transform": {
-          "Position": [
+          "position": [
             -1.0,
             -1.0
           ],
-          "Rotation": 0.0,
-          "Scale": [
+          "rotation": 0.0,
+          "scale": [
             0.800000011920929,
             0.800000011920929
           ]
@@ -412,12 +408,12 @@
           ]
         },
         "Transform": {
-          "Position": [
+          "position": [
             1.0,
             -1.0
           ],
-          "Rotation": 30.0,
-          "Scale": [
+          "rotation": 30.0,
+          "scale": [
             0.800000011920929,
             0.800000011920929
           ]
@@ -455,12 +451,12 @@
           ]
         },
         "Transform": {
-          "Position": [
+          "position": [
             -1.0,
             0.0
           ],
-          "Rotation": 50.0,
-          "Scale": [
+          "rotation": 50.0,
+          "scale": [
             0.4000000059604645,
             0.4000000059604645
           ]
@@ -498,12 +494,12 @@
           ]
         },
         "Transform": {
-          "Position": [
+          "position": [
             -1.0,
             1.0
           ],
-          "Rotation": 0.0,
-          "Scale": [
+          "rotation": 0.0,
+          "scale": [
             0.6000000238418579,
             0.6000000238418579
           ]

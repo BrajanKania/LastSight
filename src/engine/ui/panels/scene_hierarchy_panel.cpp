@@ -66,7 +66,7 @@ namespace ls::ui {
           }
 
           if (ImGui::MenuItem("Save Scene", "Ctrl + Shift + S")) {
-            ctx.sceneCtx.eventQueue->publish(event::RequestSaveScene{});
+            ctx.engineCtx.eventQueue->publish(event::RequestSaveScene{});
           }
 
           ImGui::EndMenu();

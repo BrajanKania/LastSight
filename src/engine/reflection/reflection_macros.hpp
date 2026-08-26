@@ -1,11 +1,20 @@
 #pragma once
 
+#define COMPONENT(...)
+/* Attributes
+ *
+ * DisplayName
+ *
+ */
+
 #define STRUCT(...)
+/* Attributes
+ *
+ * DisplayName
+ *
+ */
 
 #define PROPERTY(...)
-
-#define ENUM(...)
-
 /* Attributes
  *
  * DisplayName
@@ -13,5 +22,16 @@
  * ReadOnly
  *
  * Transient
+ *
+ * Color
+ *
+ * Range(Min, Max)
+ *
+ */
+
+#define ENUM(...)
+/* Attributes
+ *
+ * DisplayName
  *
  */

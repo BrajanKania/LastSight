@@ -4,8 +4,9 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Projectile {
+    PROPERTY()
     float lifetime{ 0.f };
   };
 

@@ -100,6 +100,11 @@ namespace ls::ui {
       const UIContext& ctx, const ecs::EntityId entity, const gfx::TextureManager& textureManager
   ) {
     for (auto [typeId, type] : entt::resolve()) {
+      const reflection_system::ComponentInfo* componentInfo{ type.custom() };
+
+      if (componentInfo && !componentInfo->isComponent)
+        continue;
+
       auto* set{ ctx.sceneCtx.registry->getISparseSetByTypeId(typeId) };
       if (!set)
         continue;
@@ -109,7 +114,10 @@ namespace ls::ui {
         continue;
 
       entt::meta_any anyComponent{ type.from_void(rawComponent) };
-      const char* headerName{ type.name() ? type.name() : "Unknown" };
+
+      const char* headerName{ componentInfo && componentInfo->displayName ? componentInfo->displayName
+                              : type.name()                               ? type.name()
+                                                                          : "Unknown" };
 
       if (!filterComponent(headerName))
         continue;
@@ -140,6 +148,7 @@ namespace ls::ui {
 
           for (auto [dataId, data] : type.data()) {
             const ls::reflection_system::PropertyInfo* propInfo{ data.custom() };
+            const reflection_system::EnumInfo* enumInfo{ data.custom() };
 
             if (!filterProperty(propInfo))
               continue;
@@ -149,8 +158,16 @@ namespace ls::ui {
             ImGui::TableNextRow();
 
             ImGui::TableNextColumn();
-            const char* label{ (propInfo && propInfo->displayName) ? propInfo->displayName
-                                                                   : (data.name() ? data.name() : "Unnamed") };
+
+            const char* label{ nullptr };
+            if (propInfo && propInfo->displayName) {
+              label = propInfo->displayName;
+            } else if (enumInfo && enumInfo->displayName) {
+              label = enumInfo->displayName;
+            } else {
+              label = data.name() ? data.name() : "Unnamed";
+            }
+
             ImGui::TextUnformatted(label);
 
             ImGui::TableNextColumn();
@@ -172,10 +189,16 @@ namespace ls::ui {
   bool EntityInspectorPanel::inspectComponentProperty(
       entt::meta_any& owner, entt::meta_data data, const gfx::TextureManager& textureManager
   ) {
-    const ls::reflection_system::PropertyInfo* propInfo{ data.custom() };
-    const bool isReadOnly{ propInfo ? propInfo->readOnly : false };
-    const char* label{ (propInfo && propInfo->displayName) ? propInfo->displayName
-                                                           : (data.name() ? data.name() : "Unnamed") };
+    const ls::reflection_system::PropertyInfo* propertyInfo{ data.custom() };
+    const bool isReadOnly{ propertyInfo ? propertyInfo->readOnly : false };
+    const bool isColor{ propertyInfo ? propertyInfo->color : false };
+    const float step{ propertyInfo ? propertyInfo->step : 0.05f };
+    const bool hasRange{ propertyInfo ? propertyInfo->range : false };
+    const float rangeMin{ propertyInfo ? propertyInfo->rangeMin : 0.f };
+    const float rangeMax{ propertyInfo ? propertyInfo->rangeMax : 1.f };
+
+    const char* label{ (propertyInfo && propertyInfo->displayName) ? propertyInfo->displayName
+                                                                   : (data.name() ? data.name() : "Unnamed") };
 
     entt::meta_any value{ data.get(owner) };
 
@@ -223,25 +246,28 @@ namespace ls::ui {
       }
     } else if (valueType == entt::resolve<float>()) {
       float val{ value.cast<float>() };
-      if (ImGui::DragFloat(hiddenLabel.c_str(), &val, 0.05f)) {
+      if (hasRange && ImGui::DragFloat(hiddenLabel.c_str(), &val, step, rangeMin, rangeMax)) {
+        value = val;
+        valueChanged = true;
+      } else if (!hasRange && ImGui::DragFloat(hiddenLabel.c_str(), &val, step)) {
         value = val;
         valueChanged = true;
       }
     } else if (valueType == entt::resolve<int>()) {
       int val{ value.cast<int>() };
-      if (ImGui::DragInt(hiddenLabel.c_str(), &val, 1)) {
+      if (ImGui::DragInt(hiddenLabel.c_str(), &val, (int)step)) {
         value = val;
         valueChanged = true;
       }
     } else if (valueType == entt::resolve<uint32_t>()) {
       uint32_t val{ value.cast<uint32_t>() };
-      if (ImGui::DragScalar(hiddenLabel.c_str(), ImGuiDataType_U32, &val, 1.0f)) {
+      if (ImGui::DragScalar(hiddenLabel.c_str(), ImGuiDataType_U32, &val, (int)step)) {
         value = val;
         valueChanged = true;
       }
     } else if (valueType == entt::resolve<std::size_t>()) {
       std::size_t val{ value.cast<std::size_t>() };
-      if (ImGui::DragScalar(hiddenLabel.c_str(), ImGuiDataType_U64, &val, 1.0f)) {
+      if (ImGui::DragScalar(hiddenLabel.c_str(), ImGuiDataType_U64, &val, (int)step)) {
         value = val;
         valueChanged = true;
       }
@@ -254,15 +280,23 @@ namespace ls::ui {
         valueChanged = true;
       }
     } else if (auto* vec{ value.try_cast<glm::vec2>() }) {
-      if (ImGui::DragFloat2(hiddenLabel.c_str(), &vec->x, 0.05f)) {
+      if (ImGui::DragFloat2(hiddenLabel.c_str(), &vec->x, step)) {
         valueChanged = true;
       }
     } else if (auto* vec{ value.try_cast<glm::vec3>() }) {
-      if (ImGui::DragFloat3(hiddenLabel.c_str(), &vec->x, 0.05f)) {
+      if (isColor) {
+        if (ImGui::ColorEdit3(hiddenLabel.c_str(), &vec->x)) {
+          valueChanged = true;
+        }
+      } else if (ImGui::DragFloat3(hiddenLabel.c_str(), &vec->x, step)) {
         valueChanged = true;
       }
     } else if (auto* vec{ value.try_cast<glm::vec4>() }) {
-      if (ImGui::DragFloat4(hiddenLabel.c_str(), &vec->x, 0.05f)) {
+      if (isColor) {
+        if (ImGui::ColorEdit4(hiddenLabel.c_str(), &vec->x)) {
+          value = true;
+        }
+      } else if (ImGui::DragFloat4(hiddenLabel.c_str(), &vec->x, step)) {
         valueChanged = true;
       }
     } else if (valueType.is_enum()) {
@@ -341,8 +375,13 @@ namespace ls::ui {
         return std::tolower(ch);
       });
 
-      for (auto [id, type] : entt::resolve()) {
-        auto* set{ ctx.sceneCtx.registry->getISparseSetByTypeId(id) };
+      for (auto [typeId, type] : entt::resolve()) {
+        const reflection_system::ComponentInfo* componentInfo{ type.custom() };
+
+        if (componentInfo && !componentInfo->isComponent)
+          continue;
+
+        auto* set{ ctx.sceneCtx.registry->getISparseSetByTypeId(typeId) };
 
         if (!set)
           continue;
@@ -350,7 +389,9 @@ namespace ls::ui {
         if (set->hasComponent(ctx.selectionCtx->selectedEntity))
           continue;
 
-        const char* typeName{ type.name() ? type.name() : "Unknown" };
+        const char* typeName{ componentInfo->displayName ? componentInfo->displayName
+                              : type.name()              ? type.name()
+                                                         : "Unknown" };
         std::string nameLower{ typeName };
         std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), [](unsigned char ch) {
           return std::tolower(ch);
@@ -360,12 +401,12 @@ namespace ls::ui {
           continue;
         }
 
-        auto it{ std::find(selectedComponentsToAdd_.begin(), selectedComponentsToAdd_.end(), id) };
+        auto it{ std::find(selectedComponentsToAdd_.begin(), selectedComponentsToAdd_.end(), typeId) };
         bool isSelected{ it != selectedComponentsToAdd_.end() };
 
         if (ImGui::Checkbox(typeName, &isSelected)) {
           if (isSelected) {
-            selectedComponentsToAdd_.push_back(id);
+            selectedComponentsToAdd_.push_back(typeId);
           } else {
             selectedComponentsToAdd_.erase(it);
           }

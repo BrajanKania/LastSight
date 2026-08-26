@@ -4,8 +4,9 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Interactable {
+    PROPERTY()
     float radius{ 1.f };
   };
 

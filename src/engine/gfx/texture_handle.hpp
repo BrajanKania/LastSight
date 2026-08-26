@@ -2,11 +2,8 @@
 
 #include <cstdint>
 
-#include "engine/reflection/reflection_macros.hpp"
-
 namespace ls::gfx {
 
-  STRUCT()
   struct TextureHandle {
     uint32_t id{ 0 };
 

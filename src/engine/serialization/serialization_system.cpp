@@ -82,8 +82,8 @@ namespace ls::serialization_system {
         continue;
       }
 
-      std::string fieldName{ (propInfo && propInfo->displayName) ? propInfo->displayName
-                                                                 : (data.name() ? data.name() : "") };
+      std::string fieldName{ data.name() ? data.name() : "Unnamed" };
+
       if (fieldName.empty()) {
         fieldName = std::to_string(static_cast<std::size_t>(id));
       }
@@ -203,16 +203,20 @@ namespace ls::serialization_system {
       if (propInfo && propInfo->transient)
         continue;
 
-      const char* keyName{ (propInfo && propInfo->displayName) ? propInfo->displayName : data.name() };
-      std::string fieldKey{ keyName ? keyName : std::to_string(static_cast<std::size_t>(dataId)) };
+      std::string memberName{ data.name() ? data.name() : "" };
+      std::string displayName{ (propInfo && propInfo->displayName) ? propInfo->displayName : "" };
 
-      if (jsonValue.contains(fieldKey)) {
-        const auto& fieldJson{ jsonValue[fieldKey] };
-        if (!fieldJson.is_null()) {
-          entt::meta_any fieldValue{ deserializeReflected(data.type(), fieldJson, textureManager) };
-          if (fieldValue) {
-            data.set(instance, fieldValue);
-          }
+      const nlohmann::json* fieldJson{ nullptr };
+      if (!memberName.empty() && jsonValue.contains(memberName)) {
+        fieldJson = &jsonValue[memberName];
+      } else if (!displayName.empty() && jsonValue.contains(displayName)) {
+        fieldJson = &jsonValue[displayName];
+      }
+
+      if (fieldJson && !fieldJson->is_null()) {
+        entt::meta_any fieldValue{ deserializeReflected(data.type(), *fieldJson, textureManager) };
+        if (fieldValue) {
+          data.set(instance, fieldValue);
         }
       }
     }

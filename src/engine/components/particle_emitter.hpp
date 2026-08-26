@@ -9,14 +9,18 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct ParticleEmitter {
+    PROPERTY()
     particle::ParticleEmitterConfig config;
 
     PROPERTY(ReadOnly, Transient)
     float elapsedTime{ 0.f };
 
+    PROPERTY()
     bool isPaused{ false };
+
+    PROPERTY()
     bool isEmitting{ true };
 
     PROPERTY(ReadOnly, Transient)

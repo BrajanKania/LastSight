@@ -4,8 +4,9 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Lamp {
+    PROPERTY()
     bool isOn{ false };
   };
 

@@ -6,15 +6,15 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Transform {
-    PROPERTY(Name = "Scale")
+    PROPERTY(DisplayName("Scale"), Step(0.01f))
     glm::vec2 scale{ 1.f };
 
-    PROPERTY(Name = "Position")
+    PROPERTY(DisplayName("Position"), Step(0.01f))
     glm::vec2 position{ 0.f };
 
-    PROPERTY(Name = "Rotation")
+    PROPERTY(DisplayName("Rotation"), Step(0.5f), Range(-180.f, 180.f))
     float rotation{ 0.f };
   };
 

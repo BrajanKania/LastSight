@@ -4,10 +4,15 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct PlayerState {
+    PROPERTY()
     bool isSprinting{ false };
+
+    PROPERTY()
     bool isAiming{ false };
+
+    PROPERTY()
     bool isMoving{ false };
   };
 

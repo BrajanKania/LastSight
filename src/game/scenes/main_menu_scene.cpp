@@ -74,6 +74,7 @@ namespace ls {
 
     serialization::SceneSerializer sceneSerializer(getSceneContext(), engineCtx_);
     sceneSerializer.loadScene(asset_system::scene(scene::kMainMenu));
+
     for (auto entity : registry_.view<component::EntityName>()) {
       const auto& name{ registry_.getComponent<component::EntityName>(entity) };
       if (name.name == "background") {

@@ -9,7 +9,7 @@
 
 namespace ls::component {
 
-  STRUCT()
+  COMPONENT()
   struct Inventory {
     PROPERTY(ReadOnly)
     uint32_t maxSlots{ 3 };
