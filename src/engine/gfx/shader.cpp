@@ -109,23 +109,27 @@ namespace ls::gfx {
   }
 
   void Shader::cacheUniforms() {
-    GLint uniformsCount{ 0 };
+    GLint uniformsCount{0};
     glGetProgramiv(shaderProgram_, GL_ACTIVE_UNIFORMS, &uniformsCount);
+    if (uniformsCount <= 0) return;
 
-    if (uniformsCount == 0)
-      return;
-
-    GLint maxLength{ 0 };
+    GLint maxLength{0};
     glGetProgramiv(shaderProgram_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxLength);
-    std::vector<char> nameBuffer(maxLength);
-    for (GLint i{ 0 }; i < uniformsCount; i++) {
-      GLsizei uniformLength{ 0 };
+    if (maxLength <= 0) return;
 
-      glGetActiveUniform(shaderProgram_, i, nameBuffer.size(), &uniformLength, nullptr, nullptr, nameBuffer.data());
+    std::vector<GLchar> nameBuffer(maxLength);
+    for (GLint i = 0; i < uniformsCount; ++i) {
+      GLsizei length{0};
+      GLint size{0};
+      GLenum type{0};
+      glGetActiveUniform(shaderProgram_, i, nameBuffer.size(), &length, &size, &type, nameBuffer.data());
+      if (length <= 0) continue;
 
-      std::string name(nameBuffer.data(), uniformLength);
-      GLint uniformLocation{ glGetUniformLocation(shaderProgram_, name.c_str()) };
-      uniformLocations_[name] = uniformLocation;
+      std::string name(nameBuffer.data(), length);
+      GLint location{glGetUniformLocation(shaderProgram_, name.c_str())};
+      if (location >= 0) {
+        uniformLocations_[name] = location;
+      }
     }
   }
 
