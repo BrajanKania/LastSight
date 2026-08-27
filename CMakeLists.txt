@@ -7,6 +7,12 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+file(CREATE_LINK
+    "${CMAKE_BINARY_DIR}/compile_commands.json"
+    "${CMAKE_SOURCE_DIR}/compile_commands.json"
+    SYMBOLIC COPY_ON_ERROR
+)
+
 include(FetchContent)
 FetchContent_Declare(
   glad2
@@ -19,7 +25,7 @@ FetchContent_MakeAvailable(glad2)
 glad_add_library(glad2_lib STATIC API gl:core=4.6)
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-find_package(SDL3 REQUIRED COMPONENTS SDL3-static)
+find_package(SDL3 CONFIG REQUIRED)
 find_package(glm REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
@@ -131,7 +137,7 @@ target_link_libraries(
   PRIVATE
     glad2_lib
     glm::glm
-    OpenGL::OpenGL
+    OpenGL::GL
     SDL3::SDL3
     imgui::imgui
     EnTT::EnTT

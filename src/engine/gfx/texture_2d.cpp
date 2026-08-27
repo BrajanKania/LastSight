@@ -10,7 +10,7 @@ namespace ls::gfx {
   Texture2D::Texture2D(const std::filesystem::path& path) {
     stbi_set_flip_vertically_on_load(true);
 
-    unsigned char* data{ stbi_load(path.c_str(), &width_, &height_, &channels_, 0) };
+    unsigned char* data{ stbi_load(path.string().c_str(), &width_, &height_, &channels_, 0) };
 
     if (!data)
       throw std::runtime_error(std::format("Failed to load texture: \"{}\"", path.string()));

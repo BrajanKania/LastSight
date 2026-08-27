@@ -2,7 +2,9 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "engine/core/engine_context.hpp"
 #include "engine/core/i_scene.hpp"

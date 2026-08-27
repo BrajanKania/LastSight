@@ -1,5 +1,6 @@
 #include "engine/gfx/texture_manager.hpp"
 
+#include <array>
 #include <filesystem>
 #include <memory>
 
