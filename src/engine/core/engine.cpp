@@ -3,17 +3,20 @@
 #include <imgui.h>
 
 #include <filesystem>
+#include <format>
 #include <glm/ext/vector_float4.hpp>
 #include <string>
 
-#include "engine/actions/quit_engine.hpp"
+#include "engine/actions/toggle_engine_mode.hpp"
 #include "engine/components/entity_name.hpp"
 #include "engine/core/asset_system.hpp"
+#include "engine/core/engine_mode.hpp"
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/time_system.hpp"
 #include "engine/core/window.hpp"
 #include "engine/debug/command.hpp"
 #include "engine/debug/log_level.hpp"
+#include "engine/debug/status_notification.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/events/engine_mode_changed.hpp"
@@ -33,6 +36,7 @@
 #include "engine/events/set_panel_visibility.hpp"
 #include "engine/events/toggle_panel.hpp"
 #include "engine/events/viewport_resized.hpp"
+#include "engine/input/input_context.hpp"
 #include "engine/input/types.hpp"
 #include "engine/reflection/reflection_system.hpp"
 #include "engine/renderer/render_system.hpp"
@@ -49,11 +53,14 @@ namespace ls {
 
     ui_system::init(window_.getSDLWindow(), window_.getOpengGlContext());
 
-    inputManager_.bindKey<action::QuitEngine>(input::Key::Escape);
+    inputManager_.bindKey<action::ToggleEngineMode>(input::Key::Grave, input::KeyModifier::Ctrl);
+
     sceneManager_.onResize(window_.getWidth(), window_.getHeight());
 
     loadTextures();
     registerConsoleCommands();
+
+    eventQueue_.publish(event::EngineModeChanged{});
   }
 
   Engine::~Engine() { ui_system::shutdown(); }
@@ -70,6 +77,8 @@ namespace ls {
       dt = std::min(dt, 0.1f);
       lastTime = currentTime;
 
+      statusBar_.update(dt);
+
       window_.pollEvents();
 
       handleInput();
@@ -80,11 +89,13 @@ namespace ls {
       ui_system::beginFrame();
 
       editorLayer_.render(getEngineContext(), sceneManager_.getActiveSceneContext());
+
       sceneManager_.renderUI();
 
       handleRequest();
 
       editorLayer_.update(getEngineContext());
+
       ui_system::endFrame();
 
       window_.swapBuffers();
@@ -119,6 +130,7 @@ namespace ls {
     for (const auto& event : eventQueue_.getEvents<event::RequestReloadTextures>()) {
       textureManager_.clear();
       loadTextures();
+      statusBar_.showMessage("Reloaded textures", debug::status_duration::kMedium, debug::LogLevel::Info);
     }
 
     for (const auto& event : eventQueue_.getEvents<event::RequestOpenAsset>()) {
@@ -141,9 +153,11 @@ namespace ls {
       if (sceneCtx.registry->isValidEntity(event.entityToDuplicate)) {
         ecs::EntityId entity{ sceneCtx.registry->duplicateEntity(event.entityToDuplicate) };
         if (entity != ecs::kNullEntity) {
+          std::string entityName{ "Entity" };
           if (sceneCtx.registry->hasComponent<component::EntityName>(entity)) {
             auto& name{ sceneCtx.registry->getComponent<component::EntityName>(entity) };
             name.name += "_copy";
+            entityName = name.name;
           }
 
           eventQueue_.publish(
@@ -152,20 +166,42 @@ namespace ls {
                   .newEntity = entity,
               }
           );
+
+          statusBar_.showMessage(
+              std::format("Duplicated entity: {}", entityName), debug::status_duration::kMedium, debug::LogLevel::Info
+          );
         }
+      } else {
+        statusBar_.showMessage(
+            "Cannot duplicate: No valid entity selected", debug::status_duration::kMedium, debug::LogLevel::Warning
+        );
       }
     }
 
     for (const auto& event : eventQueue_.getEvents<event::RequestDestroyEntity>()) {
       if (sceneCtx.registry->isValidEntity(event.entity)) {
         sceneCtx.registry->destroyEntity(event.entity);
+        statusBar_.showMessage("Entity destroyed", debug::status_duration::kShort, debug::LogLevel::Info);
+      } else {
+        statusBar_.showMessage(
+            "Cannot destroy: Non valid entity selected", debug::status_duration::kMedium, debug::LogLevel::Warning
+        );
       }
     }
 
     for (const auto& event : eventQueue_.getEvents<event::RequestSaveScene>()) {
       serialization::SceneSerializer serializer(sceneCtx, getEngineContext());
-      if (!serializer.saveScene(asset_system::scene(sceneManager_.getActiveSceneName()))) {
-        console_.log("Failed to save scene!", debug::LogLevel::Error);
+      const auto& path{ asset_system::scene(sceneManager_.getActiveSceneName()) };
+      if (serializer.saveScene(path)) {
+        statusBar_.showMessage(
+            std::format("Saved scene: {}", path.string()), debug::status_duration::kLong, debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format("Failed to save scene: {}", path.string()),
+            debug::status_duration::kLong,
+            debug::LogLevel::Error
+        );
       }
     }
 
@@ -203,18 +239,43 @@ namespace ls {
 
   void Engine::handleInput() {
     ImGuiIO& io{ ImGui::GetIO() };
+    const bool isEditorMode{ engineMode_ == EngineMode::Edit };
 
-    const bool isPlayMode{ engineMode_ == EngineMode::Play };
-    const bool blockKeyboard = !isPlayMode && io.WantCaptureKeyboard && !editorLayer_.isViewportFocused();
-    const bool blockMouse = !isPlayMode && io.WantCaptureMouse && !editorLayer_.isViewportHovered();
+    input::ConsumedInputState consumedInputState{};
 
-    editorLayer_.handleInput(getEngineContext(), blockKeyboard, blockMouse);
-    inputManager_.update(blockKeyboard, blockMouse);
-    sceneManager_.handleInput(blockKeyboard, blockMouse);
+    input::InputContext engineInputCtx{
+      .captureKeyboard = false,
+      .captureMouse = false,
+      .consumedInputState = consumedInputState,
+    };
+    inputManager_.update(engineInputCtx);
 
-    auto actionQuitEngineState{ inputManager_.getActionState<action::QuitEngine>() };
-    if (actionQuitEngineState == input::ActionState::JustPressed) {
-      eventQueue_.publish(event::RequestQuitEngine{});
+    if (isEditorMode) {
+      input::InputContext editorInputCtx{
+        .captureKeyboard = io.WantTextInput,
+        .captureMouse = false,
+        .consumedInputState = consumedInputState,
+      };
+      editorLayer_.handleInput(getEngineContext(), editorInputCtx);
+    }
+
+    const bool blockKeyboardForScene{ isEditorMode && io.WantCaptureKeyboard && !editorLayer_.isViewportFocused() };
+    const bool blockMouseForScene{ isEditorMode && io.WantCaptureMouse && !editorLayer_.isViewportHovered() };
+
+    input::InputContext sceneInputCtx{
+      .captureKeyboard = blockKeyboardForScene,
+      .captureMouse = blockMouseForScene,
+      .consumedInputState = consumedInputState,
+    };
+    sceneManager_.handleInput(sceneInputCtx);
+
+    auto toggleEngineModeActionState{ inputManager_.getActionState<action::ToggleEngineMode>() };
+    if (toggleEngineModeActionState == input::ActionState::JustPressed) {
+      eventQueue_.publish(
+          event::RequestChangeEngineMode{
+              .newMode = (engineMode_ == EngineMode::Edit ? EngineMode::Play : EngineMode::Edit),
+          }
+      );
     }
   }
 

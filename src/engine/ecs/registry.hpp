@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <entt/core/fwd.hpp>
 #include <entt/entt.hpp>
 #include <entt/meta/resolve.hpp>
@@ -177,6 +178,8 @@ namespace ls::ecs {
 
       return entity;
     }
+
+    std::size_t getEntityCount() const { return nextEntity_ - availableEntities_.size(); }
 
   private:
     template <typename TComponent>

@@ -6,6 +6,7 @@
 #include "engine/core/scene_manager.hpp"
 #include "engine/core/window.hpp"
 #include "engine/debug/console.hpp"
+#include "engine/debug/status_bar.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/gfx/texture_manager.hpp"
 #include "engine/input/input_manager.hpp"
@@ -40,6 +41,7 @@ namespace ls {
         .textureManager = &textureManager_,
         .engineMode = &engineMode_,
         .console = &console_,
+        .statusBar = &statusBar_,
       };
     }
 
@@ -51,8 +53,9 @@ namespace ls {
     EditorLayer editorLayer_;
     platform::ExternalToolManager externalToolManager_;
     debug::Console console_;
+    debug::StatusBar statusBar_;
 
-    EngineMode engineMode_{ EngineMode::Play };
+    EngineMode engineMode_{ EngineMode::Edit };
   };
 
 }  // namespace ls

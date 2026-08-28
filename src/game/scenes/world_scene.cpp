@@ -21,6 +21,7 @@
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/gfx/framebuffer.hpp"
+#include "engine/input/input_context.hpp"
 #include "engine/input/types.hpp"
 #include "engine/interactions/interaction_system.hpp"
 #include "engine/particles/particle_system.hpp"
@@ -248,7 +249,7 @@ namespace ls {
     processedFBO_->resize(width, height);
   }
 
-  void WorldScene::handleInput(bool blockKeyboard, bool blockMouse) { inputManager_.update(blockKeyboard, blockMouse); }
+  void WorldScene::handleInput(input::InputContext& inputCtx) { inputManager_.update(inputCtx); }
 
   void WorldScene::update(float dt) {
     processEvents();

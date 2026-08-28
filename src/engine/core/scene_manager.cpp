@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include "engine/input/input_context.hpp"
 #include "engine/renderer/render_system.hpp"
 
 namespace ls {
@@ -37,9 +38,9 @@ namespace ls {
     });
   }
 
-  void SceneManager::handleInput(bool blockKeyboard, bool blockMouse) {
+  void SceneManager::handleInput(input::InputContext& inputCtx) {
     if (!scenes_.empty()) {
-      scenes_.back()->handleInput(blockKeyboard, blockMouse);
+      scenes_.back()->handleInput(inputCtx);
     }
   }
 

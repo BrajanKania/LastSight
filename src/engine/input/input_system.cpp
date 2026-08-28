@@ -22,14 +22,16 @@ namespace ls::input_system {
           return SDL_SCANCODE_S;
         case input::Key::D:
           return SDL_SCANCODE_D;
+        case input::Key::E:
+          return SDL_SCANCODE_E;
         case input::Key::Escape:
           return SDL_SCANCODE_ESCAPE;
         case input::Key::LShift:
           return SDL_SCANCODE_LSHIFT;
+        case input::Key::RShift:
+          return SDL_SCANCODE_RSHIFT;
         case input::Key::Grave:
           return SDL_SCANCODE_GRAVE;
-        case input::Key::E:
-          return SDL_SCANCODE_E;
         case input::Key::Num1:
           return SDL_SCANCODE_1;
         case input::Key::Num2:
@@ -42,6 +44,16 @@ namespace ls::input_system {
           return SDL_SCANCODE_5;
         case input::Key::Num6:
           return SDL_SCANCODE_6;
+        case input::Key::LCtrl:
+          return SDL_SCANCODE_LCTRL;
+        case input::Key::RCtrl:
+          return SDL_SCANCODE_RCTRL;
+        case input::Key::LAlt:
+          return SDL_SCANCODE_LALT;
+        case input::Key::RAlt:
+          return SDL_SCANCODE_RALT;
+        case input::Key::Delete:
+          return SDL_SCANCODE_DELETE;
       }
 
       return SDL_SCANCODE_UNKNOWN;

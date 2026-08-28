@@ -9,7 +9,7 @@ namespace ls::particle {
 
   STRUCT()
   struct ParticleEmitterConfig {
-    PROPERTY()
+    PROPERTY(DisplayName("Max particles"), ReadOnly)
     std::size_t maxParticles{ 10 };
 
     PROPERTY()

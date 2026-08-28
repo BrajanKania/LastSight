@@ -52,12 +52,25 @@
         "EntityName": {
           "name": "Player"
         },
+        "EquippedSprite": {
+          "angleOffset": -90.0,
+          "layer": "Entities",
+          "offset": [
+            0.1199999749660492,
+            0.20999997854232788
+          ],
+          "scale": [
+            0.5,
+            0.5
+          ],
+          "textureHandle": "equipped_pistol.png"
+        },
         "FieldOfView": {
-          "darkness": 0.6000001430511475,
-          "fovAngle": 60.0,
+          "darkness": 0.5999997854232788,
+          "fovAngle": 59.9999885559082,
           "innerRadius": 1.0,
           "outerRadius": 6.0,
-          "smoothnessAngle": 40.000003814697266,
+          "smoothnessAngle": 40.0,
           "smoothnessDistance": 2.0
         },
         "Health": {
@@ -66,12 +79,12 @@
         },
         "Inventory": {
           "activeSlotIndex": 0,
-          "equippedItemId": "",
+          "equippedItemId": "weapon_pistol",
           "maxSlots": 6,
           "slots": [
             {
-              "count": 0,
-              "itemId": ""
+              "count": 1,
+              "itemId": "weapon_pistol"
             },
             {
               "count": 0,
@@ -167,10 +180,10 @@
         },
         "Transform": {
           "position": [
-            -0.38756704330444336,
-            -0.2255670428276062
+            -0.1028871089220047,
+            -0.2033880054950714
           ],
-          "rotation": 23.462705612182617,
+          "rotation": -163.71762084960938,
           "scale": [
             0.5,
             0.5
@@ -182,6 +195,56 @@
             0.0,
             0.0
           ]
+        },
+        "Weapon": {
+          "aimOffset": [
+            0.0,
+            0.27000001072883606
+          ],
+          "aimRecoil": {
+            "angularDamping": 8.0,
+            "angularSpringStiffness": 100.0,
+            "baseSpread": 5.0,
+            "cameraImpulse": 1.2000000476837158,
+            "cameraTrauma": 0.10000000149011612,
+            "damping": 40.0,
+            "maxSpringOffset": 0.15000000596046448,
+            "maxSpringRotation": 30.0,
+            "springStiffness": 400.0,
+            "weaponAngularImpulse": 100.0,
+            "weaponImpulse": 8.0
+          },
+          "baseAngleOffset": -90.0,
+          "bulletLifetime": 3.0,
+          "bulletScale": [
+            0.02500000037252903,
+            0.02500000037252903
+          ],
+          "fireRate": 0.10000000149011612,
+          "hipOffset": [
+            0.11999999731779099,
+            0.20999999344348907
+          ],
+          "hipRecoil": {
+            "angularDamping": 8.0,
+            "angularSpringStiffness": 80.0,
+            "baseSpread": 10.0,
+            "cameraImpulse": 1.0,
+            "cameraTrauma": 0.10000000149011612,
+            "damping": 30.0,
+            "maxSpringOffset": 0.15000000596046448,
+            "maxSpringRotation": 90.0,
+            "springStiffness": 400.0,
+            "weaponAngularImpulse": 150.0,
+            "weaponImpulse": 5.0
+          },
+          "initialSpeed": 6.0,
+          "isAutomatic": false,
+          "muzzleOffset": [
+            0.0,
+            0.14000000059604645
+          ],
+          "transitionSpeed": 8.0
         }
       },
       "name": "Player"
@@ -190,24 +253,24 @@
       "components": {
         "Camera": {
           "orthographicSize": 6.0,
-          "zoom": 1.0
+          "zoom": 1.0000759363174438
         },
         "CameraShake": {
           "damping": 20.0,
           "maxSpringOffset": 0.4000000059604645,
           "maxTraumaOffset": 0.3499999940395355,
           "offset": [
-            0.0,
-            0.0
+            1.401298464324817e-45,
+            1.401298464324817e-45
           ],
           "stiffness": 180.0,
-          "timeAccumulator": 0.0,
+          "timeAccumulator": 9.095998764038086,
           "trauma": 0.0,
           "traumaDecay": 2.0,
           "traumaFrequency": 8.0,
           "velocity": [
-            0.0,
-            0.0
+            -1.2611686178923354e-44,
+            -1.2611686178923354e-44
           ]
         },
         "EntityName": {
@@ -215,8 +278,8 @@
         },
         "Transform": {
           "position": [
-            -0.38756635785102844,
-            -0.22556661069393158
+            -0.10288708657026291,
+            -0.20338796079158783
           ],
           "rotation": 0.0,
           "scale": [
@@ -362,8 +425,8 @@
         },
         "Transform": {
           "position": [
-            -1.0,
-            -1.0
+            -1.115436315536499,
+            -1.2304651737213135
           ],
           "rotation": 0.0,
           "scale": [
@@ -420,49 +483,6 @@
         }
       },
       "name": "container_2"
-    },
-    {
-      "components": {
-        "EntityName": {
-          "name": "pistol"
-        },
-        "Interactable": {
-          "radius": 0.5
-        },
-        "ItemPickup": {
-          "itemStack": {
-            "count": 1,
-            "itemId": "weapon_pistol"
-          }
-        },
-        "Sprite": {
-          "angleOffset": -90.0,
-          "color": [
-            1.0,
-            1.0,
-            1.0,
-            1.0
-          ],
-          "layer": "Ground",
-          "textureHandle": "world_pistol.png",
-          "uvScale": [
-            1.0,
-            1.0
-          ]
-        },
-        "Transform": {
-          "position": [
-            -1.0,
-            0.0
-          ],
-          "rotation": 50.0,
-          "scale": [
-            0.4000000059604645,
-            0.4000000059604645
-          ]
-        }
-      },
-      "name": "pistol"
     },
     {
       "components": {

@@ -2,6 +2,8 @@
 
 #include "engine/core/engine_context.hpp"
 #include "engine/core/scene_context.hpp"
+#include "engine/input/input_context.hpp"
+#include "engine/input/types.hpp"
 #include "engine/ui/ui_context.hpp"
 
 namespace ls {
@@ -16,7 +18,7 @@ namespace ls {
     virtual void onEnter() = 0;
     virtual void onExit() = 0;
 
-    virtual void handleInput(bool blockKeyboard, bool blockMouse) = 0;
+    virtual void handleInput(input::InputContext& inputCtx) = 0;
     virtual void update(float dt) = 0;
     virtual void render() = 0;
     virtual void renderUI() = 0;

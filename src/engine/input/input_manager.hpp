@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#include "engine/input/input_context.hpp"
 #include "engine/input/input_system.hpp"
 #include "engine/input/types.hpp"
 
@@ -11,17 +12,23 @@ namespace ls::input {
 
   class InputManager {
   public:
-    void update(bool captureKeyboard, bool captureMouse);
+    void update(InputContext& inputCtx);
 
     template <typename TAction>
-    void bindKey(Key key) {
+    void bindKey(Key key, Modifier modifiers = 0) {
       ActionId id{ getActionId<TAction>() };
       ensureCapacity(id);
 
       bindings_[id] = ActionBinding{
         .type = BindingType::Key,
         .key = key,
+        .modifiers = modifiers,
       };
+    }
+
+    template <typename TAction>
+    void bindKey(Key key, KeyModifier modifier) {
+      bindKey<TAction>(key, static_cast<Modifier>(modifier));
     }
 
     template <typename TAction>

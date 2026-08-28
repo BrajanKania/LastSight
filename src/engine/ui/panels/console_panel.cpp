@@ -9,6 +9,7 @@
 #include "engine/debug/console.hpp"
 #include "engine/debug/log_level.hpp"
 #include "engine/ui/panels/panel_names.hpp"
+#include "engine/ui/ui_colors.hpp"
 
 namespace ls::ui {
 
@@ -85,15 +86,7 @@ namespace ls::ui {
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
 
       for (const auto& log : ctx.engineCtx.console->getLogs()) {
-        ImVec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
-
-        if (log.level == debug::LogLevel::Warning) {
-          color = ImVec4(1.0f, 0.8f, 0.2f, 1.0f);
-        } else if (log.level == debug::LogLevel::Error) {
-          color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
-        }
-
-        ImGui::PushStyleColor(ImGuiCol_Text, color);
+        ImGui::PushStyleColor(ImGuiCol_Text, color::forLogLevel(log.level));
         ImGui::TextUnformatted(log.message.c_str());
         ImGui::PopStyleColor();
       }

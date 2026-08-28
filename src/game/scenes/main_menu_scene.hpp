@@ -8,6 +8,7 @@
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
+#include "engine/input/input_context.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/renderer/render_pipeline.hpp"
 #include "engine/ui/ui_manager.hpp"
@@ -26,7 +27,7 @@ namespace ls {
     void onExit() override;
     void onResize(int width, int height) override;
 
-    void handleInput(bool blockKeyboard, bool blockMouse) override;
+    void handleInput(input::InputContext& inputCtx) override;
     void update(float dt) override;
     void render() override;
     void renderUI() override;

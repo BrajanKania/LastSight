@@ -51,7 +51,7 @@ namespace ls::ui {
             );
           }
 
-          if (ImGui::MenuItem("Destroy", nullptr, false, hasSelected)) {
+          if (ImGui::MenuItem("Destroy", "Delete", false, hasSelected)) {
             ctx.engineCtx.eventQueue->publish(
                 event::RequestDestroyEntity{
                     .entity = ctx.selectionCtx->selectedEntity,
@@ -123,7 +123,7 @@ namespace ls::ui {
                 );
               }
 
-              if (ImGui::MenuItem("Destroy")) {
+              if (ImGui::MenuItem("Destroy", "Delete")) {
                 ctx.engineCtx.eventQueue->publish(
                     event::RequestDestroyEntity{
                         .entity = ctx.selectionCtx->selectedEntity,

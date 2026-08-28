@@ -5,7 +5,10 @@
 
 #include <cassert>
 
-#include "engine/actions/toggle_engine_mode.hpp"
+#include "engine/actions/destroy_entity.hpp"
+#include "engine/actions/duplicate_entity.hpp"
+#include "engine/actions/quit_engine.hpp"
+#include "engine/actions/save_scene.hpp"
 #include "engine/core/engine_context.hpp"
 #include "engine/core/engine_mode.hpp"
 #include "engine/dispatch/event_queue.hpp"
@@ -13,10 +16,14 @@
 #include "engine/events/engine_mode_changed.hpp"
 #include "engine/events/entity_duplicated.hpp"
 #include "engine/events/request_change_console_auto_scroll.hpp"
-#include "engine/events/request_change_engine_mode.hpp"
 #include "engine/events/request_change_ui_style.hpp"
+#include "engine/events/request_destroy_entity.hpp"
+#include "engine/events/request_duplicate_entity.hpp"
+#include "engine/events/request_quit_engine.hpp"
+#include "engine/events/request_save_scene.hpp"
 #include "engine/events/set_panel_visibility.hpp"
 #include "engine/events/toggle_panel.hpp"
+#include "engine/input/input_context.hpp"
 #include "engine/input/types.hpp"
 #include "engine/ui/panels/asset_browser_panel.hpp"
 #include "engine/ui/panels/console_panel.hpp"
@@ -26,13 +33,17 @@
 #include "engine/ui/panels/render_pipeline_debug_panel.hpp"
 #include "engine/ui/panels/scene_browser_panel.hpp"
 #include "engine/ui/panels/scene_hierarchy_panel.hpp"
+#include "engine/ui/panels/status_bar_panel.hpp"
 #include "engine/ui/panels/viewport_panel.hpp"
 #include "engine/ui/ui_system.hpp"
 
 namespace ls {
 
   EditorLayer::EditorLayer() {
-    inputManager_.bindKey<action::ToggleEngineMode>(input::Key::Grave);
+    inputManager_.bindKey<action::QuitEngine>(input::Key::Escape, input::KeyModifier::Ctrl);
+    inputManager_.bindKey<action::SaveScene>(input::Key::S, input::KeyModifier::Ctrl | input::KeyModifier::Shift);
+    inputManager_.bindKey<action::DuplicateEntity>(input::Key::D, input::KeyModifier::Ctrl);
+    inputManager_.bindKey<action::DestroyEntity>(input::Key::Delete);
 
     uiManager_.addPanel<ui::MainMenuBarPanel>(ui::panel::kMainMenuBar);
     uiManager_.addPanel<ui::SceneBrowserPanel>(ui::panel::kSceneBrowser);
@@ -41,21 +52,42 @@ namespace ls {
     uiManager_.addPanel<ui::RenderPipelineDebugPanel>(ui::panel::kRenderPipelineDebug);
     uiManager_.addPanel<ui::SceneHierarchyPanel>(ui::panel::kSceneHierarchy);
     uiManager_.addPanel<ui::EntityInspectorPanel>(ui::panel::kEntityInspector);
+    uiManager_.addPanel<ui::StatusBarPanel>(ui::panel::kStatusBar);
+
     uiManager_.addPanel<ui::ViewportPanel>(ui::panel::kViewport);
     uiManager_.getPanel<ui::ViewportPanel>(ui::panel::kViewport).setVisible(true);
   }
 
-  void EditorLayer::handleInput(EngineContext engineCtx, bool blockKeyboard, bool blockMouse) {
+  void EditorLayer::handleInput(EngineContext engineCtx, input::InputContext& inputCtx) {
     assert(engineCtx.eventQueue != nullptr && "[EditorLayer] Requires a valid EventQueue!");
     assert(engineCtx.engineMode != nullptr && "[EditorLayer] Requires a valid EngineMode!");
 
-    inputManager_.update(blockKeyboard, blockMouse);
+    inputManager_.update(inputCtx);
 
-    auto toggleDebugActionState{ inputManager_.getActionState<action::ToggleEngineMode>() };
-    if (toggleDebugActionState == input::ActionState::JustPressed) {
+    auto actionQuitEngineState{ inputManager_.getActionState<action::QuitEngine>() };
+    if (actionQuitEngineState == input::ActionState::JustPressed) {
+      engineCtx.eventQueue->publish(event::RequestQuitEngine{});
+    }
+
+    auto saveSceneActionState{ inputManager_.getActionState<action::SaveScene>() };
+    if (saveSceneActionState == input::ActionState::JustPressed) {
+      engineCtx.eventQueue->publish(event::RequestSaveScene{});
+    }
+
+    auto duplicateEntityActionState{ inputManager_.getActionState<action::DuplicateEntity>() };
+    if (duplicateEntityActionState == input::ActionState::JustPressed) {
       engineCtx.eventQueue->publish(
-          event::RequestChangeEngineMode{
-              .newMode = (*engineCtx.engineMode == EngineMode::Edit ? EngineMode::Play : EngineMode::Edit),
+          event::RequestDuplicateEntity{
+              .entityToDuplicate = selectionCtx_.selectedEntity,
+          }
+      );
+    }
+
+    auto destroyEntityActionState{ inputManager_.getActionState<action::DestroyEntity>() };
+    if (destroyEntityActionState == input::ActionState::JustPressed) {
+      engineCtx.eventQueue->publish(
+          event::RequestDestroyEntity{
+              .entity = selectionCtx_.selectedEntity,
           }
       );
     }
@@ -102,6 +134,7 @@ namespace ls {
       uiManager_.getPanel(ui::panel::kEntityInspector).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kRenderPipelineDebug).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kConsole).setVisible(isEditMode);
+      uiManager_.getPanel(ui::panel::kStatusBar).setVisible(isEditMode);
 
       shouldResetLayout_ = isEditMode;
     }

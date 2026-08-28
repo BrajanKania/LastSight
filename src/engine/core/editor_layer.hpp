@@ -3,6 +3,7 @@
 #include "engine/core/engine_context.hpp"
 #include "engine/core/scene_context.hpp"
 #include "engine/dispatch/event_queue.hpp"
+#include "engine/input/input_context.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/ui/editor_preferences.hpp"
 #include "engine/ui/selection_context.hpp"
@@ -14,7 +15,7 @@ namespace ls {
   public:
     EditorLayer();
 
-    void handleInput(EngineContext engineCtx, bool blockKeyboard, bool blockMouse);
+    void handleInput(EngineContext engineCtx, input::InputContext& inputCtx);
     void update(EngineContext engineCtx);
     void render(EngineContext engineCtx, const SceneContext& sceneCtx);
 

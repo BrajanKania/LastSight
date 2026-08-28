@@ -14,7 +14,8 @@ namespace ls {
   }
   namespace debug {
     class Console;
-  }
+    class StatusBar;
+  }  // namespace debug
 
   struct EngineContext {
     Window* window{ nullptr };
@@ -23,6 +24,7 @@ namespace ls {
     gfx::TextureManager* textureManager{ nullptr };
     const EngineMode* engineMode{ nullptr };
     debug::Console* console{ nullptr };
+    debug::StatusBar* statusBar{ nullptr };
   };
 
 }  // namespace ls

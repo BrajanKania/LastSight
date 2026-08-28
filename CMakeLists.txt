@@ -65,6 +65,7 @@ add_executable(LastSight
   src/engine/core/window.cpp
 
   src/engine/debug/console.cpp
+  src/engine/debug/status_bar.cpp
 
   src/engine/gfx/framebuffer.cpp
   src/engine/gfx/shader.cpp
@@ -101,6 +102,7 @@ add_executable(LastSight
   src/engine/ui/panels/render_pipeline_debug_panel.cpp
   src/engine/ui/panels/scene_browser_panel.cpp
   src/engine/ui/panels/scene_hierarchy_panel.cpp
+  src/engine/ui/panels/status_bar_panel.cpp
   src/engine/ui/panels/viewport_panel.cpp
 
   src/engine/ui/ui_manager.cpp

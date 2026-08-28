@@ -18,6 +18,7 @@
 #include "engine/core/random_system.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/gfx/framebuffer.hpp"
+#include "engine/input/input_context.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/input/input_system.hpp"
 #include "engine/renderer/i_render_pass.hpp"
@@ -126,9 +127,7 @@ namespace ls {
     }
   }
 
-  void MainMenuScene::handleInput(bool blockKeyboard, bool blockMouse) {
-    inputManager_.update(blockKeyboard, blockMouse);
-  }
+  void MainMenuScene::handleInput(input::InputContext& inputCtx) { inputManager_.update(inputCtx); }
 
   void MainMenuScene::update(float dt) {
     processEvents();

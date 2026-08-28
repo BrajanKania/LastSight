@@ -9,6 +9,8 @@
 #include "engine/core/engine_context.hpp"
 #include "engine/core/i_scene.hpp"
 #include "engine/core/scene_context.hpp"
+#include "engine/input/input_context.hpp"
+#include "engine/input/types.hpp"
 
 namespace ls {
 
@@ -43,7 +45,7 @@ namespace ls {
     void changeScene(const std::string& name);
     void popScene();
 
-    void handleInput(bool blockKeyboard, bool blockMouse);
+    void handleInput(input::InputContext& inputCtx);
     void update(float dt);
     void render();
     void renderUI();
