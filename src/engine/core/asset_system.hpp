@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL_filesystem.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include <filesystem>
 #include <format>
@@ -39,6 +40,10 @@ namespace ls::asset_system {
 
   inline fs::path scene(const fs::path& name) {
     return resolve(fs::path("scenes") / std::format("{}.json", name.string()));
+  }
+
+  inline fs::path prefab(const fs::path& name) {
+    return resolve(fs::path("prefabs") / std::format("{}.prefab.json", name.string()));
   }
 
 }  // namespace ls::asset_system

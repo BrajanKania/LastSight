@@ -84,12 +84,15 @@ add_executable(LastSight
 
   src/engine/platform/external_tool_manager.cpp
 
+  src/engine/prefab/prefab_manager.cpp
+
   src/engine/renderer/passes/fov_pass.cpp
   src/engine/renderer/passes/lit_pass.cpp
   src/engine/renderer/passes/post_process_pass.cpp
 
   src/engine/renderer/render_system.cpp
 
+  src/engine/serialization/prefab_serializer.cpp
   src/engine/serialization/scene_serializer.cpp
   src/engine/serialization/serialization_system.cpp
 

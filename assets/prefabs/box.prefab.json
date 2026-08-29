@@ -1,0 +1,47 @@
+{
+  "components": {
+    "Collider": {
+      "halfExtents": [
+        0.5,
+        0.5
+      ],
+      "isTrigger": false,
+      "offset": [
+        0.0,
+        0.0
+      ],
+      "radius": 1.0,
+      "type": "OBB"
+    },
+    "EntityName": {
+      "name": "box"
+    },
+    "FovMasked": {},
+    "Sprite": {
+      "angleOffset": 0.0,
+      "color": [
+        0.7843137383460999,
+        0.7843137383460999,
+        1.0,
+        1.0
+      ],
+      "layer": "Entities",
+      "textureHandle": "container.png",
+      "uvScale": [
+        1.0,
+        1.0
+      ]
+    },
+    "Transform": {
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": -5.0,
+      "scale": [
+        0.6000000238418579,
+        0.6000000238418579
+      ]
+    }
+  }
+}

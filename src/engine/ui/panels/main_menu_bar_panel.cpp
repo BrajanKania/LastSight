@@ -11,6 +11,7 @@
 #include "engine/events/request_change_ui_style.hpp"
 #include "engine/events/request_quit_engine.hpp"
 #include "engine/events/request_reload_textures.hpp"
+#include "engine/events/request_save_scene.hpp"
 #include "engine/events/set_panel_visibility.hpp"
 #include "engine/ui/panels/panel_names.hpp"
 #include "engine/ui/ui_style.hpp"
@@ -83,6 +84,13 @@ namespace ls::ui {
           ctx.engineCtx.eventQueue->publish(event::RequestQuitEngine{});
         }
 
+        ImGui::EndMenu();
+      }
+
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Save", "Ctrl + S")) {
+          ctx.engineCtx.eventQueue->publish(event::RequestSaveScene{});
+        }
         ImGui::EndMenu();
       }
 

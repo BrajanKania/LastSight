@@ -1,9 +1,12 @@
 #pragma once
 
 #include "engine/ecs/types.hpp"
+#include "engine/prefab/prefab_handle.hpp"
+
 namespace ls::event {
 
-  struct RequestSaveEntity {
+  struct RequestOverwriteEntityPrefab {
+    prefab::PrefabHandle handle{};
     ecs::EntityId entity{ ecs::kNullEntity };
   };
 

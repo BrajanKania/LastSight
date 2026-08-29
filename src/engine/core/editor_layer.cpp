@@ -41,7 +41,7 @@ namespace ls {
 
   EditorLayer::EditorLayer() {
     inputManager_.bindKey<action::QuitEngine>(input::Key::Escape, input::KeyModifier::Ctrl);
-    inputManager_.bindKey<action::SaveScene>(input::Key::S, input::KeyModifier::Ctrl | input::KeyModifier::Shift);
+    inputManager_.bindKey<action::SaveScene>(input::Key::S, input::KeyModifier::Ctrl);
     inputManager_.bindKey<action::DuplicateEntity>(input::Key::D, input::KeyModifier::Ctrl);
     inputManager_.bindKey<action::DestroyEntity>(input::Key::Delete);
 

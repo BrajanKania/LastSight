@@ -16,6 +16,9 @@ namespace ls {
     class Console;
     class StatusBar;
   }  // namespace debug
+  namespace prefab {
+    class PrefabManager;
+  }
 
   struct EngineContext {
     Window* window{ nullptr };
@@ -25,6 +28,7 @@ namespace ls {
     const EngineMode* engineMode{ nullptr };
     debug::Console* console{ nullptr };
     debug::StatusBar* statusBar{ nullptr };
+    prefab::PrefabManager* prefabManager{ nullptr };
   };
 
 }  // namespace ls

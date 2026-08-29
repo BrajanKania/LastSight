@@ -9,6 +9,7 @@
 
 #include "engine/actions/toggle_engine_mode.hpp"
 #include "engine/components/entity_name.hpp"
+#include "engine/components/prefab_instance.hpp"
 #include "engine/core/asset_system.hpp"
 #include "engine/core/engine_mode.hpp"
 #include "engine/core/scene_manager.hpp"
@@ -26,18 +27,25 @@
 #include "engine/events/request_change_scene.hpp"
 #include "engine/events/request_change_ui_style.hpp"
 #include "engine/events/request_create_entity.hpp"
+#include "engine/events/request_create_entity_from_prefab.hpp"
+#include "engine/events/request_decouple_entity_from_prefab.hpp"
 #include "engine/events/request_destroy_entity.hpp"
 #include "engine/events/request_duplicate_entity.hpp"
+#include "engine/events/request_link_entity_to_prefab.hpp"
 #include "engine/events/request_open_asset.hpp"
+#include "engine/events/request_overwrite_entity_prefab.hpp"
 #include "engine/events/request_quit_engine.hpp"
 #include "engine/events/request_reload_textures.hpp"
 #include "engine/events/request_remove_component.hpp"
+#include "engine/events/request_save_entity_as_prefab.hpp"
 #include "engine/events/request_save_scene.hpp"
+#include "engine/events/request_sync_component_from_prefab.hpp"
 #include "engine/events/set_panel_visibility.hpp"
 #include "engine/events/toggle_panel.hpp"
 #include "engine/events/viewport_resized.hpp"
 #include "engine/input/input_context.hpp"
 #include "engine/input/types.hpp"
+#include "engine/prefab/prefab_manager.hpp"
 #include "engine/reflection/reflection_system.hpp"
 #include "engine/renderer/render_system.hpp"
 #include "engine/serialization/scene_serializer.hpp"
@@ -48,6 +56,7 @@ namespace ls {
 
   Engine::Engine()
       : window_(1500, 900),
+        prefabManager_(getPrefabContext()),
         sceneManager_(getEngineContext(), window_.getWidth(), window_.getHeight()) {
     reflection_system::registerGeneratedTypes();
 
@@ -58,6 +67,7 @@ namespace ls {
     sceneManager_.onResize(window_.getWidth(), window_.getHeight());
 
     loadTextures();
+    loadPrefabs();
     registerConsoleCommands();
 
     eventQueue_.publish(event::EngineModeChanged{});
@@ -235,6 +245,110 @@ namespace ls {
         set->destroyComponent(event.entity);
       }
     }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestSaveEntityAsPrefab>()) {
+      if (prefabManager_.save(event.name, *sceneCtx.registry, event.entity)) {
+        statusBar_.showMessage(
+            std::format("Saved as prefab: {}", asset_system::prefab(event.name).string()),
+            debug::status_duration::kLong,
+            debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format("Cannot save as prefab: {}", event.name),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Warning
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestOverwriteEntityPrefab>()) {
+      auto prefabInfo{ prefabManager_.getPrefabInfo(event.handle) };
+
+      if (prefabInfo && prefabManager_.save(prefabInfo->name, *sceneCtx.registry, event.entity)) {
+        statusBar_.showMessage(
+            std::format("Overwrote prefab: {}", asset_system::prefab(prefabInfo->name).string()),
+            debug::status_duration::kLong,
+            debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            "Failed to overwrite prefab: Invalid prefab", debug::status_duration::kMedium, debug::LogLevel::Warning
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestCreateEntityFromPrefab>()) {
+      if (event.handle.isValid()) {
+        auto prefabInfo{ prefabManager_.getPrefabInfo(event.handle) };
+        auto newEntity{ prefabManager_.instantiate(event.handle, *sceneCtx.registry) };
+        if (newEntity != ecs::kNullEntity) {
+          statusBar_.showMessage(
+              std::format("Instantiate {}", prefabInfo ? prefabInfo->name : "Invalid prefab"),
+              debug::status_duration::kMedium,
+              debug::LogLevel::Info
+          );
+        } else {
+          statusBar_.showMessage(
+              std::format("Cannot instantiate: {}", prefabInfo ? prefabInfo->name : "Invalid prefab"),
+              debug::status_duration::kMedium,
+              debug::LogLevel::Warning
+          );
+        }
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestDecoupleEntityFromPrefab>()) {
+      if (sceneCtx.registry->isValidEntity(event.entity) &&
+          sceneCtx.registry->hasComponent<component::PrefabInstance>(event.entity)) {
+        sceneCtx.registry->destroyComponent<component::PrefabInstance>(event.entity);
+        statusBar_.showMessage("Decoupled entity from prefab", debug::status_duration::kMedium, debug::LogLevel::Info);
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestLinkEntityToPrefab>()) {
+      if (sceneCtx.registry->isValidEntity(event.entity)) {
+        auto prefabInfo{ prefabManager_.getPrefabInfo(event.handle) };
+        if (prefabInfo) {
+          if (sceneCtx.registry->hasComponent<component::PrefabInstance>(event.entity)) {
+            sceneCtx.registry->getComponent<component::PrefabInstance>(event.entity).handle = event.handle;
+          } else {
+            sceneCtx.registry->addComponent(event.entity, component::PrefabInstance{ .handle = event.handle });
+          }
+          statusBar_.showMessage(
+              std::format("Link entity to prefab: {}", prefabInfo->name),
+              debug::status_duration::kMedium,
+              debug::LogLevel::Info
+          );
+        }
+      } else {
+        statusBar_.showMessage(
+            "Cannot link entity to prefab: Invalid prefab", debug::status_duration::kMedium, debug::LogLevel::Warning
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestSyncComponentFromPrefab>()) {
+      if (sceneCtx.registry->isValidEntity(event.entity) &&
+          sceneCtx.registry->hasComponent<component::PrefabInstance>(event.entity)) {
+        auto prefabInstance{ sceneCtx.registry->getComponent<component::PrefabInstance>(event.entity) };
+        auto prefabInfo{ prefabManager_.getPrefabInfo(prefabInstance.handle) };
+        if (prefabInfo &&
+            prefabManager_.syncComponent(prefabInstance.handle, event.typeId, *sceneCtx.registry, event.entity)) {
+          statusBar_.showMessage(
+              std::format("Sync entity from prefab: {}", prefabInfo->name),
+              debug::status_duration::kMedium,
+              debug::LogLevel::Info
+          );
+        } else {
+          statusBar_.showMessage(
+              "Failed to sync entity from prefab: Invalid prefab",
+              debug::status_duration::kMedium,
+              debug::LogLevel::Warning
+          );
+        }
+      }
+    }
   }
 
   void Engine::handleInput() {
@@ -283,6 +397,8 @@ namespace ls {
     textureManager_.loadFromDir(std::filesystem::path("src/engine/assets/textures"));
     textureManager_.loadFromDir(std::filesystem::path("assets/textures"));
   }
+
+  void Engine::loadPrefabs() { prefabManager_.loadFromDir(std::filesystem::path("assets/prefabs")); }
 
   void Engine::registerConsoleCommands() {
     console_.registerCommand("clear", "clear", [this](debug::CommandArgs) { console_.clear(); });

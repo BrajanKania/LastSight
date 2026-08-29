@@ -27,6 +27,11 @@ namespace ls::ui {
         return textureManager.get(gfx::texture_name::kDirectory);
       }
 
+      const std::string& filename{ entry.path().filename().string() };
+      if (filename.ends_with(".prefab.json")) {
+        return textureManager.get(gfx::texture_name::kPrefab);
+      }
+
       static constexpr std::array kSupportedTextureExtensions{ ".jpg", ".png" };
       if (std::ranges::find(kSupportedTextureExtensions, entry.path().extension()) !=
           kSupportedTextureExtensions.end()) {
@@ -49,13 +54,35 @@ namespace ls::ui {
       return std::ranges::find(kSupportedFileExtensions, path.filename().extension()) != kSupportedFileExtensions.end();
     }
 
+    std::string getDisplayName(const std::filesystem::path& path, bool showExtensions) {
+      const std::string filename{ path.filename().string() };
+      if (showExtensions) {
+        return filename;
+      }
+
+      static constexpr std::string_view kPrefabExtension{ ".prefab.json" };
+      if (filename.ends_with(kPrefabExtension)) {
+        return filename.substr(0, filename.length() - kPrefabExtension.length());
+      }
+
+      return path.stem().string();
+    }
+
   }  // namespace
 
   void AssetBrowserPanel::render(const UIContext& ctx) {
     assert(ctx.engineCtx.eventQueue != nullptr && "[AssetBrowserPanel] Requires a valid EventQueue!");
     assert(ctx.engineCtx.textureManager != nullptr && "[AssetBrowserPanel] Requires a valid TextureManager!");
 
-    if (ImGui::Begin(ui::panel::kAssetBrowser, &visible_)) {
+    if (ImGui::Begin(ui::panel::kAssetBrowser, &visible_, ImGuiWindowFlags_MenuBar)) {
+      if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("View")) {
+          ImGui::MenuItem("Show File Extensions", nullptr, &showExtensions_);
+          ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+      }
+
       if (ImGui::Button("Reset##ResetPath")) {
         searchBuffer_[0] = '\0';
         currentPath_ = assetsPath_;
@@ -121,7 +148,7 @@ namespace ls::ui {
 
         if (ImGui::BeginTable("##AssetGridTable", columns)) {
           for (const auto& entry : std::filesystem::directory_iterator(currentPath_)) {
-            const std::string filename{ entry.path().filename().string() };
+            const std::string filename{ getDisplayName(entry.path(), showExtensions_) };
 
             if (searchBuffer_[0] != '\0' && filename.find(searchBuffer_) == std::string::npos) {
               continue;
@@ -201,8 +228,8 @@ namespace ls::ui {
             }
 
             drawList->ChannelsSetCurrent(0);
-            const ImU32 bgColor = isCardHovered ? ImGui::GetColorU32(ImVec4(0.28f, 0.28f, 0.28f, 1.0f))
-                                                : ImGui::GetColorU32(ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
+            const ImU32 bgColor{ isCardHovered ? ImGui::GetColorU32(ImVec4(0.28f, 0.28f, 0.28f, 1.0f))
+                                               : ImGui::GetColorU32(ImVec4(0.15f, 0.15f, 0.15f, 1.0f)) };
 
             drawList->AddRectFilled(cardMin, cardMax, bgColor, 8.0f);
 

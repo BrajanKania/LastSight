@@ -14,13 +14,21 @@
 #include <glm/glm.hpp>
 #include <string>
 
+#include "engine/components/prefab_instance.hpp"
 #include "engine/dispatch/event_queue.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/events/request_add_component.hpp"
+#include "engine/events/request_decouple_entity_from_prefab.hpp"
+#include "engine/events/request_link_entity_to_prefab.hpp"
+#include "engine/events/request_overwrite_entity_prefab.hpp"
 #include "engine/events/request_remove_component.hpp"
+#include "engine/events/request_save_entity_as_prefab.hpp"
+#include "engine/events/request_sync_component_from_prefab.hpp"
 #include "engine/gfx/texture_handle.hpp"
 #include "engine/gfx/texture_manager.hpp"
+#include "engine/prefab/prefab_handle.hpp"
+#include "engine/prefab/prefab_manager.hpp"
 #include "engine/reflection/reflection_system.hpp"
 #include "engine/ui/panels/panel_names.hpp"
 #include "engine/ui/ui_context.hpp"
@@ -32,12 +40,16 @@ namespace ls::ui {
     assert(ctx.selectionCtx != nullptr && "[EntityInspectorPanel] Requires a valid SelectionContext!");
     assert(ctx.sceneCtx.registry != nullptr && "[EntityInspectorPanel] Requires a valid Registry!");
     assert(ctx.engineCtx.textureManager != nullptr && "[EntityInspectorPanel] Requires a valid TextureManager!");
+    assert(ctx.engineCtx.prefabManager != nullptr && "[EntityInspectorPanel] Requires a valid PrefabManager!");
 
     if (!ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
       ctx.selectionCtx->selectedEntity = ecs::kNullEntity;
     }
 
     renderAddComponentModal(ctx);
+    renderSaveAsPrefabModal(ctx);
+    renderLinkToPrefabModal(ctx);
+    renderSyncFromPrefabModal(ctx);
 
     const bool hasSelectedEntity{ ctx.selectionCtx->selectedEntity != ecs::kNullEntity };
 
@@ -47,6 +59,49 @@ namespace ls::ui {
       if (ImGui::BeginMenuBar()) {
         if (ImGui::MenuItem("Add Component", nullptr, false, hasSelectedEntity)) {
           shouldOpenAddModal_ = true;
+        }
+
+        bool isSelectedEntityPrefabInstance{
+          hasSelectedEntity &&
+          ctx.sceneCtx.registry->hasComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity) &&
+          ctx.sceneCtx.registry->getComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity)
+              .handle.isValid()
+        };
+
+        if (ImGui::BeginMenu("Prefab")) {
+          if (ImGui::MenuItem("Sync", nullptr, false, isSelectedEntityPrefabInstance)) {
+            shouldOpenSyncFromPrefabModal_ = true;
+          }
+          if (ImGui::MenuItem("Overwrite", nullptr, false, isSelectedEntityPrefabInstance)) {
+            auto prefabInstance{
+              ctx.sceneCtx.registry->getComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity)
+            };
+
+            ctx.engineCtx.eventQueue->publish(
+                event::RequestOverwriteEntityPrefab{
+                    .handle = prefabInstance.handle,
+                    .entity = ctx.selectionCtx->selectedEntity,
+                }
+            );
+          }
+          if (ImGui::MenuItem("Decouple", nullptr, false, isSelectedEntityPrefabInstance)) {
+            ctx.engineCtx.eventQueue->publish(
+                event::RequestDecoupleEntityFromPrefab{ .entity = ctx.selectionCtx->selectedEntity }
+            );
+          }
+          ImGui::Separator();
+          if (ImGui::MenuItem(
+                  "Link to Prefab",
+                  nullptr,
+                  isSelectedEntityPrefabInstance,
+                  hasSelectedEntity && !isSelectedEntityPrefabInstance
+              )) {
+            shouldOpenLinkToPrefabModal_ = true;
+          }
+          if (ImGui::MenuItem("Save as Prefab", nullptr, false, hasSelectedEntity)) {
+            shouldOpenSaveAsPrefabModal_ = true;
+          }
+          ImGui::EndMenu();
         }
 
         if (ImGui::BeginMenu("View")) {
@@ -76,7 +131,9 @@ namespace ls::ui {
         ImGui::BeginChild("InspectorRegion");
 
         if (ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
-          inspectEntity(ctx, ctx.selectionCtx->selectedEntity, *ctx.engineCtx.textureManager);
+          inspectEntity(
+              ctx, ctx.selectionCtx->selectedEntity, *ctx.engineCtx.textureManager, *ctx.engineCtx.prefabManager
+          );
 
           if (ImGui::BeginPopupContextWindow(
                   "InspectorBlankContext", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
@@ -97,7 +154,10 @@ namespace ls::ui {
   }
 
   void EntityInspectorPanel::inspectEntity(
-      const UIContext& ctx, const ecs::EntityId entity, const gfx::TextureManager& textureManager
+      const UIContext& ctx,
+      const ecs::EntityId entity,
+      const gfx::TextureManager& textureManager,
+      const prefab::PrefabManager& prefabManager
   ) {
     for (auto [typeId, type] : entt::resolve()) {
       const reflection_system::ComponentInfo* componentInfo{ type.custom() };
@@ -173,7 +233,7 @@ namespace ls::ui {
             ImGui::TableNextColumn();
             ImGui::SetNextItemWidth(-1.0f);
 
-            inspectComponentProperty(anyComponent, data, textureManager);
+            inspectComponentProperty(anyComponent, data, textureManager, prefabManager);
 
             ImGui::PopID();
           }
@@ -187,7 +247,10 @@ namespace ls::ui {
   }
 
   bool EntityInspectorPanel::inspectComponentProperty(
-      entt::meta_any& owner, entt::meta_data data, const gfx::TextureManager& textureManager
+      entt::meta_any& owner,
+      entt::meta_data data,
+      const gfx::TextureManager& textureManager,
+      const prefab::PrefabManager& prefabManager
   ) {
     const ls::reflection_system::PropertyInfo* propertyInfo{ data.custom() };
     const bool isReadOnly{ propertyInfo ? propertyInfo->readOnly : false };
@@ -228,6 +291,30 @@ namespace ls::ui {
           bool isSelected{ textureName == name };
           if (ImGui::Selectable(displayName, isSelected)) {
             value = textureManager.getHandle(name);
+            valueChanged = true;
+          }
+
+          if (isSelected) {
+            ImGui::SetItemDefaultFocus();
+          }
+          ImGui::PopID();
+        }
+        ImGui::EndCombo();
+      }
+    } else if (valueType == entt::resolve<prefab::PrefabHandle>()) {
+      prefab::PrefabHandle handle{ value.cast<prefab::PrefabHandle>() };
+      auto prefabInfo{ prefabManager.getPrefabInfo(handle) };
+      std::string prefabName{ prefabInfo ? prefabInfo->name : "Unnamed" };
+
+      if (ImGui::BeginCombo(hiddenLabel.c_str(), prefabName.c_str())) {
+        int prefabIdx{ 0 };
+        for (const auto& name : prefabManager.getNames()) {
+          ImGui::PushID(prefabIdx++);
+          const char* displayName{ name.empty() ? "None" : name.c_str() };
+
+          bool isSelected{ prefabName == name };
+          if (ImGui::Selectable(displayName, isSelected)) {
+            value = prefabManager.getHandle(name);
             valueChanged = true;
           }
 
@@ -294,7 +381,7 @@ namespace ls::ui {
     } else if (auto* vec{ value.try_cast<glm::vec4>() }) {
       if (isColor) {
         if (ImGui::ColorEdit4(hiddenLabel.c_str(), &vec->x)) {
-          value = true;
+          valueChanged = true;
         }
       } else if (ImGui::DragFloat4(hiddenLabel.c_str(), &vec->x, step)) {
         valueChanged = true;
@@ -333,7 +420,7 @@ namespace ls::ui {
       if (ImGui::TreeNode(hiddenLabel.c_str())) {
         for (auto [subDataId, subData] : valueType.data()) {
           ImGui::PushID(static_cast<int>(subDataId));
-          if (inspectComponentProperty(value, subData, textureManager)) {
+          if (inspectComponentProperty(value, subData, textureManager, prefabManager)) {
             valueChanged = true;
           }
           ImGui::PopID();
@@ -451,6 +538,264 @@ namespace ls::ui {
       if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0.0f))) {
         selectedComponentsToAdd_.clear();
         addComponentFilter_[0] = '\0';
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+  }
+
+  void EntityInspectorPanel::renderSaveAsPrefabModal(const UIContext& ctx) {
+    if (shouldOpenSaveAsPrefabModal_) {
+      ImGui::OpenPopup("Save as Prefab");
+      saveAsPrefabNameBuffer_[0] = '\0';
+      shouldOpenSaveAsPrefabModal_ = false;
+    }
+
+    if (ImGui::BeginPopupModal("Save as Prefab", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      ImGui::SetNextItemWidth(200.f);
+      ImGui::InputTextWithHint(
+          "##NameInput", "Enter name...", saveAsPrefabNameBuffer_, sizeof(saveAsPrefabNameBuffer_)
+      );
+
+      ImGui::Separator();
+
+      std::string name{ saveAsPrefabNameBuffer_ };
+      const bool hasWhitespace{ std::ranges::any_of(name, [](unsigned char ch) { return std::isspace(ch); }) };
+
+      const bool isValidName{ !name.empty() && !hasWhitespace };
+      const float availWidth{ ImGui::GetContentRegionAvail().x };
+      const float buttonWidth{ availWidth * 0.25f };
+      const float spacing{ ImGui::GetStyle().ItemSpacing.x };
+      const float totalButtonWidth{ 2.f * buttonWidth + spacing };
+
+      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availWidth - totalButtonWidth);
+
+      {  // Save Button
+        if (!isValidName)
+          ImGui::BeginDisabled();
+
+        if (ImGui::Button("Save", ImVec2(buttonWidth, 0.0f))) {
+          ctx.engineCtx.eventQueue->publish(
+              event::RequestSaveEntityAsPrefab{
+                  .name = name,
+                  .entity = ctx.selectionCtx->selectedEntity,
+              }
+          );
+
+          saveAsPrefabNameBuffer_[0] = '\0';
+          ImGui::CloseCurrentPopup();
+        }
+
+        if (!isValidName)
+          ImGui::EndDisabled();
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0.0f))) {
+        saveAsPrefabNameBuffer_[0] = '\0';
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+  }
+
+  void EntityInspectorPanel::renderLinkToPrefabModal(const UIContext& ctx) {
+    if (shouldOpenLinkToPrefabModal_) {
+      ImGui::OpenPopup("Link Entity to Prefab");
+      prefabSearchBuffer_[0] = '\0';
+      shouldOpenLinkToPrefabModal_ = false;
+    }
+
+    if (ImGui::BeginPopupModal("Link Entity to Prefab", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      ImGui::SetNextItemWidth(-1.f);
+      ImGui::InputTextWithHint(
+          "##SearchPrefabName", "Search prefab...", prefabSearchBuffer_, sizeof(prefabSearchBuffer_)
+      );
+
+      ImGui::Separator();
+
+      if (ImGui::BeginChild("PrefabListRegion", ImVec2(350.f, 300.f), ImGuiChildFlags_Borders)) {
+        std::string lowerNameFilter{ prefabSearchBuffer_ };
+        std::transform(lowerNameFilter.begin(), lowerNameFilter.end(), lowerNameFilter.begin(), [](unsigned char ch) {
+          return std::tolower(ch);
+        });
+
+        const auto& prefabNames{ ctx.engineCtx.prefabManager->getNames() };
+        for (const auto& prefabName : prefabNames) {
+          std::string lowerPrefabName{ prefabName };
+          std::transform(lowerPrefabName.begin(), lowerPrefabName.end(), lowerPrefabName.begin(), [](unsigned char ch) {
+            return std::tolower(ch);
+          });
+
+          if (!lowerNameFilter.empty() && lowerPrefabName.find(lowerNameFilter) == std::string::npos)
+            continue;
+
+          const bool isSelected{ selectedPrefabName_ == prefabName };
+          if (ImGui::Selectable(prefabName.c_str(), isSelected)) {
+            selectedPrefabName_ = prefabName;
+          }
+
+          if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            ctx.engineCtx.eventQueue->publish(
+                event::RequestLinkEntityToPrefab{
+                    .entity = ctx.selectionCtx->selectedEntity,
+                    .handle = ctx.engineCtx.prefabManager->getHandle(prefabName),
+                }
+            );
+            selectedPrefabName_ = "";
+            ImGui::CloseCurrentPopup();
+          }
+        }
+      }
+      ImGui::EndChild();
+
+      const bool hasPrefabSelected{ !selectedPrefabName_.empty() };
+
+      const float availWidth{ ImGui::GetContentRegionAvail().x };
+      const float buttonWidth{ availWidth * 0.25f };
+      const float spacing{ ImGui::GetStyle().ItemSpacing.x };
+      const float totalButtonWidth{ 2.f * buttonWidth + spacing };
+
+      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availWidth - totalButtonWidth);
+
+      {  // Link Button
+        if (!hasPrefabSelected)
+          ImGui::BeginDisabled();
+
+        if (ImGui::Button("Link", ImVec2(buttonWidth, 0.0f))) {
+          ctx.engineCtx.eventQueue->publish(
+              event::RequestLinkEntityToPrefab{
+                  .entity = ctx.selectionCtx->selectedEntity,
+                  .handle = ctx.engineCtx.prefabManager->getHandle(selectedPrefabName_),
+              }
+          );
+          selectedPrefabName_ = "";
+          ImGui::CloseCurrentPopup();
+        }
+
+        if (!hasPrefabSelected)
+          ImGui::EndDisabled();
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0.0f))) {
+        selectedPrefabName_ = "";
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+  }
+
+  void EntityInspectorPanel::renderSyncFromPrefabModal(const UIContext& ctx) {
+    if (shouldOpenSyncFromPrefabModal_) {
+      ImGui::OpenPopup("Sync Entity from Prefab");
+      shouldOpenSyncFromPrefabModal_ = false;
+    }
+
+    if (ImGui::BeginPopupModal("Sync Entity from Prefab", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      ImGui::SetNextItemWidth(-1.f);
+      ImGui::InputTextWithHint(
+          "##SearchComponent", "Search component...", syncComponentFilter_, sizeof(syncComponentFilter_)
+      );
+      ImGui::Separator();
+
+      ImGui::BeginChild("ComponentListRegion", ImVec2(350.0f, 300.0f), ImGuiChildFlags_Borders);
+
+      std::string filterLower{ syncComponentFilter_ };
+      std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), [](unsigned char ch) {
+        return std::tolower(ch);
+      });
+
+      auto prefabInstance{
+        ctx.sceneCtx.registry->getComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity)
+      };
+      auto prefabInfo{ ctx.engineCtx.prefabManager->getPrefabInfo(prefabInstance.handle) };
+
+      for (auto componentTypeId : prefabInfo->componentTypeIds) {
+        auto componentType{ entt::resolve(componentTypeId) };
+        const reflection_system::ComponentInfo* componentInfo{ componentType.custom() };
+
+        if (componentInfo && !componentInfo->isComponent)
+          continue;
+
+        auto* set{ ctx.sceneCtx.registry->getISparseSetByTypeId(componentTypeId) };
+
+        if (!set)
+          continue;
+
+        bool hasEntityComponent{ set->hasComponent(ctx.selectionCtx->selectedEntity) };
+
+        const char* typeName{ componentInfo->displayName ? componentInfo->displayName
+                              : componentType.name()     ? componentType.name()
+                                                         : "Unknown" };
+        std::string nameLower{ typeName };
+        std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), [](unsigned char ch) {
+          return std::tolower(ch);
+        });
+
+        if (!filterLower.empty() && nameLower.find(filterLower) == std::string::npos) {
+          continue;
+        }
+
+        auto it{ std::find(selectedComponentsToSync_.begin(), selectedComponentsToSync_.end(), componentTypeId) };
+        bool isSelected{ it != selectedComponentsToSync_.end() };
+
+        std::string label{ typeName };
+        if (!hasEntityComponent)
+          label += " [new]";
+
+        if (ImGui::Checkbox(label.c_str(), &isSelected)) {
+          if (isSelected) {
+            selectedComponentsToSync_.push_back(componentTypeId);
+          } else {
+            selectedComponentsToSync_.erase(it);
+          }
+        }
+      }
+      ImGui::EndChild();
+
+      ImGui::Separator();
+
+      const bool hasComponentsSelected{ !selectedComponentsToSync_.empty() };
+      const float availWidth{ ImGui::GetContentRegionAvail().x };
+      const float buttonWidth{ availWidth * 0.25f };
+      const float spacing{ ImGui::GetStyle().ItemSpacing.x };
+      const float totalButtonWidth{ 2.f * buttonWidth + spacing };
+
+      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availWidth - totalButtonWidth);
+
+      {  // Add button
+        if (!hasComponentsSelected)
+          ImGui::BeginDisabled();
+
+        if (ImGui::Button("Sync", ImVec2(buttonWidth, 0.0f))) {
+          for (auto typeId : selectedComponentsToSync_) {
+            ctx.engineCtx.eventQueue->publish(
+                event::RequestSyncComponentFromPrefab{
+                    .entity = ctx.selectionCtx->selectedEntity,
+                    .typeId = typeId,
+                }
+            );
+          }
+          selectedComponentsToSync_.clear();
+          syncComponentFilter_[0] = '\0';
+          ImGui::CloseCurrentPopup();
+        }
+
+        if (!hasComponentsSelected)
+          ImGui::EndDisabled();
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0.0f))) {
+        selectedComponentsToSync_.clear();
+        syncComponentFilter_[0] = '\0';
         ImGui::CloseCurrentPopup();
       }
 

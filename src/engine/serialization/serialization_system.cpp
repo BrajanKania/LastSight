@@ -14,7 +14,10 @@
 
 namespace ls::serialization_system {
 
-  nlohmann::json serializeReflected(entt::meta_any any, const gfx::TextureManager& textureManager) {
+  nlohmann::json serializeReflected(
+      entt::meta_any any, const gfx::TextureManager& textureManager, const prefab::PrefabManager& prefabManager
+
+  ) {
     if (!any)
       return nullptr;
 
@@ -23,6 +26,12 @@ namespace ls::serialization_system {
     if (any.type() == entt::resolve<gfx::TextureHandle>()) {
       auto handle{ any.cast<gfx::TextureHandle>() };
       return textureManager.getName(handle);
+    }
+
+    if (type == entt::resolve<prefab::PrefabHandle>()) {
+      auto handle{ any.cast<prefab::PrefabHandle>() };
+      auto info{ prefabManager.getPrefabInfo(handle) };
+      return info ? info->name : "";
     }
 
     if (auto* value{ any.try_cast<bool>() }) {
@@ -69,7 +78,7 @@ namespace ls::serialization_system {
     if (auto container{ any.as_sequence_container() }) {
       nlohmann::json jsonArray = nlohmann::json::array();
       for (auto element : container) {
-        jsonArray.push_back(serializeReflected(element, textureManager));
+        jsonArray.push_back(serializeReflected(element, textureManager, prefabManager));
       }
       return jsonArray;
     }
@@ -89,14 +98,17 @@ namespace ls::serialization_system {
       }
 
       entt::meta_any fieldValue{ data.get(any) };
-      jsonObject[fieldName] = serializeReflected(fieldValue, textureManager);
+      jsonObject[fieldName] = serializeReflected(fieldValue, textureManager, prefabManager);
     }
 
     return jsonObject;
   }
 
   entt::meta_any deserializeReflected(
-      entt::meta_type type, const nlohmann::json& jsonValue, const gfx::TextureManager& textureManager
+      entt::meta_type type,
+      const nlohmann::json& jsonValue,
+      const gfx::TextureManager& textureManager,
+      const prefab::PrefabManager& prefabManager
   ) {
     if (jsonValue.is_null() || !type)
       return entt::meta_any{};
@@ -104,6 +116,11 @@ namespace ls::serialization_system {
     if (type == entt::resolve<gfx::TextureHandle>()) {
       return jsonValue.is_string() ? textureManager.getHandle(jsonValue.get<std::string>()) : gfx::TextureHandle{};
     }
+
+    if (type == entt::resolve<prefab::PrefabHandle>()) {
+      return jsonValue.is_string() ? prefabManager.getHandle(jsonValue.get<std::string>()) : prefab::PrefabHandle{};
+    }
+
     if (type == entt::resolve<bool>()) {
       return jsonValue.is_boolean() ? jsonValue.get<bool>() : false;
     }
@@ -186,7 +203,7 @@ namespace ls::serialization_system {
       if (jsonValue.is_array()) {
         entt::meta_type elementType{ container.value_type() };
         for (const auto& elementJson : jsonValue) {
-          entt::meta_any elementValue{ deserializeReflected(elementType, elementJson, textureManager) };
+          entt::meta_any elementValue{ deserializeReflected(elementType, elementJson, textureManager, prefabManager) };
           if (elementValue) {
             container.insert(container.end(), elementValue);
           }
@@ -214,7 +231,7 @@ namespace ls::serialization_system {
       }
 
       if (fieldJson && !fieldJson->is_null()) {
-        entt::meta_any fieldValue{ deserializeReflected(data.type(), *fieldJson, textureManager) };
+        entt::meta_any fieldValue{ deserializeReflected(data.type(), *fieldJson, textureManager, prefabManager) };
         if (fieldValue) {
           data.set(instance, fieldValue);
         }

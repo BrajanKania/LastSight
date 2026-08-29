@@ -11,6 +11,8 @@
 #include "engine/gfx/texture_manager.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/platform/external_tool_manager.hpp"
+#include "engine/prefab/prefab_context.hpp"
+#include "engine/prefab/prefab_manager.hpp"
 
 namespace ls {
 
@@ -31,6 +33,7 @@ namespace ls {
     void handleRequest();
     void handleInput();
     void loadTextures();
+    void loadPrefabs();
     void registerConsoleCommands();
 
     EngineContext getEngineContext() {
@@ -42,18 +45,27 @@ namespace ls {
         .engineMode = &engineMode_,
         .console = &console_,
         .statusBar = &statusBar_,
+        .prefabManager = &prefabManager_,
+      };
+    }
+
+    prefab::PrefabContext getPrefabContext() {
+      return prefab::PrefabContext{
+        .textureManager = &textureManager_,
+        .console = &console_,
       };
     }
 
     Window window_;
-    input::InputManager inputManager_;
-    dispatch::EventQueue eventQueue_;
-    gfx::TextureManager textureManager_;
+    input::InputManager inputManager_{};
+    dispatch::EventQueue eventQueue_{};
+    gfx::TextureManager textureManager_{};
+    debug::Console console_{};
+    debug::StatusBar statusBar_{};
+    prefab::PrefabManager prefabManager_;
     SceneManager sceneManager_;
-    EditorLayer editorLayer_;
-    platform::ExternalToolManager externalToolManager_;
-    debug::Console console_;
-    debug::StatusBar statusBar_;
+    EditorLayer editorLayer_{};
+    platform::ExternalToolManager externalToolManager_{};
 
     EngineMode engineMode_{ EngineMode::Edit };
   };

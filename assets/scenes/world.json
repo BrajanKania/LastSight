@@ -66,11 +66,11 @@
           "textureHandle": "equipped_pistol.png"
         },
         "FieldOfView": {
-          "darkness": 0.5999997854232788,
-          "fovAngle": 59.9999885559082,
+          "darkness": 0.6000000238418579,
+          "fovAngle": 60.0,
           "innerRadius": 1.0,
           "outerRadius": 6.0,
-          "smoothnessAngle": 40.0,
+          "smoothnessAngle": 40.00000762939453,
           "smoothnessDistance": 2.0
         },
         "Health": {
@@ -180,10 +180,10 @@
         },
         "Transform": {
           "position": [
-            -0.1028871089220047,
-            -0.2033880054950714
+            -1.295755386352539,
+            -0.31665274500846863
           ],
-          "rotation": -163.71762084960938,
+          "rotation": -16.93012237548828,
           "scale": [
             0.5,
             0.5
@@ -253,23 +253,23 @@
       "components": {
         "Camera": {
           "orthographicSize": 6.0,
-          "zoom": 1.0000759363174438
+          "zoom": 1.000001072883606
         },
         "CameraShake": {
           "damping": 20.0,
           "maxSpringOffset": 0.4000000059604645,
           "maxTraumaOffset": 0.3499999940395355,
           "offset": [
-            1.401298464324817e-45,
+            -1.401298464324817e-45,
             1.401298464324817e-45
           ],
           "stiffness": 180.0,
-          "timeAccumulator": 9.095998764038086,
+          "timeAccumulator": 10.831998825073242,
           "trauma": 0.0,
           "traumaDecay": 2.0,
           "traumaFrequency": 8.0,
           "velocity": [
-            -1.2611686178923354e-44,
+            1.2611686178923354e-44,
             -1.2611686178923354e-44
           ]
         },
@@ -278,8 +278,8 @@
         },
         "Transform": {
           "position": [
-            -0.10288708657026291,
-            -0.20338796079158783
+            -1.2957556247711182,
+            -0.316652774810791
           ],
           "rotation": 0.0,
           "scale": [
@@ -455,11 +455,14 @@
         "EntityName": {
           "name": "container_2"
         },
+        "PrefabInstance": {
+          "handle": "box"
+        },
         "Sprite": {
           "angleOffset": 0.0,
           "color": [
-            1.0,
-            1.0,
+            0.7843137383460999,
+            0.7843137383460999,
             1.0,
             1.0
           ],
@@ -472,8 +475,8 @@
         },
         "Transform": {
           "position": [
-            1.0,
-            -1.0
+            1.010657787322998,
+            -0.9938467741012573
           ],
           "rotation": 30.0,
           "scale": [

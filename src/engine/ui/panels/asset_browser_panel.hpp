@@ -16,6 +16,7 @@ namespace ls::ui {
     std::filesystem::path currentPath_{ "assets" };
     std::filesystem::path assetsPath_{ "assets" };
     char searchBuffer_[256]{};
+    bool showExtensions_{ false };
   };
 
 }  // namespace ls::ui
