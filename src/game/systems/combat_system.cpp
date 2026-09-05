@@ -11,6 +11,7 @@
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/gfx/texture_manager.hpp"
+#include "engine/renderer/material/material_names.hpp"
 #include "game/components/camera_shake.hpp"
 #include "game/components/weapon.hpp"
 #include "game/events/request_shoot.hpp"
@@ -53,11 +54,12 @@ namespace ls::combat_system {
       glm::vec2 muzzleWorldPos{ transform.position + rotatedMuzzleOffset };
 
       factory::ProjectileConfig config{
+        .materialHandle = ctx.materialManager.getHandle(material_name::kLit),
+        .textureHandle = ctx.textureManager.getHandle(texture_name::kBullet),
         .scale = weapon.bulletScale,
         .position = muzzleWorldPos,
         .direction = bulletDirection,
         .speed = weapon.initialSpeed,
-        .textureHandle = ctx.textureManager.getHandle(texture_name::kBullet),
         .angleOffset = -90.f,
         .lifetime = weapon.bulletLifetime,
       };
@@ -65,7 +67,12 @@ namespace ls::combat_system {
       factory::spawnProjectile(ctx.registry, config);
 
       ecs::EntityId particleEmitter{ ctx.registry.createEntity() };
-      ctx.registry.addComponent(particleEmitter, component::ParticleEmitter{ particle::preset::gunSparks() });
+      ctx.registry.addComponent(
+          particleEmitter,
+          component::ParticleEmitter{ particle::preset::gunSparks(
+              ctx.materialManager.getHandle(material_name::kLit), ctx.textureManager.getHandle(texture_name::kWhite)
+          ) }
+      );
       ctx.registry.addComponent(
           particleEmitter,
           component::Transform{

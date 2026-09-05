@@ -19,6 +19,10 @@ namespace ls {
   namespace prefab {
     class PrefabManager;
   }
+  namespace renderer {
+    class MaterialManager;
+    class RenderPipeline;
+  }  // namespace renderer
 
   struct EngineContext {
     Window* window{ nullptr };
@@ -28,6 +32,8 @@ namespace ls {
     const EngineMode* engineMode{ nullptr };
     debug::Console* console{ nullptr };
     debug::StatusBar* statusBar{ nullptr };
+    renderer::MaterialManager* materialManager{ nullptr };
+    renderer::RenderPipeline* renderPipeline{ nullptr };
     prefab::PrefabManager* prefabManager{ nullptr };
   };
 

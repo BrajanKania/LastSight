@@ -9,13 +9,14 @@
 #include "engine/events/viewport_resized.hpp"
 #include "engine/gfx/framebuffer.hpp"
 #include "engine/input/input_system.hpp"
+#include "engine/renderer/render_pipeline.hpp"
 #include "engine/ui/panels/panel_names.hpp"
 
 namespace ls::ui {
 
   void ViewportPanel::render(const UIContext& ctx) {
     assert(ctx.engineCtx.engineMode != nullptr && "[ViewportPanel] Requires a valid EngineMode!");
-    assert(ctx.sceneCtx.sceneFBO != nullptr && "[ViewportPanel] Requires a valid FBO!");
+    assert(ctx.engineCtx.renderPipeline != nullptr && "[ViewportPanel] Requires a valid RenderPipeline!");
     assert(ctx.engineCtx.eventQueue != nullptr && "[ViewportPanel] Requires a valid EventQueue!");
 
     const bool isPlayMode{ *ctx.engineCtx.engineMode == EngineMode::Play };
@@ -65,10 +66,14 @@ namespace ls::ui {
         setVisible(false);
       }
 
-      uint32_t sceneTextureId{ ctx.sceneCtx.sceneFBO->getColorBufferId() };
-      ImGui::Image(
-          reinterpret_cast<void*>(static_cast<uintptr_t>(sceneTextureId)), viewportSize, ImVec2(0, 1), ImVec2(1, 0)
-      );
+      gfx::Framebuffer* targetFramebuffer{ ctx.engineCtx.renderPipeline->getFrameData().getFramebuffer("final") };
+
+      if (targetFramebuffer) {
+        std::uint32_t sceneTextureId{ targetFramebuffer->getColorBufferId() };
+        ImGui::Image(
+            reinterpret_cast<void*>(static_cast<uintptr_t>(sceneTextureId)), viewportSize, ImVec2(0, 1), ImVec2(1, 0)
+        );
+      }
 
       ImGui::SetCursorScreenPos(cursorScreenPosition);
       ImGui::InvisibleButton(

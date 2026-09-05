@@ -3,12 +3,24 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/glm.hpp>
 
+#include "engine/gfx/texture_handle.hpp"
 #include "engine/reflection/reflection_macros.hpp"
+#include "engine/renderer/layer.hpp"
+#include "engine/renderer/material/material_handle.hpp"
 
 namespace ls::particle {
 
   STRUCT()
   struct ParticleEmitterConfig {
+    PROPERTY()
+    renderer::MaterialHandle materialHandle{ renderer::kNullMaterial };
+
+    PROPERTY()
+    gfx::TextureHandle textureHandle{ 0 };
+
+    PROPERTY()
+    renderer::Layer layer{ renderer::Layer::Entities };
+
     PROPERTY(DisplayName("Max particles"), ReadOnly)
     std::size_t maxParticles{ 10 };
 

@@ -31,6 +31,7 @@ namespace ls::equip_system {
           ctx.registry.addComponent(
               entity,
               component::EquippedSprite{
+                  .materialHandle = itemDef->materialHandle,
                   .textureHandle = itemDef->equippedTextureHandle,
                   .scale = itemDef->equippedScale,
                   .offset = itemDef->weaponConfig->hipOffset,

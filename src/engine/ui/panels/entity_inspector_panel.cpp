@@ -30,6 +30,8 @@
 #include "engine/prefab/prefab_handle.hpp"
 #include "engine/prefab/prefab_manager.hpp"
 #include "engine/reflection/reflection_system.hpp"
+#include "engine/renderer/material/material_handle.hpp"
+#include "engine/renderer/material/material_manager.hpp"
 #include "engine/ui/panels/panel_names.hpp"
 #include "engine/ui/ui_context.hpp"
 
@@ -41,6 +43,7 @@ namespace ls::ui {
     assert(ctx.sceneCtx.registry != nullptr && "[EntityInspectorPanel] Requires a valid Registry!");
     assert(ctx.engineCtx.textureManager != nullptr && "[EntityInspectorPanel] Requires a valid TextureManager!");
     assert(ctx.engineCtx.prefabManager != nullptr && "[EntityInspectorPanel] Requires a valid PrefabManager!");
+    assert(ctx.engineCtx.materialManager != nullptr && "[EntityInspectorPanel] Requires a valid MaterialManager!");
 
     if (!ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
       ctx.selectionCtx->selectedEntity = ecs::kNullEntity;
@@ -132,7 +135,11 @@ namespace ls::ui {
 
         if (ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
           inspectEntity(
-              ctx, ctx.selectionCtx->selectedEntity, *ctx.engineCtx.textureManager, *ctx.engineCtx.prefabManager
+              ctx,
+              ctx.selectionCtx->selectedEntity,
+              *ctx.engineCtx.materialManager,
+              *ctx.engineCtx.textureManager,
+              *ctx.engineCtx.prefabManager
           );
 
           if (ImGui::BeginPopupContextWindow(
@@ -156,6 +163,7 @@ namespace ls::ui {
   void EntityInspectorPanel::inspectEntity(
       const UIContext& ctx,
       const ecs::EntityId entity,
+      const renderer::MaterialManager& materialManager,
       const gfx::TextureManager& textureManager,
       const prefab::PrefabManager& prefabManager
   ) {
@@ -233,7 +241,7 @@ namespace ls::ui {
             ImGui::TableNextColumn();
             ImGui::SetNextItemWidth(-1.0f);
 
-            inspectComponentProperty(anyComponent, data, textureManager, prefabManager);
+            inspectComponentProperty(anyComponent, data, materialManager, textureManager, prefabManager);
 
             ImGui::PopID();
           }
@@ -249,6 +257,7 @@ namespace ls::ui {
   bool EntityInspectorPanel::inspectComponentProperty(
       entt::meta_any& owner,
       entt::meta_data data,
+      const renderer::MaterialManager& materialManager,
       const gfx::TextureManager& textureManager,
       const prefab::PrefabManager& prefabManager
   ) {
@@ -291,6 +300,29 @@ namespace ls::ui {
           bool isSelected{ textureName == name };
           if (ImGui::Selectable(displayName, isSelected)) {
             value = textureManager.getHandle(name);
+            valueChanged = true;
+          }
+
+          if (isSelected) {
+            ImGui::SetItemDefaultFocus();
+          }
+          ImGui::PopID();
+        }
+        ImGui::EndCombo();
+      }
+    } else if (valueType == entt::resolve<renderer::MaterialHandle>()) {
+      renderer::MaterialHandle handle{ value.cast<renderer::MaterialHandle>() };
+      std::string materialName{ materialManager.getName(handle) };
+
+      if (ImGui::BeginCombo(hiddenLabel.c_str(), materialName.empty() ? "None" : materialName.c_str())) {
+        int textureIdx{ 0 };
+        for (const auto& name : materialManager.getNames()) {
+          ImGui::PushID(textureIdx++);
+          const char* displayName{ name.empty() ? "None" : name.c_str() };
+
+          bool isSelected{ materialName == name };
+          if (ImGui::Selectable(displayName, isSelected)) {
+            value = materialManager.getHandle(name);
             valueChanged = true;
           }
 
@@ -420,7 +452,7 @@ namespace ls::ui {
       if (ImGui::TreeNode(hiddenLabel.c_str())) {
         for (auto [subDataId, subData] : valueType.data()) {
           ImGui::PushID(static_cast<int>(subDataId));
-          if (inspectComponentProperty(value, subData, textureManager, prefabManager)) {
+          if (inspectComponentProperty(value, subData, materialManager, textureManager, prefabManager)) {
             valueChanged = true;
           }
           ImGui::PopID();

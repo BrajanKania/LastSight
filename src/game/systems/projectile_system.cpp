@@ -7,20 +7,27 @@
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
 #include "engine/events/collision.hpp"
+#include "engine/renderer/material/material_names.hpp"
 #include "game/components/enemy.hpp"
 #include "game/components/projectile.hpp"
 #include "game/particles/blood_splat.hpp"
+#include "game/scenes/texture_names.hpp"
 
 namespace ls::projectile_system {
 
   namespace {
 
-    void hitEnemy(ecs::Registry& registry, const ecs::EntityId enemy) {
-      auto particleEmitter{ registry.createEntity() };
-      registry.addComponent(particleEmitter, component::ParticleEmitter{ particle::preset::bloodSplat() });
-      registry.addComponent(
+    void hitEnemy(const UpdateContext& ctx, const ecs::EntityId enemy) {
+      auto particleEmitter{ ctx.registry.createEntity() };
+      ctx.registry.addComponent(
           particleEmitter,
-          component::Transform{ .position = registry.getComponent<component::Transform>(enemy).position }
+          component::ParticleEmitter{ particle::preset::bloodSplat(
+              ctx.materialManager.getHandle(material_name::kLit), ctx.textureManager.getHandle(texture_name::kWhite)
+          ) }
+      );
+      ctx.registry.addComponent(
+          particleEmitter,
+          component::Transform{ .position = ctx.registry.getComponent<component::Transform>(enemy).position }
       );
     }
 
@@ -39,13 +46,13 @@ namespace ls::projectile_system {
       if (ctx.registry.hasComponent<component::Projectile>(event.entityA)) {
         ctx.registry.destroyEntity(event.entityA);
         if (ctx.registry.hasComponent<component::Enemy>(event.entityB)) {
-          hitEnemy(ctx.registry, event.entityB);
+          hitEnemy(ctx, event.entityB);
         }
       }
       if (ctx.registry.hasComponent<component::Projectile>(event.entityB)) {
         ctx.registry.destroyEntity(event.entityB);
         if (ctx.registry.hasComponent<component::Enemy>(event.entityA)) {
-          hitEnemy(ctx.registry, event.entityA);
+          hitEnemy(ctx, event.entityA);
         }
       }
     }

@@ -11,11 +11,16 @@
 #include "engine/core/engine_context.hpp"
 #include "engine/gfx/texture_manager.hpp"
 #include "engine/reflection/reflection_system.hpp"
+#include "engine/renderer/material/material_handle.hpp"
+#include "engine/renderer/material/material_manager.hpp"
 
 namespace ls::serialization_system {
 
   nlohmann::json serializeReflected(
-      entt::meta_any any, const gfx::TextureManager& textureManager, const prefab::PrefabManager& prefabManager
+      entt::meta_any any,
+      const renderer::MaterialManager& materialManager,
+      const gfx::TextureManager& textureManager,
+      const prefab::PrefabManager& prefabManager
 
   ) {
     if (!any)
@@ -26,6 +31,11 @@ namespace ls::serialization_system {
     if (any.type() == entt::resolve<gfx::TextureHandle>()) {
       auto handle{ any.cast<gfx::TextureHandle>() };
       return textureManager.getName(handle);
+    }
+
+    if (any.type() == entt::resolve<renderer::MaterialHandle>()) {
+      auto handle{ any.cast<renderer::MaterialHandle>() };
+      return materialManager.getName(handle);
     }
 
     if (type == entt::resolve<prefab::PrefabHandle>()) {
@@ -78,7 +88,7 @@ namespace ls::serialization_system {
     if (auto container{ any.as_sequence_container() }) {
       nlohmann::json jsonArray = nlohmann::json::array();
       for (auto element : container) {
-        jsonArray.push_back(serializeReflected(element, textureManager, prefabManager));
+        jsonArray.push_back(serializeReflected(element, materialManager, textureManager, prefabManager));
       }
       return jsonArray;
     }
@@ -98,7 +108,7 @@ namespace ls::serialization_system {
       }
 
       entt::meta_any fieldValue{ data.get(any) };
-      jsonObject[fieldName] = serializeReflected(fieldValue, textureManager, prefabManager);
+      jsonObject[fieldName] = serializeReflected(fieldValue, materialManager, textureManager, prefabManager);
     }
 
     return jsonObject;
@@ -107,6 +117,7 @@ namespace ls::serialization_system {
   entt::meta_any deserializeReflected(
       entt::meta_type type,
       const nlohmann::json& jsonValue,
+      const renderer::MaterialManager& materialManager,
       const gfx::TextureManager& textureManager,
       const prefab::PrefabManager& prefabManager
   ) {
@@ -115,6 +126,11 @@ namespace ls::serialization_system {
 
     if (type == entt::resolve<gfx::TextureHandle>()) {
       return jsonValue.is_string() ? textureManager.getHandle(jsonValue.get<std::string>()) : gfx::TextureHandle{};
+    }
+
+    if (type == entt::resolve<renderer::MaterialHandle>()) {
+      return jsonValue.is_string() ? materialManager.getHandle(jsonValue.get<std::string>())
+                                   : renderer::MaterialHandle{};
     }
 
     if (type == entt::resolve<prefab::PrefabHandle>()) {
@@ -203,7 +219,9 @@ namespace ls::serialization_system {
       if (jsonValue.is_array()) {
         entt::meta_type elementType{ container.value_type() };
         for (const auto& elementJson : jsonValue) {
-          entt::meta_any elementValue{ deserializeReflected(elementType, elementJson, textureManager, prefabManager) };
+          entt::meta_any elementValue{
+            deserializeReflected(elementType, elementJson, materialManager, textureManager, prefabManager)
+          };
           if (elementValue) {
             container.insert(container.end(), elementValue);
           }
@@ -231,7 +249,9 @@ namespace ls::serialization_system {
       }
 
       if (fieldJson && !fieldJson->is_null()) {
-        entt::meta_any fieldValue{ deserializeReflected(data.type(), *fieldJson, textureManager, prefabManager) };
+        entt::meta_any fieldValue{
+          deserializeReflected(data.type(), *fieldJson, materialManager, textureManager, prefabManager)
+        };
         if (fieldValue) {
           data.set(instance, fieldValue);
         }

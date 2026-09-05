@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include "engine/input/input_context.hpp"
+#include "engine/renderer/render_pipeline.hpp"
 #include "engine/renderer/render_system.hpp"
 
 namespace ls {
@@ -23,6 +24,7 @@ namespace ls {
 
       if (width_ > 0 && height_ > 0) {
         newScene->onResize(width_, height_);
+        engineCtx_.renderPipeline->onResize(width_, height_);
       }
 
       scenes_.push_back(std::move(newScene));

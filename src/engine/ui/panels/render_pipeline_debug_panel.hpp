@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include <glm/ext/vector_float2.hpp>
+#include <string>
 
 #include "engine/ui/i_ui_panel.hpp"
 
@@ -14,8 +15,7 @@ namespace ls::ui {
     void render(const UIContext& ctx) override;
 
   private:
-    int selectedPassIndex_{ -1 };
-    float imageScale_{ 0.2f };
+    std::string selectedFramebufferName_{};
 
     ImVec2 canvasPan_{ 10.0f, 10.0f };
     float canvasZoom_{ 0.3f };

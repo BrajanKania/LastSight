@@ -141,7 +141,7 @@ namespace ls::ui {
       }
 
       if (ImGui::BeginMenu("Debug")) {
-        const bool hasRenderPipeline{ ctx.sceneCtx.renderPipeline != nullptr };
+        const bool hasRenderPipeline{ ctx.engineCtx.renderPipeline != nullptr };
         if (ImGui::MenuItem(ui::panel::kRenderPipelineDebug, nullptr, false, hasRenderPipeline)) {
           ctx.engineCtx.eventQueue->publish(
               event::SetPanelVisibility{

@@ -12,10 +12,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/matrix.hpp>
 
+#include "engine/components/camera.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/core/update_context.hpp"
 #include "engine/input/input_system.hpp"
-#include "game/components/camera.hpp"
 #include "game/components/camera_shake.hpp"
 #include "game/components/player.hpp"
 #include "game/components/player_camera_settings.hpp"

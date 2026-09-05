@@ -1,11 +1,20 @@
 #pragma once
 
+#include "engine/gfx/texture_handle.hpp"
 #include "engine/particles/particle_emitter_config.hpp"
+#include "engine/renderer/layer.hpp"
+#include "engine/renderer/material/material_handle.hpp"
 
 namespace ls::particle::preset {
 
-  inline particle::ParticleEmitterConfig fire() {
+  inline particle::ParticleEmitterConfig fire(
+      renderer::MaterialHandle materialHandle, gfx::TextureHandle textureHandle
+  ) {
     return particle::ParticleEmitterConfig{
+      .materialHandle = materialHandle,
+      .textureHandle = textureHandle,
+
+      .layer = renderer::Layer::Entities,
       .maxParticles = 80,
 
       .minSpeed = 0.2f,

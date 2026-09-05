@@ -10,7 +10,6 @@
 #include "engine/core/i_scene.hpp"
 #include "engine/core/scene_context.hpp"
 #include "engine/input/input_context.hpp"
-#include "engine/input/types.hpp"
 
 namespace ls {
 

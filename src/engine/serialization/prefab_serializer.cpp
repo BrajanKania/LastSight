@@ -22,6 +22,7 @@ namespace ls::serialization {
   ) const {
     assert(ctx_.textureManager != nullptr && "[PrefabSerializer] Requires a valid TextureManager!");
     assert(ctx_.prefabManager != nullptr && "[PrefabSerializer] Requires a valid PrefabManager!");
+    assert(ctx_.materialManager != nullptr && "[PrefabSerializer] Requires a valid MaterialManager!");
 
     std::ifstream file(path);
     if (!file.is_open()) {
@@ -84,7 +85,7 @@ namespace ls::serialization {
         componentInstance = componentType.construct();
       } else {
         componentInstance = serialization_system::deserializeReflected(
-            componentType, componentJson, *ctx_.textureManager, *ctx_.prefabManager
+            componentType, componentJson, *ctx_.materialManager, *ctx_.textureManager, *ctx_.prefabManager
         );
         if (!componentInstance) {
           componentInstance = componentType.construct();
@@ -126,7 +127,8 @@ namespace ls::serialization {
   bool PrefabSerializer::savePrefab(
       const std::filesystem::path& path, ecs::Registry& registry, ecs::EntityId sourceEntity
   ) const {
-    assert(ctx_.textureManager != nullptr && "[PrefabSerializer] requires a valid TextureManager!");
+    assert(ctx_.textureManager != nullptr && "[PrefabSerializer] Requires a valid TextureManager!");
+    assert(ctx_.materialManager != nullptr && "[PrefabSerializer] Requires a valid MaterialManager!");
 
     nlohmann::json entityJson;
     nlohmann::json componentsJson = nlohmann::json::object();
@@ -147,8 +149,9 @@ namespace ls::serialization {
 
       const char* componentName{ type.name() ? type.name() : "Unknown component" };
 
-      componentsJson[componentName] =
-          serialization_system::serializeReflected(componentAny, *ctx_.textureManager, *ctx_.prefabManager);
+      componentsJson[componentName] = serialization_system::serializeReflected(
+          componentAny, *ctx_.materialManager, *ctx_.textureManager, *ctx_.prefabManager
+      );
     }
 
     entityJson["components"] = componentsJson;

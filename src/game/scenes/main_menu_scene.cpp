@@ -7,9 +7,9 @@
 #include <glm/common.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
-#include <memory>
 #include <vector>
 
+#include "engine/components/camera.hpp"
 #include "engine/components/entity_name.hpp"
 #include "engine/components/parallax.hpp"
 #include "engine/components/sprite.hpp"
@@ -17,21 +17,23 @@
 #include "engine/core/asset_system.hpp"
 #include "engine/core/random_system.hpp"
 #include "engine/ecs/registry.hpp"
-#include "engine/gfx/framebuffer.hpp"
 #include "engine/input/input_context.hpp"
 #include "engine/input/input_manager.hpp"
 #include "engine/input/input_system.hpp"
-#include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/layer.hpp"
-#include "engine/renderer/passes/fov_pass.hpp"
-#include "engine/renderer/passes/lit_pass.hpp"
+#include "engine/renderer/material/material_manager.hpp"
+#include "engine/renderer/material/material_names.hpp"
+#include "engine/renderer/render_phase.hpp"
+#include "engine/renderer/render_pipeline.hpp"
 #include "engine/serialization/scene_serializer.hpp"
 #include "engine/systems/parallax_system.hpp"
-#include "game/components/camera.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/fov_masked.hpp"
 #include "game/components/menu_stalker.hpp"
 #include "game/components/menu_stalker_point.hpp"
+#include "game/extraction/extraction_system.hpp"
+#include "game/renderer/passes/fov_pass.hpp"
+#include "game/renderer/passes/lit_pass.hpp"
 #include "game/scenes/scene_names.hpp"
 #include "game/scenes/texture_names.hpp"
 #include "game/systems/camera_system.hpp"
@@ -41,18 +43,9 @@
 namespace ls {
 
   void MainMenuScene::onEnter() {
-    assert(engineCtx_.textureManager != nullptr && "MainMenuScene requires a valid TextureManager!");
-
-    /*
-      engineCtx_.textureManager->load(
-          texture_name::kMainMenuBackground, asset_system::texture(texture_name::kMainMenuBackground)
-      );
-      engineCtx_.textureManager->load(texture_name::kStalker, asset_system::texture(texture_name::kStalker));
-      engineCtx_.textureManager->load(texture_name::kGrass1, asset_system::texture(texture_name::kGrass1));
-      engineCtx_.textureManager->load(texture_name::kTrunk, asset_system::texture(texture_name::kTrunk));
-      engineCtx_.textureManager->load(texture_name::kMainMenuTitle,
-      asset_system::texture(texture_name::kMainMenuTitle));
-    */
+    assert(engineCtx_.textureManager != nullptr && "[MainMenuScene] Requires a valid TextureManager!");
+    assert(engineCtx_.materialManager != nullptr && "[MainMenuScene] Requires a valid MaterialManager!");
+    assert(engineCtx_.renderPipeline != nullptr && "[MainMenuScene] Requires a valid RenderPipeline!");
 
     const float trunkParallax{ 0.15f };
     stalkerPoints_ = std::vector<component::MenuStalkerPoint>{
@@ -103,22 +96,21 @@ namespace ls {
 
     // generateEntities();
 
-    worldFBO_ = std::make_shared<gfx::Framebuffer>();
-    fovFBO_ = std::make_shared<gfx::Framebuffer>();
+    // for (auto entity : registry_.view<component::Sprite>()) {
+    //   auto& sprite{ registry_.getComponent<component::Sprite>(entity) };
+    //   sprite.materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit);
+    // }
 
-    renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
-    renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
+    engineCtx_.renderPipeline->addPass<renderer::LitPass>(renderer::RenderPhase::MainPass);
+    engineCtx_.renderPipeline->addPass<renderer::FovPass>(renderer::RenderPhase::MainPass);
 
     uiManager_.addPanel<ui::MainMenuPanel>(ui::panel::kMainMenu);
     uiManager_.getPanel(ui::panel::kMainMenu).setVisible(true);
   }
 
-  void MainMenuScene::onExit() {}
+  void MainMenuScene::onExit() { engineCtx_.renderPipeline->clearPasses(); }
 
   void MainMenuScene::onResize(int width, int height) {
-    worldFBO_->resize(width, height);
-    fovFBO_->resize(width, height);
-
     float aspectRatio{ static_cast<float>(width) / static_cast<float>(height) };
 
     if (registry_.hasComponent<component::Transform>(backgroundEntity_)) {
@@ -135,6 +127,7 @@ namespace ls {
     UpdateContext ctx{
       .registry = registry_,
       .eventQueue = eventQueue_,
+      .materialManager = *engineCtx_.materialManager,
       .textureManager = *engineCtx_.textureManager,
       .inputManager = inputManager_,
       .dt = dt,
@@ -182,19 +175,41 @@ namespace ls {
   }
 
   void MainMenuScene::render() {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     for (auto entity : registry_.view<component::Camera>()) {
       const auto& camera{ registry_.getComponent<component::Camera>(entity) };
-      renderPipeline_.execute(
-          renderer::RenderContext{
-              .registry = registry_,
-              .viewProjection = camera.projection * camera.view,
-              .textureManager = *engineCtx_.textureManager,
-          }
-      );
+      engineCtx_.renderPipeline->getFrameData().setCamera(camera.view, camera.projection);
       break;
     }
+
+    for (auto entity : registry_.view<component::Transform, component::FieldOfView>()) {
+      const auto& transform{ registry_.getComponent<component::Transform>(entity) };
+      const auto& fov{ registry_.getComponent<component::FieldOfView>(entity) };
+
+      glm::vec2 fovDir{ glm::cos(glm::radians(transform.rotation)), glm::sin(glm::radians(transform.rotation)) };
+
+      if (auto* material{ engineCtx_.materialManager->get(material_name::kLit) }) {
+        material->setProperty("uFovPos", transform.position);
+        material->setProperty("uFovDir", fovDir);
+        material->setProperty("uFovInnerRadius", fov.innerRadius);
+        material->setProperty("uFovOuterRadius", fov.outerRadius);
+        material->setProperty("uFovHalfAngleRad", glm::radians(fov.fovAngle / 2.f));
+        material->setProperty("uFovSmoothnessRad", glm::radians(fov.smoothnessAngle));
+        material->setProperty("uFovSmoothnessDist", fov.smoothnessDistance);
+      }
+
+      if (auto* material{ engineCtx_.materialManager->get(material_name::kFov) }) {
+        material->setProperty("uViewPos", transform.position);
+        material->setProperty("uViewDir", fovDir);
+        material->setProperty("uInnerRadius", fov.innerRadius);
+        material->setProperty("uOuterRadius", fov.outerRadius);
+        material->setProperty("uHalfFovRad", glm::radians(fov.fovAngle / 2.f));
+        material->setProperty("uSmoothnessRad", glm::radians(fov.smoothnessAngle));
+        material->setProperty("uSmoothnessDistance", fov.smoothnessDistance);
+        material->setProperty("uDarkness", fov.darkness);
+      }
+    }
+
+    extraction_system::extractGameRenderCommands(engineCtx_.renderPipeline->getCommandBuffer(), registry_);
   }
 
   void MainMenuScene::renderUI() { uiManager_.render(getUIContext()); }

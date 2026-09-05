@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
 
+#include "engine/components/camera.hpp"
 #include "engine/components/transform.hpp"
 #include "engine/components/velocity.hpp"
 #include "engine/core/update_context.hpp"
@@ -29,7 +30,6 @@
 #include "game/actions/select_slot_5.hpp"
 #include "game/actions/shoot.hpp"
 #include "game/actions/sprint.hpp"
-#include "game/components/camera.hpp"
 #include "game/components/inventory.hpp"
 #include "game/components/movement_settings.hpp"
 #include "game/components/player.hpp"

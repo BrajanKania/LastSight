@@ -47,6 +47,7 @@
 #include "engine/input/types.hpp"
 #include "engine/prefab/prefab_manager.hpp"
 #include "engine/reflection/reflection_system.hpp"
+#include "engine/renderer/material/material_names.hpp"
 #include "engine/renderer/render_system.hpp"
 #include "engine/serialization/scene_serializer.hpp"
 #include "engine/ui/ui_style.hpp"
@@ -67,6 +68,7 @@ namespace ls {
     sceneManager_.onResize(window_.getWidth(), window_.getHeight());
 
     loadTextures();
+    loadMaterials();
     loadPrefabs();
     registerConsoleCommands();
 
@@ -87,14 +89,14 @@ namespace ls {
       dt = std::min(dt, 0.1f);
       lastTime = currentTime;
 
-      statusBar_.update(dt);
-
       window_.pollEvents();
 
+      statusBar_.update(dt);
       handleInput();
 
       sceneManager_.update(dt);
       sceneManager_.render();
+      renderPipeline_.execute(getEngineContext());
 
       ui_system::beginFrame();
 
@@ -135,6 +137,7 @@ namespace ls {
 
     for (const auto& event : eventQueue_.getEvents<event::ViewportResized>()) {
       sceneManager_.onResize(event.newSize.x, event.newSize.y);
+      renderPipeline_.onResize(event.newSize.x, event.newSize.y);
     }
 
     for (const auto& event : eventQueue_.getEvents<event::RequestReloadTextures>()) {
@@ -399,6 +402,26 @@ namespace ls {
   }
 
   void Engine::loadPrefabs() { prefabManager_.loadFromDir(std::filesystem::path("assets/prefabs")); }
+
+  void Engine::loadMaterials() {
+    materialManager_.create(
+        material_name::kDefualtLit,
+        asset_system::engineShader("default_lit_vertex.glsl"),
+        asset_system::engineShader("default_lit_fragment.glsl")
+    );
+
+    materialManager_.create(
+        material_name::kLit, asset_system::shader("lit_vertex.glsl"), asset_system::shader("lit_fragment.glsl")
+    );
+    materialManager_.create(
+        material_name::kFov, asset_system::shader("fov_vertex.glsl"), asset_system::shader("fov_fragment.glsl")
+    );
+    materialManager_.create(
+        material_name::kPostProcess,
+        asset_system::shader("post_process_vertex.glsl"),
+        asset_system::shader("post_process_fragment.glsl")
+    );
+  }
 
   void Engine::registerConsoleCommands() {
     console_.registerCommand("clear", "clear", [this](debug::CommandArgs) { console_.clear(); });

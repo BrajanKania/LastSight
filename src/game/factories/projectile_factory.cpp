@@ -31,6 +31,7 @@ namespace ls::factory {
     registry.addComponent(
         proj,
         component::Sprite{
+            .materialHandle = config.materialHandle,
             .color = glm::vec4(1.f),
             .uvScale = glm::vec2(1.f),
             .textureHandle = config.textureHandle,

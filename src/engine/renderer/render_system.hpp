@@ -19,4 +19,6 @@ namespace ls::render_system {
 
   void bindFramebuffer(uint32_t fbo);
 
+  void bindShader(std::uint32_t shader);
+
 }  // namespace ls::render_system

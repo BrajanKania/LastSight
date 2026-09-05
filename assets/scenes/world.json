@@ -14,6 +14,7 @@
             1.0
           ],
           "layer": "Background",
+          "materialHandle": "lit_material",
           "textureHandle": "grass.jpg",
           "uvScale": [
             2.5,
@@ -55,9 +56,10 @@
         "EquippedSprite": {
           "angleOffset": -90.0,
           "layer": "Entities",
+          "materialHandle": "lit_material",
           "offset": [
             0.1199999749660492,
-            0.20999997854232788
+            0.2099999636411667
           ],
           "scale": [
             0.5,
@@ -66,11 +68,11 @@
           "textureHandle": "equipped_pistol.png"
         },
         "FieldOfView": {
-          "darkness": 0.6000000238418579,
+          "darkness": 0.6000001430511475,
           "fovAngle": 60.0,
           "innerRadius": 1.0,
           "outerRadius": 6.0,
-          "smoothnessAngle": 40.00000762939453,
+          "smoothnessAngle": 39.999996185302734,
           "smoothnessDistance": 2.0
         },
         "Health": {
@@ -163,6 +165,7 @@
             1.0
           ],
           "layer": "Entities",
+          "materialHandle": "lit_material",
           "textureHandle": "player.png",
           "uvScale": [
             1.0,
@@ -180,17 +183,17 @@
         },
         "Transform": {
           "position": [
-            -1.295755386352539,
-            -0.31665274500846863
+            -0.7044055461883545,
+            0.5151651501655579
           ],
-          "rotation": -16.93012237548828,
+          "rotation": -12.92770004272461,
           "scale": [
             0.5,
             0.5
           ]
         },
         "Velocity": {
-          "angular": 0.0,
+          "angular": -0.6070733070373535,
           "linear": [
             0.0,
             0.0
@@ -253,7 +256,7 @@
       "components": {
         "Camera": {
           "orthographicSize": 6.0,
-          "zoom": 1.000001072883606
+          "zoom": 0.998399555683136
         },
         "CameraShake": {
           "damping": 20.0,
@@ -261,16 +264,16 @@
           "maxTraumaOffset": 0.3499999940395355,
           "offset": [
             -1.401298464324817e-45,
-            1.401298464324817e-45
+            -1.401298464324817e-45
           ],
           "stiffness": 180.0,
-          "timeAccumulator": 10.831998825073242,
+          "timeAccumulator": 13.591998100280762,
           "trauma": 0.0,
-          "traumaDecay": 2.0,
+          "traumaDecay": 1.0,
           "traumaFrequency": 8.0,
           "velocity": [
-            1.2611686178923354e-44,
-            -1.2611686178923354e-44
+            1.1210387714598537e-44,
+            1.1210387714598537e-44
           ]
         },
         "EntityName": {
@@ -278,8 +281,8 @@
         },
         "Transform": {
           "position": [
-            -1.2957556247711182,
-            -0.316652774810791
+            -0.6930850148200989,
+            0.515190839767456
           ],
           "rotation": 0.0,
           "scale": [
@@ -308,14 +311,14 @@
         "EntityName": {
           "name": "container"
         },
+        "FovMasked": {},
         "Interactable": {
           "radius": 0.800000011920929
         },
         "Lamp": {
-          "isOn": false
+          "isOn": true
         },
         "ParticleEmitter": {
-          "activeParticlesCount": 0,
           "config": {
             "duration": 0.0,
             "endColor": [
@@ -329,6 +332,8 @@
               0.009999999776482582
             ],
             "isLooping": true,
+            "layer": "Entities",
+            "materialHandle": "lit_material",
             "maxAngularSpeed": 60.0,
             "maxBrightness": 1.5,
             "maxLifetime": 0.6000000238418579,
@@ -354,10 +359,11 @@
               0.75,
               0.10000000149011612,
               0.8999999761581421
-            ]
+            ],
+            "textureHandle": "white.png"
           },
           "isEmitting": true,
-          "isPaused": true
+          "isPaused": false
         },
         "Sprite": {
           "angleOffset": 0.0,
@@ -368,6 +374,7 @@
             1.0
           ],
           "layer": "Entities",
+          "materialHandle": "lit_material",
           "textureHandle": "container.png",
           "uvScale": [
             1.0,
@@ -376,8 +383,8 @@
         },
         "Transform": {
           "position": [
-            1.0,
-            1.0
+            0.9852219223976135,
+            1.0415815114974976
           ],
           "rotation": 0.0,
           "scale": [
@@ -417,6 +424,7 @@
             1.0
           ],
           "layer": "Entities",
+          "materialHandle": "lit_material",
           "textureHandle": "enemy.png",
           "uvScale": [
             1.0,
@@ -425,8 +433,8 @@
         },
         "Transform": {
           "position": [
-            -1.115436315536499,
-            -1.2304651737213135
+            -1.0282436609268188,
+            -1.1836293935775757
           ],
           "rotation": 0.0,
           "scale": [
@@ -455,18 +463,16 @@
         "EntityName": {
           "name": "container_2"
         },
-        "PrefabInstance": {
-          "handle": "box"
-        },
         "Sprite": {
           "angleOffset": 0.0,
           "color": [
-            0.7843137383460999,
-            0.7843137383460999,
+            1.0,
+            1.0,
             1.0,
             1.0
           ],
           "layer": "Entities",
+          "materialHandle": "lit_material",
           "textureHandle": "container.png",
           "uvScale": [
             1.0,
@@ -475,8 +481,8 @@
         },
         "Transform": {
           "position": [
-            1.010657787322998,
-            -0.9938467741012573
+            1.0101522207260132,
+            -1.0165064334869385
           ],
           "rotation": 30.0,
           "scale": [
@@ -510,6 +516,7 @@
             1.0
           ],
           "layer": "Ground",
+          "materialHandle": "lit_material",
           "textureHandle": "world_rifle.png",
           "uvScale": [
             1.0,

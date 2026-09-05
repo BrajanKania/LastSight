@@ -7,6 +7,7 @@
 
 #include "engine/prefab/prefab_manager.hpp"
 #include "engine/reflection/reflection_system.hpp"
+#include "engine/renderer/material/material_manager.hpp"
 #include "engine/ui/ui_context.hpp"
 
 namespace ls::ui {
@@ -20,12 +21,14 @@ namespace ls::ui {
     void inspectEntity(
         const UIContext& ctx,
         const ecs::EntityId entity,
+        const renderer::MaterialManager& materialManager,
         const gfx::TextureManager& textureManager,
         const prefab::PrefabManager& prefabManager
     );
     bool inspectComponentProperty(
         entt::meta_any& owner,
         entt::meta_data data,
+        const renderer::MaterialManager& materialManager,
         const gfx::TextureManager& textureManager,
         const prefab::PrefabManager& prefabManager
     );

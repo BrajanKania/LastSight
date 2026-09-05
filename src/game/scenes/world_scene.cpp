@@ -8,8 +8,8 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <memory>
 
+#include "engine/components/camera.hpp"
 #include "engine/components/collider.hpp"
 #include "engine/components/entity_name.hpp"
 #include "engine/components/interactable.hpp"
@@ -20,17 +20,15 @@
 #include "engine/core/asset_system.hpp"
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/registry.hpp"
-#include "engine/gfx/framebuffer.hpp"
 #include "engine/input/input_context.hpp"
 #include "engine/input/types.hpp"
 #include "engine/interactions/interaction_system.hpp"
 #include "engine/particles/particle_system.hpp"
 #include "engine/physics/physics_system.hpp"
-#include "engine/renderer/i_render_pass.hpp"
 #include "engine/renderer/layer.hpp"
-#include "engine/renderer/passes/fov_pass.hpp"
-#include "engine/renderer/passes/lit_pass.hpp"
-#include "engine/renderer/passes/post_process_pass.hpp"
+#include "engine/renderer/material/material_names.hpp"
+#include "engine/renderer/render_phase.hpp"
+#include "engine/renderer/render_pipeline.hpp"
 #include "engine/serialization/scene_serializer.hpp"
 #include "game/actions/aim.hpp"
 #include "game/actions/interact.hpp"
@@ -43,7 +41,6 @@
 #include "game/actions/select_slot_5.hpp"
 #include "game/actions/shoot.hpp"
 #include "game/actions/sprint.hpp"
-#include "game/components/camera.hpp"
 #include "game/components/camera_shake.hpp"
 #include "game/components/enemy.hpp"
 #include "game/components/field_of_view.hpp"
@@ -60,9 +57,12 @@
 #include "game/components/post_process_settings.hpp"
 #include "game/components/stamina.hpp"
 #include "game/components/weapon.hpp"
+#include "game/extraction/extraction_system.hpp"
 #include "game/items/weapon_config.hpp"
 #include "game/particles/fire.hpp"
-#include "game/scenes/scene_names.hpp"
+#include "game/renderer/passes/fov_pass.hpp"
+#include "game/renderer/passes/lit_pass.hpp"
+#include "game/renderer/passes/post_process_pass.hpp"
 #include "game/scenes/texture_names.hpp"
 #include "game/systems/camera_system.hpp"
 #include "game/systems/combat_system.hpp"
@@ -79,24 +79,9 @@
 namespace ls {
 
   void WorldScene::onEnter() {
-    assert(engineCtx_.eventQueue != nullptr && "World Scene requires a valid EventQueue!");
-    assert(engineCtx_.textureManager != nullptr && "World Scene requires a valid TextureManager!");
-
-    /*
-      engineCtx_.textureManager->load(texture_name::kWhite, asset_system::texture(texture_name::kWhite));
-      engineCtx_.textureManager->load(texture_name::kGrass, asset_system::texture(texture_name::kGrass));
-      engineCtx_.textureManager->load(texture_name::kContainer, asset_system::texture(texture_name::kContainer));
-      engineCtx_.textureManager->load(texture_name::kPlayer, asset_system::texture(texture_name::kPlayer));
-      engineCtx_.textureManager->load(texture_name::kWorldPistol, asset_system::texture(texture_name::kWorldPistol));
-      engineCtx_.textureManager->load(
-          texture_name::kEquippedPistol, asset_system::texture(texture_name::kEquippedPistol)
-      );
-      engineCtx_.textureManager->load(texture_name::kBullet, asset_system::texture(texture_name::kBullet));
-      engineCtx_.textureManager->load(texture_name::kWorldRifle, asset_system::texture(texture_name::kWorldRifle));
-      engineCtx_.textureManager->load(texture_name::kEquippedRifle,
-      asset_system::texture(texture_name::kEquippedRifle)); engineCtx_.textureManager->load(texture_name::kEnemy,
-      asset_system::texture(texture_name::kEnemy));
-    */
+    assert(engineCtx_.eventQueue != nullptr && "[WorldScene] requires a valid EventQueue!");
+    assert(engineCtx_.textureManager != nullptr && "[WorldScene] requires a valid TextureManager!");
+    assert(engineCtx_.materialManager != nullptr && "[WorldScene] requires a valid MaterailManager!");
 
     serialization::SceneSerializer serializer(getSceneContext(), engineCtx_);
     serializer.loadScene(asset_system::scene(scene::kWorld));
@@ -107,13 +92,19 @@ namespace ls {
 
     // genereteEntities();
 
-    worldFBO_ = std::make_shared<gfx::Framebuffer>();
-    fovFBO_ = std::make_shared<gfx::Framebuffer>();
-    processedFBO_ = std::make_shared<gfx::Framebuffer>();
+    // for (auto entity : registry_.view<component::Sprite>()) {
+    //   auto& sprite{ registry_.getComponent<component::Sprite>(entity) };
+    //   sprite.materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit);
+    // }
+    //
+    // for (auto entity : registry_.view<component::EquippedSprite>()) {
+    //   auto& equippedSprite{ registry_.getComponent<component::EquippedSprite>(entity) };
+    //   equippedSprite.materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit);
+    // }
 
-    renderPipeline_.addPass<renderer::LitPass>(worldFBO_);
-    renderPipeline_.addPass<renderer::FovPass>(fovFBO_, worldFBO_);
-    renderPipeline_.addPass<renderer::PostProcessPass>(processedFBO_, fovFBO_);
+    engineCtx_.renderPipeline->addPass<renderer::LitPass>(renderer::RenderPhase::MainPass);
+    engineCtx_.renderPipeline->addPass<renderer::FovPass>(renderer::RenderPhase::MainPass);
+    engineCtx_.renderPipeline->addPass<renderer::PostProcessPass>(renderer::RenderPhase::MainPass);
 
     uiManager_.addPanel<ui::InventoryPanel>(ui::panel::kInventory, itemRegistry_);
 
@@ -134,6 +125,7 @@ namespace ls {
       itemRegistry_.registerItem(
           item::ItemDefinition{
               .id = "weapon_pistol",
+              .materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit),
               .iconTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldPistol),
               .worldTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldPistol),
               .equippedTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kEquippedPistol),
@@ -188,6 +180,7 @@ namespace ls {
       itemRegistry_.registerItem(
           item::ItemDefinition{
               .id = "weapon_rifle",
+              .materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit),
               .iconTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldRifle),
               .worldTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldRifle),
               .equippedTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kEquippedRifle),
@@ -243,11 +236,7 @@ namespace ls {
 
   void WorldScene::onExit() {}
 
-  void WorldScene::onResize(int width, int height) {
-    worldFBO_->resize(width, height);
-    fovFBO_->resize(width, height);
-    processedFBO_->resize(width, height);
-  }
+  void WorldScene::onResize(int width, int height) {}
 
   void WorldScene::handleInput(input::InputContext& inputCtx) { inputManager_.update(inputCtx); }
 
@@ -257,6 +246,7 @@ namespace ls {
     UpdateContext ctx{
       .registry = registry_,
       .eventQueue = eventQueue_,
+      .materialManager = *engineCtx_.materialManager,
       .textureManager = *engineCtx_.textureManager,
       .inputManager = inputManager_,
       .dt = dt,
@@ -287,21 +277,58 @@ namespace ls {
   }
 
   void WorldScene::render() {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     for (auto entity : registry_.view<component::Camera>()) {
       const auto& camera{ registry_.getComponent<component::Camera>(entity) };
-      glm::mat4 viewProjection{ camera.projection * camera.view };
-      renderPipeline_.execute(
-          renderer::RenderContext{
-              .registry = registry_,
-              .viewProjection = viewProjection,
-              .textureManager = *engineCtx_.textureManager,
-          }
-      );
+      engineCtx_.renderPipeline->getFrameData().setCamera(camera.view, camera.projection);
       break;
     }
+
+    for (auto entity : registry_.view<component::Transform, component::FieldOfView>()) {
+      const auto& transform{ registry_.getComponent<component::Transform>(entity) };
+      const auto& fov{ registry_.getComponent<component::FieldOfView>(entity) };
+
+      glm::vec2 fovDir{ glm::cos(glm::radians(transform.rotation)), glm::sin(glm::radians(transform.rotation)) };
+
+      if (auto* material{ engineCtx_.materialManager->get(material_name::kLit) }) {
+        material->setProperty("uFovPos", transform.position);
+        material->setProperty("uFovDir", fovDir);
+        material->setProperty("uFovInnerRadius", fov.innerRadius);
+        material->setProperty("uFovOuterRadius", fov.outerRadius);
+        material->setProperty("uFovHalfAngleRad", glm::radians(fov.fovAngle / 2.f));
+        material->setProperty("uFovSmoothnessRad", glm::radians(fov.smoothnessAngle));
+        material->setProperty("uFovSmoothnessDist", fov.smoothnessDistance);
+      }
+
+      if (auto* material{ engineCtx_.materialManager->get(material_name::kFov) }) {
+        material->setProperty("uViewPos", transform.position);
+        material->setProperty("uViewDir", fovDir);
+        material->setProperty("uInnerRadius", fov.innerRadius);
+        material->setProperty("uOuterRadius", fov.outerRadius);
+        material->setProperty("uHalfFovRad", glm::radians(fov.fovAngle / 2.f));
+        material->setProperty("uSmoothnessRad", glm::radians(fov.smoothnessAngle));
+        material->setProperty("uSmoothnessDistance", fov.smoothnessDistance);
+        material->setProperty("uDarkness", fov.darkness);
+      }
+    }
+
+    for (auto entity : registry_.view<component::PostProcessSettings>()) {
+      const auto& settings{ registry_.getComponent<component::PostProcessSettings>(entity) };
+
+      if (auto* material{ engineCtx_.materialManager->get(material_name::kPostProcess) }) {
+        material->setProperty("uDamageVignetteColor", settings.damageVignetteColor);
+        material->setProperty("uDamageInnerRadius", settings.damageInnerRadius);
+        material->setProperty("uDamageOuterRadius", settings.damageOuterRadius);
+        material->setProperty("uMaxDamageDesaturation", settings.maxDamageDesaturation);
+        material->setProperty("uDamageIntensity", settings.currentDamageIntensity);
+
+        material->setProperty("uStaminaInnerRadius", settings.staminaInnerRadius);
+        material->setProperty("uStaminaOuterRadius", settings.staminaOuterRadius);
+        material->setProperty("uMaxStaminaDesaturation", settings.maxStaminaDesaturation);
+        material->setProperty("uStaminaIntensity", settings.currentStaminaIntensity);
+      }
+    }
+
+    extraction_system::extractGameRenderCommands(engineCtx_.renderPipeline->getCommandBuffer(), registry_);
   }
 
   void WorldScene::renderUI() { uiManager_.render(getUIContext()); }
@@ -487,8 +514,15 @@ namespace ls {
                 .halfExtents = glm::vec2(0.5f),
             }
         );
-        registry_.addComponent(container, component::ParticleEmitter{ particle::preset::fire() });
+        registry_.addComponent(
+            container,
+            component::ParticleEmitter{ particle::preset::fire(
+                engineCtx_.materialManager->getHandle(material_name::kLit),
+                engineCtx_.textureManager->getHandle(texture_name::kWhite)
+            ) }
+        );
         registry_.addComponent(container, component::Lamp{});
+        registry_.addComponent(container, component::FovMasked{});
         registry_.addComponent(
             container,
             component::Interactable{

@@ -5,11 +5,15 @@
 #include "engine/gfx/texture_handle.hpp"
 #include "engine/reflection/reflection_macros.hpp"
 #include "engine/renderer/layer.hpp"
+#include "engine/renderer/material/material_handle.hpp"
 
 namespace ls::component {
 
   COMPONENT()
   struct Sprite {
+    PROPERTY(DisplayName("Material Handle"))
+    renderer::MaterialHandle materialHandle{ renderer::kNullMaterial };
+
     PROPERTY(DisplayName("Color"), Color)
     glm::vec4 color{ 1.f };
 

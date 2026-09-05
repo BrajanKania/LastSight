@@ -22,7 +22,7 @@ void main() {
   vec4 fragNDC = vec4(texCoords.xy * 2.f - 1.f, 0.f, 1.f);
   vec2 fragPos = (uInvViewProj * fragNDC).xy;
 
-  vec2 fragDir =  normalize(fragPos - uViewPos);
+  vec2 fragDir = normalize(fragPos - uViewPos);
   float fragAngleCos = dot(uViewDir, fragDir);
 
   float fragAngleRad = acos(clamp(fragAngleCos, -1.0, 1.0));

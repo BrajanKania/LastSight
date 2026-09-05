@@ -10,7 +10,6 @@
 #include "engine/ecs/types.hpp"
 #include "engine/input/input_context.hpp"
 #include "engine/input/input_manager.hpp"
-#include "engine/renderer/render_pipeline.hpp"
 #include "engine/ui/ui_manager.hpp"
 #include "game/components/field_of_view.hpp"
 #include "game/components/menu_stalker_point.hpp"
@@ -38,9 +37,7 @@ namespace ls {
       return SceneContext{
         .registry = &registry_,
         .eventQueue = &eventQueue_,
-        .renderPipeline = &renderPipeline_,
         .uiManager = &uiManager_,
-        .sceneFBO = fovFBO_,
       };
     }
 
@@ -54,10 +51,6 @@ namespace ls {
     ecs::Registry registry_;
     ui::UIManager uiManager_;
     input::InputManager inputManager_;
-
-    renderer::RenderPipeline renderPipeline_;
-    std::shared_ptr<gfx::Framebuffer> worldFBO_{ nullptr };
-    std::shared_ptr<gfx::Framebuffer> fovFBO_{ nullptr };
 
     dispatch::EventQueue eventQueue_;
 

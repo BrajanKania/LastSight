@@ -5,6 +5,7 @@
 
 #include "engine/gfx/texture_handle.hpp"
 #include "engine/reflection/reflection_macros.hpp"
+#include "engine/renderer/material/material_handle.hpp"
 #include "game/items/types.hpp"
 #include "game/items/weapon_config.hpp"
 
@@ -14,6 +15,9 @@ namespace ls::item {
   struct ItemDefinition {
     PROPERTY()
     ItemId id;
+
+    PROPERTY()
+    renderer::MaterialHandle materialHandle{ renderer::kNullMaterial };
 
     PROPERTY()
     gfx::TextureHandle iconTextureHandle{ 0 };

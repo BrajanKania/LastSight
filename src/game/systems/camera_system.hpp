@@ -2,10 +2,10 @@
 
 #include <glm/ext/vector_float2.hpp>
 
+#include "engine/components/camera.hpp"
 #include "engine/core/update_context.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/ecs/types.hpp"
-#include "game/components/camera.hpp"
 
 namespace ls::camera_system {
 

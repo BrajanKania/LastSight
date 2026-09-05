@@ -13,6 +13,8 @@
 #include "engine/platform/external_tool_manager.hpp"
 #include "engine/prefab/prefab_context.hpp"
 #include "engine/prefab/prefab_manager.hpp"
+#include "engine/renderer/material/material_manager.hpp"
+#include "engine/renderer/render_pipeline.hpp"
 
 namespace ls {
 
@@ -34,6 +36,7 @@ namespace ls {
     void handleInput();
     void loadTextures();
     void loadPrefabs();
+    void loadMaterials();
     void registerConsoleCommands();
 
     EngineContext getEngineContext() {
@@ -45,12 +48,15 @@ namespace ls {
         .engineMode = &engineMode_,
         .console = &console_,
         .statusBar = &statusBar_,
+        .materialManager = &materialManager_,
+        .renderPipeline = &renderPipeline_,
         .prefabManager = &prefabManager_,
       };
     }
 
     prefab::PrefabContext getPrefabContext() {
       return prefab::PrefabContext{
+        .materialManager = &materialManager_,
         .textureManager = &textureManager_,
         .console = &console_,
       };
@@ -62,6 +68,8 @@ namespace ls {
     gfx::TextureManager textureManager_{};
     debug::Console console_{};
     debug::StatusBar statusBar_{};
+    renderer::MaterialManager materialManager_{};
+    renderer::RenderPipeline renderPipeline_{};
     prefab::PrefabManager prefabManager_;
     SceneManager sceneManager_;
     EditorLayer editorLayer_{};

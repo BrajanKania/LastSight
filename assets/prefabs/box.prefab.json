@@ -26,6 +26,7 @@
         1.0
       ],
       "layer": "Entities",
+      "materialHandle": "default_lit_material",
       "textureHandle": "container.png",
       "uvScale": [
         1.0,

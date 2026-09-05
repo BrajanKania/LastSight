@@ -67,6 +67,8 @@ add_executable(LastSight
   src/engine/debug/console.cpp
   src/engine/debug/status_bar.cpp
 
+  src/engine/extraction/extraction_system.cpp
+
   src/engine/gfx/framebuffer.cpp
   src/engine/gfx/shader.cpp
   src/engine/gfx/shader_exception.cpp
@@ -86,10 +88,12 @@ add_executable(LastSight
 
   src/engine/prefab/prefab_manager.cpp
 
-  src/engine/renderer/passes/fov_pass.cpp
-  src/engine/renderer/passes/lit_pass.cpp
-  src/engine/renderer/passes/post_process_pass.cpp
+  src/engine/renderer/passes/default_lit_pass.cpp
 
+  src/engine/renderer/material/material.cpp
+  src/engine/renderer/material/material_manager.cpp
+
+  src/engine/renderer/render_pipeline.cpp
   src/engine/renderer/render_system.cpp
 
   src/engine/serialization/prefab_serializer.cpp
@@ -113,8 +117,13 @@ add_executable(LastSight
 
   # Game ---
 
+  src/game/extraction/extraction_system.cpp
+
   src/game/factories/projectile_factory.cpp
 
+  src/game/renderer/passes/lit_pass.cpp
+  src/game/renderer/passes/fov_pass.cpp
+  src/game/renderer/passes/post_process_pass.cpp
 
   src/game/scenes/main_menu_scene.cpp
   src/game/scenes/world_scene.cpp

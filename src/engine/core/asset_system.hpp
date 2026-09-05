@@ -22,7 +22,20 @@ namespace ls::asset_system {
     return path;
   }
 
+  inline fs::path engineAssetsDir() {
+    static const fs::path path{ []() {
+      const char* basePath{ SDL_GetBasePath() };
+      if (!basePath) {
+        return fs::current_path() / "engine/assets";
+      }
+      return fs::path{ basePath } / "engine/assets";
+    }() };
+    return path;
+  }
+
   inline fs::path resolve(const fs::path& relativePath) { return assetsDir() / relativePath; }
+
+  inline fs::path engineResolve(const fs::path& relativePath) { return engineAssetsDir() / relativePath; }
 
   inline fs::path asset(const fs::path& relativePath) {
     fs::path path{ resolve(relativePath) };
@@ -34,7 +47,19 @@ namespace ls::asset_system {
     return path;
   }
 
+  inline fs::path engineAsset(const fs::path& relativePath) {
+    fs::path path{ engineResolve(relativePath) };
+
+    if (!fs::exists(path)) {
+      throw std::runtime_error("Asset not found: " + path.string());
+    }
+
+    return path;
+  }
+
   inline fs::path shader(const fs::path& name) { return asset(fs::path("shaders") / name); }
+
+  inline fs::path engineShader(const fs::path& name) { return engineAsset(fs::path("shaders") / name); }
 
   inline fs::path texture(const fs::path& name) { return asset(fs::path("textures") / name); }
 

@@ -1,27 +1,29 @@
 #pragma once
 
 #include <cstdint>
-#include <memory>
-#include <optional>
 
 #include "engine/gfx/framebuffer.hpp"
-#include "engine/gfx/shader.hpp"
 #include "engine/renderer/i_render_pass.hpp"
 
 namespace ls::renderer {
 
   class LitPass : public IRenderPass {
   public:
-    explicit LitPass(std::shared_ptr<gfx::Framebuffer> target);
+    LitPass() = default;
 
     void onEnter() override;
+    void onExit() override;
+    void onResize(int width, int height) override;
+
     void execute(const RenderContext& ctx) override;
+
     const char* getName() const override { return "Lit Pass"; }
 
   private:
-    std::optional<gfx::Shader> shader_;
-    uint32_t vao_{ 0 };
-    uint32_t vbo_{ 0 };
+    gfx::Framebuffer litFramebuffer_{};
+
+    std::uint32_t vao_{ 0 };
+    std::uint32_t vbo_{ 0 };
   };
 
 }  // namespace ls::renderer

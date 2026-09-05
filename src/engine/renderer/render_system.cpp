@@ -40,4 +40,6 @@ namespace ls::render_system {
 
   void bindFramebuffer(uint32_t fbo) { glBindFramebuffer(GL_FRAMEBUFFER, fbo); }
 
+  void bindShader(std::uint32_t shader) { glUseProgram(shader); }
+
 }  // namespace ls::render_system

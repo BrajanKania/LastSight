@@ -16,6 +16,7 @@ namespace ls::serialization {
     assert(sceneCtx_.registry != nullptr && "[SceneSerializer] Requires a valid Registry!");
     assert(engineCtx_.textureManager != nullptr && "[SceneSerializer] Requires a valid TextureManager!");
     assert(engineCtx_.prefabManager != nullptr && "[SceneSerializer] Requires a valid PrefabManager!");
+    assert(engineCtx_.materialManager != nullptr && "[SceneSerializer] Requires a valid MaterialManager!");
 
     std::ifstream file(path);
     if (!file.is_open()) {
@@ -96,7 +97,11 @@ namespace ls::serialization {
           componentInstance = componentType.construct();
         } else {
           componentInstance = serialization_system::deserializeReflected(
-              componentType, componentJson, *engineCtx_.textureManager, *engineCtx_.prefabManager
+              componentType,
+              componentJson,
+              *engineCtx_.materialManager,
+              *engineCtx_.textureManager,
+              *engineCtx_.prefabManager
           );
           if (!componentInstance) {
             componentInstance = componentType.construct();
@@ -140,6 +145,7 @@ namespace ls::serialization {
     assert(sceneCtx_.registry != nullptr && "[SceneSerializer] requires a valid Registry!");
     assert(engineCtx_.textureManager != nullptr && "[SceneSerializer] requires a valid TextureManager!");
     assert(engineCtx_.prefabManager != nullptr && "[SceneSerializer] requires a valid PrefabManager!");
+    assert(engineCtx_.materialManager != nullptr && "[SceneSerializer] requires a valid MaterialManager!");
 
     nlohmann::json sceneJson = nlohmann::json::object();
     nlohmann::json entitiesArray = nlohmann::json::array();
@@ -165,7 +171,7 @@ namespace ls::serialization {
         const char* componentName{ type.name() ? type.name() : "Unknown component" };
 
         componentsJson[componentName] = serialization_system::serializeReflected(
-            componentAny, *engineCtx_.textureManager, *engineCtx_.prefabManager
+            componentAny, *engineCtx_.materialManager, *engineCtx_.textureManager, *engineCtx_.prefabManager
         );
       }
 

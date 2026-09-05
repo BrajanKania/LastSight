@@ -11,8 +11,8 @@
         },
         "Transform": {
           "position": [
-            -0.4143778383731842,
-            0.18323767185211182
+            -0.013734068721532822,
+            0.0002521102433092892
           ],
           "rotation": 0.0,
           "scale": [
@@ -37,6 +37,7 @@
             1.0
           ],
           "layer": "Background",
+          "materialHandle": "lit_material",
           "textureHandle": "main_menu_background.png",
           "uvScale": [
             1.0,
@@ -78,7 +79,7 @@
         },
         "Parallax": {
           "basePosition": [
-            -1.0999999046325684,
+            -1.0999525785446167,
             -0.10000000149011612
           ],
           "factor": [
@@ -95,6 +96,7 @@
             1.0
           ],
           "layer": "Entities",
+          "materialHandle": "lit_material",
           "textureHandle": "stalker.png",
           "uvScale": [
             1.0,
@@ -103,8 +105,8 @@
         },
         "Transform": {
           "position": [
-            -1.1617372035980225,
-            -0.07278502732515335
+            -1.1020915508270264,
+            -0.09986720234155655
           ],
           "rotation": 0.0,
           "scale": [
@@ -130,8 +132,8 @@
         },
         "Transform": {
           "position": [
-            -2.0590760707855225,
-            1.1833945512771606
+            -0.08446740359067917,
+            0.15382061898708344
           ],
           "rotation": 0.0,
           "scale": [
@@ -167,6 +169,7 @@
             1.0
           ],
           "layer": "Entities",
+          "materialHandle": "lit_material",
           "textureHandle": "main_menu_title.png",
           "uvScale": [
             1.0,
@@ -176,7 +179,7 @@
         "Transform": {
           "position": [
             0.0,
-            0.6181433200836182
+            0.6000885367393494
           ],
           "rotation": 0.0,
           "scale": [
@@ -211,6 +214,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -219,8 +223,8 @@
         },
         "Transform": {
           "position": [
-            -3.0411581993103027,
-            -0.7818567156791687
+            -3.0014283657073975,
+            -0.7999114990234375
           ],
           "rotation": 0.0,
           "scale": [
@@ -255,6 +259,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -263,8 +268,8 @@
         },
         "Transform": {
           "position": [
-            -2.0411581993103027,
-            -0.38185667991638184
+            -2.0014283657073975,
+            -0.39991146326065063
           ],
           "rotation": 0.0,
           "scale": [
@@ -299,6 +304,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -307,8 +313,8 @@
         },
         "Transform": {
           "position": [
-            -1.0411581993103027,
-            0.018143316730856895
+            -1.0014283657073975,
+            8.853241888573393e-05
           ],
           "rotation": 0.0,
           "scale": [
@@ -343,6 +349,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -351,8 +358,8 @@
         },
         "Transform": {
           "position": [
-            2.9588418006896973,
-            -0.48185667395591736
+            2.9985716342926025,
+            -0.49991145730018616
           ],
           "rotation": 0.0,
           "scale": [
@@ -387,6 +394,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -395,8 +403,8 @@
         },
         "Transform": {
           "position": [
-            1.9588418006896973,
-            -0.1818566918373108
+            1.9985716342926025,
+            -0.1999114751815796
           ],
           "rotation": 0.0,
           "scale": [
@@ -431,6 +439,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -439,8 +448,8 @@
         },
         "Transform": {
           "position": [
-            0.9588418006896973,
-            0.018143316730856895
+            0.9985716938972473,
+            8.853241888573393e-05
           ],
           "rotation": 0.0,
           "scale": [
@@ -475,6 +484,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -483,8 +493,8 @@
         },
         "Transform": {
           "position": [
-            -5.041158199310303,
-            -0.2818566858768463
+            -5.001428127288818,
+            -0.2999114692211151
           ],
           "rotation": 0.0,
           "scale": [
@@ -519,6 +529,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -527,8 +538,8 @@
         },
         "Transform": {
           "position": [
-            -2.0411581993103027,
-            -0.7818567156791687
+            -2.0014283657073975,
+            -0.7999114990234375
           ],
           "rotation": 0.0,
           "scale": [
@@ -563,6 +574,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -571,8 +583,8 @@
         },
         "Transform": {
           "position": [
-            -1.5411581993103027,
-            -0.08185668289661407
+            -1.5014283657073975,
+            -0.09991146624088287
           ],
           "rotation": 0.0,
           "scale": [
@@ -607,6 +619,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -615,8 +628,8 @@
         },
         "Transform": {
           "position": [
-            2.158841848373413,
-            -0.6818566918373108
+            2.1985716819763184,
+            -0.6999114751815796
           ],
           "rotation": 0.0,
           "scale": [
@@ -651,6 +664,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -659,8 +673,8 @@
         },
         "Transform": {
           "position": [
-            1.5588418245315552,
-            -0.5818567276000977
+            1.5985716581344604,
+            -0.5999115109443665
           ],
           "rotation": 0.0,
           "scale": [
@@ -695,6 +709,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "grass_1.png",
           "uvScale": [
             1.0,
@@ -703,8 +718,8 @@
         },
         "Transform": {
           "position": [
-            0.1588417887687683,
-            -0.48185667395591736
+            0.19857168197631836,
+            -0.49991145730018616
           ],
           "rotation": 0.0,
           "scale": [
@@ -739,6 +754,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -747,8 +763,8 @@
         },
         "Transform": {
           "position": [
-            -2.061737298965454,
-            1.0272150039672852
+            -2.0021424293518066,
+            1.0001327991485596
           ],
           "rotation": 0.0,
           "scale": [
@@ -783,6 +799,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -791,8 +808,8 @@
         },
         "Transform": {
           "position": [
-            -1.061737298965454,
-            1.127215027809143
+            -1.0021424293518066,
+            1.1001328229904175
           ],
           "rotation": 0.0,
           "scale": [
@@ -827,6 +844,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -835,8 +853,8 @@
         },
         "Transform": {
           "position": [
-            0.4382626712322235,
-            0.9272149801254272
+            0.4978575110435486,
+            0.9001327753067017
           ],
           "rotation": 0.0,
           "scale": [
@@ -871,6 +889,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -879,8 +898,8 @@
         },
         "Transform": {
           "position": [
-            1.1382627487182617,
-            1.0272150039672852
+            1.1978576183319092,
+            1.0001327991485596
           ],
           "rotation": 0.0,
           "scale": [
@@ -915,6 +934,7 @@
             1.0
           ],
           "layer": "Foreground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -923,8 +943,8 @@
         },
         "Transform": {
           "position": [
-            -0.26173731684684753,
-            1.227215051651001
+            -0.20214249193668365,
+            1.2001328468322754
           ],
           "rotation": 0.0,
           "scale": [
@@ -959,6 +979,7 @@
             1.0
           ],
           "layer": "Ground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -967,8 +988,8 @@
         },
         "Transform": {
           "position": [
-            -1.5205790996551514,
-            2.3590714931488037
+            -1.5007141828536987,
+            2.3500442504882813
           ],
           "rotation": 0.0,
           "scale": [
@@ -1003,6 +1024,7 @@
             1.0
           ],
           "layer": "Ground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -1011,8 +1033,8 @@
         },
         "Transform": {
           "position": [
-            0.9794209003448486,
-            2.0090715885162354
+            0.9992858171463013,
+            2.000044345855713
           ],
           "rotation": 0.0,
           "scale": [
@@ -1047,6 +1069,7 @@
             1.0
           ],
           "layer": "Ground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -1055,8 +1078,8 @@
         },
         "Transform": {
           "position": [
-            -0.020579105243086815,
-            2.209071636199951
+            -0.0007141606183722615,
+            2.2000443935394287
           ],
           "rotation": 0.0,
           "scale": [
@@ -1091,6 +1114,7 @@
             1.0
           ],
           "layer": "Ground",
+          "materialHandle": "lit_material",
           "textureHandle": "trunk.png",
           "uvScale": [
             1.0,
@@ -1099,8 +1123,8 @@
         },
         "Transform": {
           "position": [
-            -0.3205791115760803,
-            2.3090715408325195
+            -0.3007141649723053,
+            2.300044298171997
           ],
           "rotation": 0.0,
           "scale": [

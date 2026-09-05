@@ -29,7 +29,7 @@ namespace ls::component {
     PROPERTY(Transient)
     std::vector<particle::Particle> particles;
 
-    PROPERTY(ReadOnly)
+    PROPERTY(ReadOnly, Transient)
     std::uint32_t activeParticlesCount{ 0 };
 
     ParticleEmitter() = default;
