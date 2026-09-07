@@ -62,7 +62,7 @@ namespace ls::renderer {
   }
 
   const std::string& MaterialManager::getName(MaterialHandle handle) const {
-    static constexpr std::string kEmpty{ "" };
+    static const std::string kEmpty{ "" };
     if (contains(handle))
       return names_[handle.id];
 
