@@ -1,0 +1,70 @@
+#include "ls/ui/ui_system.hpp"
+
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_sdl3.h>
+
+#include "ls/renderer/render_system.hpp"
+#include "ls/ui/ui_style.hpp"
+
+namespace ls::ui_system {
+
+  namespace {
+    bool isImGuiInit{ false };
+  }
+
+  void init(SDL_Window* window, SDL_GLContext glContext) {
+    assert(!isImGuiInit && "ImGui is already initialized");
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io{ ImGui::GetIO() };
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.IniFilename = nullptr;
+
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplSDL3_InitForOpenGL(window, glContext);
+    ImGui_ImplOpenGL3_Init("#version 460");
+    isImGuiInit = true;
+  }
+
+  void changeUIStyle(ui::UIStyle uiStyle) {
+    switch (uiStyle) {
+      case ui::UIStyle::Dark:
+        ImGui::StyleColorsDark();
+        break;
+      case ui::UIStyle::Classic:
+        ImGui::StyleColorsClassic();
+        break;
+      case ui::UIStyle::Light:
+        ImGui::StyleColorsLight();
+        break;
+    }
+  }
+
+  void shutdown() {
+    assert(isImGuiInit && "Attempted to shutdown non-initialized ImGui.");
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
+    isImGuiInit = false;
+  }
+
+  void processEvent(const SDL_Event* event) { ImGui_ImplSDL3_ProcessEvent(event); }
+
+  void beginFrame() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+  }
+
+  void endFrame() {
+    render_system::bindFramebuffer(0);
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  }
+
+}  // namespace ls::ui_system
