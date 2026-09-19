@@ -14,7 +14,11 @@
 #include <glm/glm.hpp>
 #include <string>
 
+#include "ls/asset/asset_handle.hpp"
+#include "ls/asset/asset_manager.hpp"
+#include "ls/asset/asset_types.hpp"
 #include "ls/components/prefab_instance.hpp"
+#include "ls/core/engine_context.hpp"
 #include "ls/dispatch/event_queue.hpp"
 #include "ls/ecs/registry.hpp"
 #include "ls/ecs/types.hpp"
@@ -25,8 +29,6 @@
 #include "ls/events/request_remove_component.hpp"
 #include "ls/events/request_save_entity_as_prefab.hpp"
 #include "ls/events/request_sync_component_from_prefab.hpp"
-#include "ls/gfx/texture_handle.hpp"
-#include "ls/gfx/texture_manager.hpp"
 #include "ls/prefab/prefab_handle.hpp"
 #include "ls/prefab/prefab_manager.hpp"
 #include "ls/reflection/reflection_system.hpp"
@@ -41,9 +43,9 @@ namespace ls::ui {
     assert(ctx.engineCtx.eventQueue != nullptr && "[EntityInspectorPanel] Requires a valid EventQueue!");
     assert(ctx.selectionCtx != nullptr && "[EntityInspectorPanel] Requires a valid SelectionContext!");
     assert(ctx.sceneCtx.registry != nullptr && "[EntityInspectorPanel] Requires a valid Registry!");
-    assert(ctx.engineCtx.textureManager != nullptr && "[EntityInspectorPanel] Requires a valid TextureManager!");
     assert(ctx.engineCtx.prefabManager != nullptr && "[EntityInspectorPanel] Requires a valid PrefabManager!");
     assert(ctx.engineCtx.materialManager != nullptr && "[EntityInspectorPanel] Requires a valid MaterialManager!");
+    assert(ctx.engineCtx.assetManager != nullptr && "[EntityInspectorPanel] Requires a valid AssetManager!");
 
     if (!ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
       ctx.selectionCtx->selectedEntity = ecs::kNullEntity;
@@ -134,13 +136,7 @@ namespace ls::ui {
         ImGui::BeginChild("InspectorRegion");
 
         if (ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
-          inspectEntity(
-              ctx,
-              ctx.selectionCtx->selectedEntity,
-              *ctx.engineCtx.materialManager,
-              *ctx.engineCtx.textureManager,
-              *ctx.engineCtx.prefabManager
-          );
+          inspectEntity(ctx, ctx.selectionCtx->selectedEntity);
 
           if (ImGui::BeginPopupContextWindow(
                   "InspectorBlankContext", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
@@ -160,13 +156,7 @@ namespace ls::ui {
     ImGui::End();
   }
 
-  void EntityInspectorPanel::inspectEntity(
-      const UIContext& ctx,
-      const ecs::EntityId entity,
-      const renderer::MaterialManager& materialManager,
-      const gfx::TextureManager& textureManager,
-      const prefab::PrefabManager& prefabManager
-  ) {
+  void EntityInspectorPanel::inspectEntity(const UIContext& ctx, const ecs::EntityId entity) {
     for (auto [typeId, type] : entt::resolve()) {
       const reflection_system::ComponentInfo* componentInfo{ type.custom() };
 
@@ -241,7 +231,7 @@ namespace ls::ui {
             ImGui::TableNextColumn();
             ImGui::SetNextItemWidth(-1.0f);
 
-            inspectComponentProperty(anyComponent, data, materialManager, textureManager, prefabManager);
+            inspectComponentProperty(ctx.engineCtx, anyComponent, data);
 
             ImGui::PopID();
           }
@@ -255,11 +245,7 @@ namespace ls::ui {
   }
 
   bool EntityInspectorPanel::inspectComponentProperty(
-      entt::meta_any& owner,
-      entt::meta_data data,
-      const renderer::MaterialManager& materialManager,
-      const gfx::TextureManager& textureManager,
-      const prefab::PrefabManager& prefabManager
+      const EngineContext& ctx, entt::meta_any& owner, entt::meta_data data
   ) {
     const ls::reflection_system::PropertyInfo* propertyInfo{ data.custom() };
     const bool isReadOnly{ propertyInfo ? propertyInfo->readOnly : false };
@@ -287,42 +273,45 @@ namespace ls::ui {
 
     auto valueType{ value.type() };
 
-    if (valueType == entt::resolve<gfx::TextureHandle>()) {
-      gfx::TextureHandle handle{ value.cast<gfx::TextureHandle>() };
-      std::string textureName{ textureManager.getName(handle) };
+    if (valueType == entt::resolve<asset::TextureHandle>()) {
+      asset::TextureHandle handle{ value.cast<asset::TextureHandle>() };
+      const asset::AssetMetadata* selectedAssetMetadata{ ctx.assetManager->getAssetMetadata(handle) };
+      std::string selectedAssetName{ selectedAssetMetadata ? selectedAssetMetadata->path.string() : "None" };
 
-      if (ImGui::BeginCombo(hiddenLabel.c_str(), textureName.empty() ? "None" : textureName.c_str())) {
-        int textureIdx{ 0 };
-        for (const auto& name : textureManager.getNames()) {
-          ImGui::PushID(textureIdx++);
-          const char* displayName{ name.empty() ? "None" : name.c_str() };
+      if (ImGui::BeginCombo(hiddenLabel.c_str(), selectedAssetName.c_str())) {
+        int assetIdx{ 0 };
+        for (const auto& assetMetadata : ctx.assetManager->getAssetMetadataOfType(handle.getType())) {
+          ImGui::PushID(assetIdx++);
 
-          bool isSelected{ textureName == name };
-          if (ImGui::Selectable(displayName, isSelected)) {
-            value = textureManager.getHandle(name);
+          std::string displayName{ assetMetadata.path.string() };
+          bool isSelected{ selectedAssetName == displayName };
+
+          if (ImGui::Selectable(displayName.c_str(), isSelected)) {
+            value = asset::TextureHandle{ assetMetadata.id };
             valueChanged = true;
           }
 
           if (isSelected) {
             ImGui::SetItemDefaultFocus();
           }
+
           ImGui::PopID();
         }
         ImGui::EndCombo();
       }
     } else if (valueType == entt::resolve<renderer::MaterialHandle>()) {
       renderer::MaterialHandle handle{ value.cast<renderer::MaterialHandle>() };
-      std::string materialName{ materialManager.getName(handle) };
+      std::string materialName{ ctx.materialManager->getName(handle) };
 
       if (ImGui::BeginCombo(hiddenLabel.c_str(), materialName.empty() ? "None" : materialName.c_str())) {
         int textureIdx{ 0 };
-        for (const auto& name : materialManager.getNames()) {
+        for (const auto& name : ctx.materialManager->getNames()) {
           ImGui::PushID(textureIdx++);
           const char* displayName{ name.empty() ? "None" : name.c_str() };
 
           bool isSelected{ materialName == name };
           if (ImGui::Selectable(displayName, isSelected)) {
-            value = materialManager.getHandle(name);
+            value = ctx.materialManager->getHandle(name);
             valueChanged = true;
           }
 
@@ -335,18 +324,18 @@ namespace ls::ui {
       }
     } else if (valueType == entt::resolve<prefab::PrefabHandle>()) {
       prefab::PrefabHandle handle{ value.cast<prefab::PrefabHandle>() };
-      auto prefabInfo{ prefabManager.getPrefabInfo(handle) };
+      auto prefabInfo{ ctx.prefabManager->getPrefabInfo(handle) };
       std::string prefabName{ prefabInfo ? prefabInfo->name : "Unnamed" };
 
       if (ImGui::BeginCombo(hiddenLabel.c_str(), prefabName.c_str())) {
         int prefabIdx{ 0 };
-        for (const auto& name : prefabManager.getNames()) {
+        for (const auto& name : ctx.prefabManager->getNames()) {
           ImGui::PushID(prefabIdx++);
           const char* displayName{ name.empty() ? "None" : name.c_str() };
 
           bool isSelected{ prefabName == name };
           if (ImGui::Selectable(displayName, isSelected)) {
-            value = prefabManager.getHandle(name);
+            value = ctx.prefabManager->getHandle(name);
             valueChanged = true;
           }
 
@@ -378,8 +367,8 @@ namespace ls::ui {
         value = val;
         valueChanged = true;
       }
-    } else if (valueType == entt::resolve<uint32_t>()) {
-      uint32_t val{ value.cast<uint32_t>() };
+    } else if (valueType == entt::resolve<std::uint32_t>()) {
+      std::uint32_t val{ value.cast<std::uint32_t>() };
       if (ImGui::DragScalar(hiddenLabel.c_str(), ImGuiDataType_U32, &val, (int)step)) {
         value = val;
         valueChanged = true;
@@ -452,7 +441,7 @@ namespace ls::ui {
       if (ImGui::TreeNode(hiddenLabel.c_str())) {
         for (auto [subDataId, subData] : valueType.data()) {
           ImGui::PushID(static_cast<int>(subDataId));
-          if (inspectComponentProperty(value, subData, materialManager, textureManager, prefabManager)) {
+          if (inspectComponentProperty(ctx, value, subData)) {
             valueChanged = true;
           }
           ImGui::PopID();

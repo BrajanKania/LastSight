@@ -6,13 +6,14 @@
 #include <format>
 #include <optional>
 
+#include "ls/asset/asset_system.hpp"
 #include "ls/components/prefab_instance.hpp"
-#include "ls/core/asset_system.hpp"
 #include "ls/debug/console.hpp"
 #include "ls/debug/log_level.hpp"
 #include "ls/ecs/types.hpp"
 #include "ls/prefab/prefab_handle.hpp"
 #include "ls/serialization/prefab_serializer.hpp"
+#include "ls/serialization/serialization_context.hpp"
 
 namespace ls::prefab {
 
@@ -57,7 +58,7 @@ namespace ls::prefab {
 
     ecs::EntityId entity{ prefabRegistry_.createEntity() };
 
-    serialization::PrefabSerializer serializer(ctx_);
+    serialization::PrefabSerializer serializer{ serialization::SerializationContext{ ctx_ } };
     if (!serializer.loadPrefab(path, prefabRegistry_, entity)) {
       prefabRegistry_.destroyEntity(entity);
       return false;
@@ -124,7 +125,7 @@ namespace ls::prefab {
   }
 
   bool PrefabManager::save(const std::string& name, ecs::Registry& registry, ecs::EntityId entity) {
-    serialization::PrefabSerializer serializer(ctx_);
+    serialization::PrefabSerializer serializer{ serialization::SerializationContext{ ctx_ } };
     if (serializer.savePrefab(asset_system::prefab(name), registry, entity)) {
       if (load(asset_system::prefab(name))) {
         auto handle{ getHandle(name) };

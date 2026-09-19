@@ -57,6 +57,10 @@ set_target_properties(Engine
 
 target_sources(Engine
   PRIVATE
+    # asset
+    src/ls/asset/asset_manager.cpp
+
+    # core
     src/ls/core/editor_layer.cpp
     src/ls/core/engine.cpp
     src/ls/core/random_system.cpp
@@ -64,30 +68,40 @@ target_sources(Engine
     src/ls/core/stb_impl.cpp
     src/ls/core/window.cpp
 
+    # debug
     src/ls/debug/console.cpp
     src/ls/debug/status_bar.cpp
 
+    # extraction
     src/ls/extraction/extraction_system.cpp
 
+    # gfx
     src/ls/gfx/framebuffer.cpp
     src/ls/gfx/shader.cpp
     src/ls/gfx/shader_exception.cpp
     src/ls/gfx/texture_2d.cpp
     src/ls/gfx/texture_manager.cpp
 
+    # input
     src/ls/input/input_manager.cpp
     src/ls/input/input_system.cpp
 
+    # interactions
     src/ls/interactions/interaction_system.cpp
 
+    # particles
     src/ls/particles/particle_system.cpp
 
+    # physics
     src/ls/physics/physics_system.cpp
 
+    # platform
     src/ls/platform/external_tool_manager.cpp
 
+    # prefab
     src/ls/prefab/prefab_manager.cpp
 
+    # renderer
     src/ls/renderer/passes/default_lit_pass.cpp
 
     src/ls/renderer/material/material.cpp
@@ -96,12 +110,16 @@ target_sources(Engine
     src/ls/renderer/render_pipeline.cpp
     src/ls/renderer/render_system.cpp
 
+    # serialization
+    src/ls/serialization/asset_metadata_serializer.cpp
     src/ls/serialization/prefab_serializer.cpp
     src/ls/serialization/scene_serializer.cpp
     src/ls/serialization/serialization_system.cpp
 
+    # systems
     src/ls/systems/parallax_system.cpp
 
+    # ui
     src/ls/ui/panels/asset_browser_panel.cpp
     src/ls/ui/panels/console_panel.cpp
     src/ls/ui/panels/entity_inspector_panel.cpp
@@ -139,42 +157,45 @@ target_link_libraries(Engine
 option(USE_LINK_TO_ASSETS_DIR "" OFF)
 
 if(USE_LINK_TO_ASSETS_DIR)
-  file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/game")
+  file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/game")
+  file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
-  if(EXISTS "${CMAKE_BINARY_DIR}/game/assets" AND NOT IS_SYMLINK "${CMAKE_BINARY_DIR}/game/assets")
-    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/game/assets")
+  if(EXISTS "${CMAKE_BINARY_DIR}/game" AND NOT IS_SYMLINK "${CMAKE_BINARY_DIR}/game")
+    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/game")
   endif()
 
-  if(NOT EXISTS "${CMAKE_BINARY_DIR}/game/assets")
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/game")
     file(CREATE_LINK
-            "${CMAKE_SOURCE_DIR}/game/assets"
-            "${CMAKE_BINARY_DIR}/game/assets"
-            SYMBOLIC
-        )
-  endif()
-
-  file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/engine")
-
-  if(EXISTS "${CMAKE_BINARY_DIR}/engine/assets" AND NOT IS_SYMLINK "${CMAKE_BINARY_DIR}/engine/assets")
-    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/engine/assets")
-  endif()
-
-  if(NOT EXISTS "${CMAKE_BINARY_DIR}/engine/assets")
-    file(CREATE_LINK
-            "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-            "${CMAKE_BINARY_DIR}/engine/assets"
-            SYMBOLIC
-        )
-  endif()
-else()
-  add_custom_target(copy_assets ALL
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/game/assets"
-            "${CMAKE_BINARY_DIR}/game/assets"
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-            "${CMAKE_BINARY_DIR}/engine/assets"
+      "${CMAKE_SOURCE_DIR}/game"
+      "${CMAKE_BINARY_DIR}/game"
+      SYMBOLIC
     )
+  endif()
+
+  if(EXISTS "${CMAKE_BINARY_DIR}/engine" AND NOT IS_SYMLINK "${CMAKE_BINARY_DIR}/engine")
+    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/engine")
+  endif()
+
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/engine")
+    file(CREATE_LINK
+      "${CMAKE_CURRENT_SOURCE_DIR}"
+      "${CMAKE_BINARY_DIR}/engine"
+      SYMBOLIC
+    )
+  endif()
+
+else()
+  file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/game")
+
+  add_custom_target(copy_assets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${CMAKE_SOURCE_DIR}/game"
+      "${CMAKE_BINARY_DIR}/game"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${CMAKE_CURRENT_SOURCE_DIR}"
+      "${CMAKE_BINARY_DIR}/engine"
+  )
+
   add_dependencies(Engine copy_assets)
 endif()
 

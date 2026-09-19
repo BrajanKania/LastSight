@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ls/gfx/texture_handle.hpp"
+#include "ls/asset/asset_handle.hpp"
 #include "ls/particles/particle_emitter_config.hpp"
 #include "ls/renderer/layer.hpp"
 #include "ls/renderer/material/material_handle.hpp"
@@ -8,11 +8,11 @@
 namespace ls::particle::preset {
 
   inline particle::ParticleEmitterConfig gunSparks(
-      renderer::MaterialHandle materialHandle, gfx::TextureHandle textureHandle
+      renderer::MaterialHandle materialHandle, asset::TextureHandle textureHandle
   ) {
     return particle::ParticleEmitterConfig{
-      .materialHandle = materialHandle,
       .textureHandle = textureHandle,
+      .materialHandle = materialHandle,
 
       .layer = renderer::Layer::Entities,
       .maxParticles = 30,

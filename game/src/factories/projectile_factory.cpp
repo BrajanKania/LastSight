@@ -31,10 +31,10 @@ namespace ls::factory {
     registry.addComponent(
         proj,
         component::Sprite{
+            .textureHandle = config.textureHandle,
             .materialHandle = config.materialHandle,
             .color = glm::vec4(1.f),
             .uvScale = glm::vec2(1.f),
-            .textureHandle = config.textureHandle,
             .angleOffset = config.angleOffset,
             .layer = renderer::Layer::Entities,
         }

@@ -2,22 +2,19 @@
 
 #include <cstddef>
 #include <filesystem>
-#include <memory>
-#include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "ls/asset/asset_handle.hpp"
+#include "ls/asset/asset_manager.hpp"
+#include "ls/asset/asset_types.hpp"
 #include "ls/gfx/texture_2d.hpp"
-#include "ls/gfx/texture_handle.hpp"
 
 namespace ls::gfx {
 
   class TextureManager {
   public:
-    TextureManager() {
-      textures_.push_back(nullptr);
-      names_.push_back("");
-    };
+    TextureManager() {};
 
     ~TextureManager() = default;
 
@@ -27,17 +24,11 @@ namespace ls::gfx {
     TextureManager(TextureManager&&) noexcept = default;
     TextureManager& operator=(TextureManager&&) noexcept = default;
 
-    TextureHandle load(const std::string& name, const std::filesystem::path& path);
+    bool load(asset::TextureHandle handle, const asset::AssetManager& assetManager);
+    void loadAll(const asset::AssetManager& assetManager);
 
-    bool contains(const std::string& name) const;
-    bool contains(TextureHandle handle) const;
-
-    const Texture2D* get(TextureHandle handle) const;
-    const Texture2D* get(const std::string& name) const;
-
-    TextureHandle getHandle(const std::string& name) const;
-    const std::string& getName(TextureHandle handle) const;
-    const std::vector<std::string>& getNames() const;
+    bool contains(asset::TextureHandle handle);
+    const Texture2D* get(asset::TextureHandle handle) const;
 
     std::size_t getTextureCount() const { return textures_.size(); }
     void clear();
@@ -45,9 +36,8 @@ namespace ls::gfx {
     void loadFromDir(const std::filesystem::path& path, bool recursive = false);
 
   private:
-    std::vector<std::unique_ptr<Texture2D>> textures_;
-    std::vector<std::string> names_;
-    std::unordered_map<std::string, TextureHandle> nameToHandle_;
+    std::vector<Texture2D> textures_;
+    std::unordered_map<asset::AssetId, std::size_t> assetIdToIdx_{};
   };
 
 }  // namespace ls::gfx

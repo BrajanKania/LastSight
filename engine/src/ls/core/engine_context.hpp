@@ -23,6 +23,9 @@ namespace ls {
     class MaterialManager;
     class RenderPipeline;
   }  // namespace renderer
+  namespace asset {
+    class AssetManager;
+  }
 
   struct EngineContext {
     Window* window{ nullptr };
@@ -35,6 +38,7 @@ namespace ls {
     renderer::MaterialManager* materialManager{ nullptr };
     renderer::RenderPipeline* renderPipeline{ nullptr };
     prefab::PrefabManager* prefabManager{ nullptr };
+    asset::AssetManager* assetManager{ nullptr };
   };
 
 }  // namespace ls

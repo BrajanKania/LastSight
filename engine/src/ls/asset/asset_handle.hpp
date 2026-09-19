@@ -6,9 +6,9 @@ namespace ls::asset {
 
   template <AssetType Type>
   struct AssetHandle {
-    AssetId id{ 0 };
+    AssetId id{ kNullAsset };
 
-    constexpr AssetType getType() const { return Type; }
+    static constexpr AssetType getType() { return Type; }
 
     bool isValid() const { return id != kNullAsset; }
     explicit operator bool() const { return isValid(); }

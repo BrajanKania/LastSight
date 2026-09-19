@@ -13,6 +13,7 @@
 #include "ls/components/prefab_instance.hpp"
 #include "ls/debug/console.hpp"
 #include "ls/debug/log_level.hpp"
+#include "ls/serialization/serialization_context.hpp"
 #include "ls/serialization/serialization_system.hpp"
 
 namespace ls::serialization {
@@ -20,7 +21,6 @@ namespace ls::serialization {
   bool PrefabSerializer::loadPrefab(
       const std::filesystem::path& path, ecs::Registry& registry, ecs::EntityId targetEntity
   ) const {
-    assert(ctx_.textureManager != nullptr && "[PrefabSerializer] Requires a valid TextureManager!");
     assert(ctx_.prefabManager != nullptr && "[PrefabSerializer] Requires a valid PrefabManager!");
     assert(ctx_.materialManager != nullptr && "[PrefabSerializer] Requires a valid MaterialManager!");
 
@@ -85,7 +85,7 @@ namespace ls::serialization {
         componentInstance = componentType.construct();
       } else {
         componentInstance = serialization_system::deserializeReflected(
-            componentType, componentJson, *ctx_.materialManager, *ctx_.textureManager, *ctx_.prefabManager
+            componentType, componentJson, serialization::SerializationContext{ ctx_ }
         );
         if (!componentInstance) {
           componentInstance = componentType.construct();
@@ -127,7 +127,6 @@ namespace ls::serialization {
   bool PrefabSerializer::savePrefab(
       const std::filesystem::path& path, ecs::Registry& registry, ecs::EntityId sourceEntity
   ) const {
-    assert(ctx_.textureManager != nullptr && "[PrefabSerializer] Requires a valid TextureManager!");
     assert(ctx_.materialManager != nullptr && "[PrefabSerializer] Requires a valid MaterialManager!");
 
     nlohmann::json entityJson;
@@ -149,9 +148,8 @@ namespace ls::serialization {
 
       const char* componentName{ type.name() ? type.name() : "Unknown component" };
 
-      componentsJson[componentName] = serialization_system::serializeReflected(
-          componentAny, *ctx_.materialManager, *ctx_.textureManager, *ctx_.prefabManager
-      );
+      componentsJson[componentName] =
+          serialization_system::serializeReflected(componentAny, serialization::SerializationContext{ ctx_ });
     }
 
     entityJson["components"] = componentsJson;

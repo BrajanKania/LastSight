@@ -42,7 +42,6 @@ namespace ls {
 
   private:
     void processEvents() override;
-    void genereteEntities();
 
     ecs::Registry registry_;
     dispatch::EventQueue eventQueue_;

@@ -32,9 +32,11 @@ namespace ls::asset {
       return assetBuffers_[static_cast<std::size_t>(Type)].get(handle.id);
     }
 
-    const std::vector<AssetMetadata>& getAssetsOfType(AssetType type) const {
+    const std::vector<AssetMetadata>& getAssetMetadataOfType(AssetType type) const {
       return assetBuffers_[static_cast<std::size_t>(type)].getAssets();
     }
+
+    const std::array<AssetBuffer, kAssetTypeCount>& getAssetBuffers() const { return assetBuffers_; }
 
     void clear() {
       for (auto& assetBuffer : assetBuffers_) {

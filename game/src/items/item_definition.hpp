@@ -5,7 +5,7 @@
 
 #include "items/types.hpp"
 #include "items/weapon_config.hpp"
-#include "ls/gfx/texture_handle.hpp"
+#include "ls/asset/asset_handle.hpp"
 #include "ls/reflection/reflection_macros.hpp"
 #include "ls/renderer/material/material_handle.hpp"
 
@@ -20,13 +20,13 @@ namespace ls::item {
     renderer::MaterialHandle materialHandle{ renderer::kNullMaterial };
 
     PROPERTY()
-    gfx::TextureHandle iconTextureHandle{ 0 };
+    asset::TextureHandle iconTextureHandle{ asset::kNullAsset };
 
     PROPERTY()
-    gfx::TextureHandle worldTextureHandle{ 0 };
+    asset::TextureHandle equippedTextureHandle{ asset::kNullAsset };
 
     PROPERTY()
-    gfx::TextureHandle equippedTextureHandle{ 0 };
+    asset::TextureHandle worldTextureHandle{ asset::kNullAsset };
 
     PROPERTY()
     glm::vec2 equippedScale{ 1.f };

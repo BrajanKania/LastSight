@@ -5,7 +5,8 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_float4.hpp>
 
-#include "ls/gfx/texture_handle.hpp"
+#include "ls/asset/asset_handle.hpp"
+#include "ls/asset/asset_types.hpp"
 #include "ls/renderer/layer.hpp"
 #include "ls/renderer/material/material_handle.hpp"
 #include "ls/renderer/material/material_property.hpp"
@@ -13,8 +14,8 @@
 namespace ls::renderer::command {
 
   struct DrawSprite {
+    asset::TextureHandle textureHandle{ asset::kNullAsset };
     MaterialHandle materialHandle{ renderer::kNullMaterial };
-    gfx::TextureHandle textureHandle{};
     Layer layer{ Layer::Ground };
     glm::vec4 color{ 1.f };
     glm::vec2 uvScale{ 1.f };

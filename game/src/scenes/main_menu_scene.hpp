@@ -46,7 +46,6 @@ namespace ls {
   private:
     void processEvents() override;
     void updateMenuStalker(const component::FieldOfView& fov, glm::vec2 mouseWorldPos, float dt);
-    void generateEntities();
 
     ecs::Registry registry_;
     ui::UIManager uiManager_;

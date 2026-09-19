@@ -1,4 +1,4 @@
-project(LastSightGame LANGUAGES C CXX)
+project(LastSight LANGUAGES C CXX)
 
 add_executable(LastSight)
 

@@ -9,27 +9,27 @@
 
 namespace ls::component {
 
-  COMPONENT()
+  COMPONENT(DisplayName("Particle Emitter"))
   struct ParticleEmitter {
-    PROPERTY()
+    PROPERTY(DisplayName("Config"))
     particle::ParticleEmitterConfig config;
 
-    PROPERTY(ReadOnly, Transient)
+    PROPERTY(DisplayName("Elapsed Time"), ReadOnly, Transient)
     float elapsedTime{ 0.f };
 
-    PROPERTY()
+    PROPERTY(DisplayName("Is Paused"))
     bool isPaused{ false };
 
-    PROPERTY()
+    PROPERTY(DisplayName("Is Emitting"))
     bool isEmitting{ true };
 
-    PROPERTY(ReadOnly, Transient)
+    PROPERTY(DisplayName("Spawn Timer"), ReadOnly, Transient)
     float spawnTimer{ 0.f };
 
-    PROPERTY(Transient)
+    PROPERTY(DisplayName("Particles"), Transient)
     std::vector<particle::Particle> particles;
 
-    PROPERTY(ReadOnly, Transient)
+    PROPERTY(DisplayName("Active Particle Count"), ReadOnly, Transient)
     std::uint32_t activeParticlesCount{ 0 };
 
     ParticleEmitter() = default;

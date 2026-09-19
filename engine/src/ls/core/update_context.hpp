@@ -1,8 +1,8 @@
 #pragma once
 
+#include "ls/asset/asset_manager.hpp"
 #include "ls/dispatch/event_queue.hpp"
 #include "ls/ecs/registry.hpp"
-#include "ls/gfx/texture_manager.hpp"
 #include "ls/input/input_manager.hpp"
 #include "ls/renderer/material/material_manager.hpp"
 
@@ -12,7 +12,7 @@ namespace ls {
     ecs::Registry& registry;
     dispatch::EventQueue& eventQueue;
     renderer::MaterialManager& materialManager;
-    gfx::TextureManager& textureManager;
+    asset::AssetManager& assetManager;
     input::InputManager& inputManager;
     float dt;
   };

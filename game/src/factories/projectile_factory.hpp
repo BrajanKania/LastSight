@@ -2,15 +2,16 @@
 
 #include <glm/ext/vector_float2.hpp>
 
+#include "ls/asset/asset_handle.hpp"
+#include "ls/asset/asset_types.hpp"
 #include "ls/ecs/registry.hpp"
-#include "ls/gfx/texture_handle.hpp"
 #include "ls/renderer/material/material_handle.hpp"
 
 namespace ls::factory {
 
   struct ProjectileConfig {
+    asset::TextureHandle textureHandle{ asset::kNullAsset };
     renderer::MaterialHandle materialHandle{ renderer::kNullMaterial };
-    gfx::TextureHandle textureHandle{ 0 };
 
     glm::vec2 scale{ 1.f };
     glm::vec2 position{ 0.f };

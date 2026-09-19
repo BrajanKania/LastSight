@@ -4,43 +4,41 @@
 #include <cstddef>
 #include <cstdint>
 #include <entt/meta/resolve.hpp>
+#include <filesystem>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/glm.hpp>
 #include <string>
 
+#include "ls/asset/asset_handle.hpp"
+#include "ls/asset/asset_types.hpp"
 #include "ls/core/engine_context.hpp"
-#include "ls/gfx/texture_manager.hpp"
+#include "ls/prefab/prefab_manager.hpp"
 #include "ls/reflection/reflection_system.hpp"
 #include "ls/renderer/material/material_handle.hpp"
 #include "ls/renderer/material/material_manager.hpp"
+#include "ls/serialization/serialization_context.hpp"
 
 namespace ls::serialization_system {
 
-  nlohmann::json serializeReflected(
-      entt::meta_any any,
-      const renderer::MaterialManager& materialManager,
-      const gfx::TextureManager& textureManager,
-      const prefab::PrefabManager& prefabManager
-
-  ) {
+  nlohmann::json serializeReflected(entt::meta_any any, serialization::SerializationContext ctx) {
     if (!any)
       return nullptr;
 
     auto type{ any.type() };
 
-    if (any.type() == entt::resolve<gfx::TextureHandle>()) {
-      auto handle{ any.cast<gfx::TextureHandle>() };
-      return textureManager.getName(handle);
+    if (any.type() == entt::resolve<asset::TextureHandle>()) {
+      auto handle{ any.cast<asset::TextureHandle>() };
+      return handle.id;
     }
 
     if (any.type() == entt::resolve<renderer::MaterialHandle>()) {
       auto handle{ any.cast<renderer::MaterialHandle>() };
-      return materialManager.getName(handle);
+      return ctx.materialManager->getName(handle);
     }
 
     if (type == entt::resolve<prefab::PrefabHandle>()) {
       auto handle{ any.cast<prefab::PrefabHandle>() };
-      auto info{ prefabManager.getPrefabInfo(handle) };
+      auto info{ ctx.prefabManager->getPrefabInfo(handle) };
       return info ? info->name : "";
     }
 
@@ -50,7 +48,10 @@ namespace ls::serialization_system {
     if (auto* value{ any.try_cast<int>() }) {
       return *value;
     }
-    if (auto* value{ any.try_cast<uint32_t>() }) {
+    if (auto* value{ any.try_cast<std::uint32_t>() }) {
+      return *value;
+    }
+    if (auto* value{ any.try_cast<std::uint64_t>() }) {
       return *value;
     }
     if (auto* value{ any.try_cast<std::size_t>() }) {
@@ -61,6 +62,9 @@ namespace ls::serialization_system {
     }
     if (auto* str{ any.try_cast<std::string>() }) {
       return *str;
+    }
+    if (auto* path{ any.try_cast<std::filesystem::path>() }) {
+      return path->string();
     }
 
     if (auto* vec{ any.try_cast<glm::vec2>() }) {
@@ -79,7 +83,7 @@ namespace ls::serialization_system {
           if (data.name()) {
             return data.name();
           }
-          return static_cast<uint32_t>(id);
+          return static_cast<std::uint32_t>(id);
         }
       }
       return 0;
@@ -88,7 +92,7 @@ namespace ls::serialization_system {
     if (auto container{ any.as_sequence_container() }) {
       nlohmann::json jsonArray = nlohmann::json::array();
       for (auto element : container) {
-        jsonArray.push_back(serializeReflected(element, materialManager, textureManager, prefabManager));
+        jsonArray.push_back(serializeReflected(element, ctx));
       }
       return jsonArray;
     }
@@ -108,33 +112,30 @@ namespace ls::serialization_system {
       }
 
       entt::meta_any fieldValue{ data.get(any) };
-      jsonObject[fieldName] = serializeReflected(fieldValue, materialManager, textureManager, prefabManager);
+      jsonObject[fieldName] = serializeReflected(fieldValue, ctx);
     }
 
     return jsonObject;
   }
 
   entt::meta_any deserializeReflected(
-      entt::meta_type type,
-      const nlohmann::json& jsonValue,
-      const renderer::MaterialManager& materialManager,
-      const gfx::TextureManager& textureManager,
-      const prefab::PrefabManager& prefabManager
+      entt::meta_type type, const nlohmann::json& jsonValue, serialization::SerializationContext ctx
   ) {
     if (jsonValue.is_null() || !type)
       return entt::meta_any{};
 
-    if (type == entt::resolve<gfx::TextureHandle>()) {
-      return jsonValue.is_string() ? textureManager.getHandle(jsonValue.get<std::string>()) : gfx::TextureHandle{};
+    if (type == entt::resolve<asset::TextureHandle>()) {
+      return asset::TextureHandle{ jsonValue.is_number() ? jsonValue.get<asset::AssetId>() : asset::kNullAsset };
     }
 
     if (type == entt::resolve<renderer::MaterialHandle>()) {
-      return jsonValue.is_string() ? materialManager.getHandle(jsonValue.get<std::string>())
+      return jsonValue.is_string() ? ctx.materialManager->getHandle(jsonValue.get<std::string>())
                                    : renderer::MaterialHandle{};
     }
 
     if (type == entt::resolve<prefab::PrefabHandle>()) {
-      return jsonValue.is_string() ? prefabManager.getHandle(jsonValue.get<std::string>()) : prefab::PrefabHandle{};
+      return jsonValue.is_string() ? ctx.prefabManager->getHandle(jsonValue.get<std::string>())
+                                   : prefab::PrefabHandle{};
     }
 
     if (type == entt::resolve<bool>()) {
@@ -143,17 +144,23 @@ namespace ls::serialization_system {
     if (type == entt::resolve<int>()) {
       return jsonValue.is_number() ? jsonValue.get<int>() : 0;
     }
-    if (type == entt::resolve<uint32_t>()) {
-      return jsonValue.is_number() ? jsonValue.get<uint32_t>() : 0u;
+    if (type == entt::resolve<std::uint32_t>()) {
+      return jsonValue.is_number() ? jsonValue.get<std::uint32_t>() : static_cast<std::uint32_t>(0);
+    }
+    if (type == entt::resolve<std::uint64_t>()) {
+      return jsonValue.is_number() ? jsonValue.get<std::uint64_t>() : static_cast<std::uint64_t>(0);
     }
     if (type == entt::resolve<std::size_t>()) {
       return jsonValue.is_number() ? jsonValue.get<std::size_t>() : static_cast<std::size_t>(0);
     }
     if (type == entt::resolve<float>()) {
-      return jsonValue.is_number() ? jsonValue.get<float>() : 0.0f;
+      return jsonValue.is_number() ? jsonValue.get<float>() : 0.f;
     }
     if (type == entt::resolve<std::string>()) {
       return jsonValue.is_string() ? jsonValue.get<std::string>() : std::string{};
+    }
+    if (type == entt::resolve<std::filesystem::path>()) {
+      return jsonValue.is_string() ? std::filesystem::path{ jsonValue.get<std::string>() } : std::filesystem::path{};
     }
 
     if (type == entt::resolve<glm::vec2>()) {
@@ -191,16 +198,16 @@ namespace ls::serialization_system {
       }
 
       if (jsonValue.is_number()) {
-        auto numVal = jsonValue.get<uint32_t>();
+        auto numVal = jsonValue.get<std::uint32_t>();
         for (auto [id, data] : type.data()) {
           entt::meta_any enumAny{ data.get({}) };
 
           if (enumAny) {
-            if (auto* val{ enumAny.try_cast<uint32_t>() }) {
+            if (auto* val{ enumAny.try_cast<std::uint32_t>() }) {
               if (*val == numVal)
                 return enumAny;
             } else if (auto* val{ enumAny.try_cast<int>() }) {
-              if (static_cast<uint32_t>(*val) == numVal)
+              if (static_cast<std::uint32_t>(*val) == numVal)
                 return enumAny;
             }
           }
@@ -219,9 +226,7 @@ namespace ls::serialization_system {
       if (jsonValue.is_array()) {
         entt::meta_type elementType{ container.value_type() };
         for (const auto& elementJson : jsonValue) {
-          entt::meta_any elementValue{
-            deserializeReflected(elementType, elementJson, materialManager, textureManager, prefabManager)
-          };
+          entt::meta_any elementValue{ deserializeReflected(elementType, elementJson, ctx) };
           if (elementValue) {
             container.insert(container.end(), elementValue);
           }
@@ -249,9 +254,7 @@ namespace ls::serialization_system {
       }
 
       if (fieldJson && !fieldJson->is_null()) {
-        entt::meta_any fieldValue{
-          deserializeReflected(data.type(), *fieldJson, materialManager, textureManager, prefabManager)
-        };
+        entt::meta_any fieldValue{ deserializeReflected(data.type(), *fieldJson, ctx) };
         if (fieldValue) {
           data.set(instance, fieldValue);
         }

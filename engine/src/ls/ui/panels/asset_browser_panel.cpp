@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <string>
 
+#include "ls/asset/asset_types.hpp"
+#include "ls/core/engine_context.hpp"
 #include "ls/dispatch/event_queue.hpp"
 #include "ls/events/request_open_asset.hpp"
 #include "ls/gfx/texture_2d.hpp"
@@ -20,30 +22,38 @@ namespace ls::ui {
 
   namespace {
 
-    const gfx::Texture2D* getIcon(
-        const std::filesystem::directory_entry& entry, const gfx::TextureManager& textureManager
-    ) {
+    const gfx::Texture2D* getIcon(const std::filesystem::directory_entry& entry, const EngineContext& ctx) {
       if (entry.is_directory()) {
-        return textureManager.get(gfx::texture_name::kDirectory);
+        return ctx.textureManager->get(
+            ctx.assetManager->findHandleByName<asset::AssetType::Texture2D>(gfx::texture_name::kDirectory)
+        );
       }
 
       const std::string& filename{ entry.path().filename().string() };
       if (filename.ends_with(".prefab.json")) {
-        return textureManager.get(gfx::texture_name::kPrefab);
+        return ctx.textureManager->get(
+            ctx.assetManager->findHandleByName<asset::AssetType::Texture2D>(gfx::texture_name::kPrefab)
+        );
       }
 
       static constexpr std::array kSupportedTextureExtensions{ ".jpg", ".png" };
       if (std::ranges::find(kSupportedTextureExtensions, entry.path().extension()) !=
           kSupportedTextureExtensions.end()) {
-        return textureManager.get(entry.path().filename().string());
+        return ctx.textureManager->get(
+            ctx.assetManager->findHandleByName<asset::AssetType::Texture2D>(entry.path().filename().string())
+        );
       }
 
       if (entry.path().extension().string().find(".glsl") != std::string::npos) {
-        return textureManager.get(gfx::texture_name::kGLSL);
+        return ctx.textureManager->get(
+            ctx.assetManager->findHandleByName<asset::AssetType::Texture2D>(gfx::texture_name::kGLSL)
+        );
       }
 
       if (entry.path().extension().string().find(".json") != std::string::npos) {
-        return textureManager.get(gfx::texture_name::kJSON);
+        return ctx.textureManager->get(
+            ctx.assetManager->findHandleByName<asset::AssetType::Texture2D>(gfx::texture_name::kJSON)
+        );
       }
 
       return nullptr;
@@ -167,7 +177,7 @@ namespace ls::ui {
 
             ImGui::BeginGroup();
 
-            const auto* icon{ getIcon(entry, *ctx.engineCtx.textureManager) };
+            const auto* icon{ getIcon(entry, ctx.engineCtx) };
             if (icon != nullptr && icon->getHeight() > 0) {
               const float width{ static_cast<float>(icon->getWidth()) };
               const float height{ static_cast<float>(icon->getHeight()) };

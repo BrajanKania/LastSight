@@ -5,9 +5,8 @@
 #include <ls/ui/i_ui_panel.hpp>
 #include <string>
 
-#include "ls/prefab/prefab_manager.hpp"
+#include "ls/core/engine_context.hpp"
 #include "ls/reflection/reflection_system.hpp"
-#include "ls/renderer/material/material_manager.hpp"
 #include "ls/ui/ui_context.hpp"
 
 namespace ls::ui {
@@ -18,20 +17,8 @@ namespace ls::ui {
     void render(const UIContext& ctx) override;
 
   private:
-    void inspectEntity(
-        const UIContext& ctx,
-        const ecs::EntityId entity,
-        const renderer::MaterialManager& materialManager,
-        const gfx::TextureManager& textureManager,
-        const prefab::PrefabManager& prefabManager
-    );
-    bool inspectComponentProperty(
-        entt::meta_any& owner,
-        entt::meta_data data,
-        const renderer::MaterialManager& materialManager,
-        const gfx::TextureManager& textureManager,
-        const prefab::PrefabManager& prefabManager
-    );
+    void inspectEntity(const UIContext& ctx, const ecs::EntityId entity);
+    bool inspectComponentProperty(const EngineContext& ctx, entt::meta_any& owner, entt::meta_data data);
 
     void renderAddComponentModal(const UIContext& ctx);
     void renderSaveAsPrefabModal(const UIContext& ctx);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
 
 namespace ls::gfx {
@@ -17,11 +18,11 @@ namespace ls::gfx {
     Texture2D(Texture2D&& other);
     Texture2D& operator=(Texture2D&& other);
 
-    uint32_t getId() const { return id_; }
+    std::uint32_t getId() const { return id_; }
     int getWidth() const { return width_; }
     int getHeight() const { return height_; }
 
-    void bind(uint32_t slot) const;
+    void bind(std::uint32_t slot) const;
     void unbind() const;
 
     void resize(int width, int height);
@@ -29,7 +30,7 @@ namespace ls::gfx {
   private:
     void cleanup();
 
-    uint32_t id_{ 0 };
+    std::uint32_t id_{ 0 };
     int width_{ 0 };
     int height_{ 0 };
     int channels_{ 0 };

@@ -83,7 +83,7 @@ namespace ls::gfx {
     return *this;
   }
 
-  void Texture2D::bind(uint32_t slot) const {
+  void Texture2D::bind(std::uint32_t slot) const {
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, id_);
   }

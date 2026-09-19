@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ls/asset/asset_context.hpp"
+#include "ls/asset/asset_manager.hpp"
 #include "ls/core/editor_layer.hpp"
 #include "ls/core/engine_context.hpp"
 #include "ls/core/engine_mode.hpp"
@@ -51,13 +53,19 @@ namespace ls {
         .materialManager = &materialManager_,
         .renderPipeline = &renderPipeline_,
         .prefabManager = &prefabManager_,
+        .assetManager = &assetManager_,
       };
     }
 
     prefab::PrefabContext getPrefabContext() {
       return prefab::PrefabContext{
         .materialManager = &materialManager_,
-        .textureManager = &textureManager_,
+        .console = &console_,
+      };
+    }
+
+    asset::AssetContext getAssetContext() {
+      return asset::AssetContext{
         .console = &console_,
       };
     }
@@ -68,6 +76,7 @@ namespace ls {
     gfx::TextureManager textureManager_{};
     debug::Console console_{};
     debug::StatusBar statusBar_{};
+    asset::AssetManager assetManager_;
     renderer::MaterialManager materialManager_{};
     renderer::RenderPipeline renderPipeline_{};
     prefab::PrefabManager prefabManager_;

@@ -78,6 +78,13 @@ namespace ls::ui {
           ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("Settings")) {
+          if (ImGui::MenuItem("Developer Mode", nullptr)) {
+          }
+
+          ImGui::EndMenu();
+        }
+
         ImGui::Separator();
 
         if (ImGui::MenuItem("Close", "Ecs")) {

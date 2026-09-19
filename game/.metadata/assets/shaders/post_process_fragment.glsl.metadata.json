@@ -1,0 +1,6 @@
+{
+  "id": 14088636885815100516,
+  "isEngineAsset": false,
+  "path": "game/assets/shaders/post_process_fragment.glsl",
+  "type": "Shader"
+}

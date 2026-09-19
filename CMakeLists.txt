@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(LastSightWorkspace LANGUAGES C CXX)
+project(LastSightProject LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -12,5 +12,5 @@ file(CREATE_LINK
     SYMBOLIC COPY_ON_ERROR
 )
 
-add_subdirectory(engine)
-add_subdirectory(game)
+add_subdirectory(engine "${CMAKE_BINARY_DIR}/engine_build")
+add_subdirectory(game "${CMAKE_BINARY_DIR}/game_build")

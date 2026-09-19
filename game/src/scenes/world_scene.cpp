@@ -20,33 +20,16 @@
 #include "actions/select_slot_5.hpp"
 #include "actions/shoot.hpp"
 #include "actions/sprint.hpp"
-#include "components/camera_shake.hpp"
-#include "components/enemy.hpp"
 #include "components/field_of_view.hpp"
-#include "components/fov_masked.hpp"
-#include "components/health.hpp"
-#include "components/inventory.hpp"
-#include "components/item_pickup.hpp"
-#include "components/lamp.hpp"
-#include "components/movement_settings.hpp"
 #include "components/player.hpp"
-#include "components/player_camera_settings.hpp"
-#include "components/player_fov_settings.hpp"
-#include "components/player_state.hpp"
 #include "components/post_process_settings.hpp"
-#include "components/stamina.hpp"
 #include "components/weapon.hpp"
 #include "extraction/extraction_system.hpp"
 #include "items/weapon_config.hpp"
+#include "ls/asset/asset_system.hpp"
+#include "ls/asset/asset_types.hpp"
 #include "ls/components/camera.hpp"
-#include "ls/components/collider.hpp"
-#include "ls/components/entity_name.hpp"
-#include "ls/components/interactable.hpp"
-#include "ls/components/particle_emitter.hpp"
-#include "ls/components/sprite.hpp"
 #include "ls/components/transform.hpp"
-#include "ls/components/velocity.hpp"
-#include "ls/core/asset_system.hpp"
 #include "ls/core/update_context.hpp"
 #include "ls/ecs/registry.hpp"
 #include "ls/input/input_context.hpp"
@@ -54,12 +37,10 @@
 #include "ls/interactions/interaction_system.hpp"
 #include "ls/particles/particle_system.hpp"
 #include "ls/physics/physics_system.hpp"
-#include "ls/renderer/layer.hpp"
 #include "ls/renderer/material/material_names.hpp"
 #include "ls/renderer/render_phase.hpp"
 #include "ls/renderer/render_pipeline.hpp"
 #include "ls/serialization/scene_serializer.hpp"
-#include "particles/fire.hpp"
 #include "renderer/passes/fov_pass.hpp"
 #include "renderer/passes/lit_pass.hpp"
 #include "renderer/passes/post_process_pass.hpp"
@@ -80,7 +61,6 @@ namespace ls {
 
   void WorldScene::onEnter() {
     assert(engineCtx_.eventQueue != nullptr && "[WorldScene] requires a valid EventQueue!");
-    assert(engineCtx_.textureManager != nullptr && "[WorldScene] requires a valid TextureManager!");
     assert(engineCtx_.materialManager != nullptr && "[WorldScene] requires a valid MaterailManager!");
 
     serialization::SceneSerializer serializer(getSceneContext(), engineCtx_);
@@ -89,18 +69,6 @@ namespace ls {
       player_ = entity;
       break;
     }
-
-    // genereteEntities();
-
-    // for (auto entity : registry_.view<component::Sprite>()) {
-    //   auto& sprite{ registry_.getComponent<component::Sprite>(entity) };
-    //   sprite.materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit);
-    // }
-    //
-    // for (auto entity : registry_.view<component::EquippedSprite>()) {
-    //   auto& equippedSprite{ registry_.getComponent<component::EquippedSprite>(entity) };
-    //   equippedSprite.materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit);
-    // }
 
     engineCtx_.renderPipeline->addPass<renderer::LitPass>(renderer::RenderPhase::MainPass);
     engineCtx_.renderPipeline->addPass<renderer::FovPass>(renderer::RenderPhase::MainPass);
@@ -126,9 +94,12 @@ namespace ls {
           item::ItemDefinition{
               .id = "weapon_pistol",
               .materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit),
-              .iconTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldPistol),
-              .worldTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldPistol),
-              .equippedTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kEquippedPistol),
+              .iconTextureHandle =
+                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kWorldPistol),
+              .equippedTextureHandle =
+                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kEquippedPistol),
+              .worldTextureHandle =
+                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kWorldPistol),
               .equippedScale = glm::vec2(0.5f),
               .equippedOffset = glm::vec2(0.f, 0.2f),
               .equippedAngleOffset = -90.f,
@@ -181,9 +152,12 @@ namespace ls {
           item::ItemDefinition{
               .id = "weapon_rifle",
               .materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit),
-              .iconTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldRifle),
-              .worldTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldRifle),
-              .equippedTextureHandle = engineCtx_.textureManager->getHandle(texture_name::kEquippedRifle),
+              .iconTextureHandle =
+                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kWorldRifle),
+              .equippedTextureHandle =
+                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kEquippedRifle),
+              .worldTextureHandle =
+                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kWorldRifle),
               .equippedScale = glm::vec2(1.2f),
               .equippedOffset = glm::vec2(0.08f, 0.3f),
               .equippedAngleOffset = -90.f,
@@ -247,7 +221,7 @@ namespace ls {
       .registry = registry_,
       .eventQueue = eventQueue_,
       .materialManager = *engineCtx_.materialManager,
-      .textureManager = *engineCtx_.textureManager,
+      .assetManager = *engineCtx_.assetManager,
       .inputManager = inputManager_,
       .dt = dt,
     };
@@ -334,334 +308,5 @@ namespace ls {
   void WorldScene::renderUI() { uiManager_.render(getUIContext()); }
 
   void WorldScene::processEvents() {}
-
-  void WorldScene::genereteEntities() {
-    {  // world entities
-
-      {  // Background
-        auto background{ registry_.createEntity() };
-        registry_.addComponent(background, component::EntityName{ .name = "background" });
-        registry_.addComponent(background, component::Transform{ .scale = glm::vec2(5.f) });
-        registry_.addComponent(
-            background,
-            component::Sprite{
-                .uvScale = glm::vec2(2.5f),
-                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kGrass),
-                .layer = renderer::Layer::Background,
-            }
-        );
-      }
-
-      {  // Player
-        player_ = registry_.createEntity();
-        registry_.addComponent(player_, component::Player{});
-        registry_.addComponent(
-            player_,
-            component::EntityName{
-                .name = "Player",
-            }
-        );
-        registry_.addComponent(
-            player_,
-            component::Transform{
-                .scale = glm::vec2(0.5f),
-            }
-        );
-        registry_.addComponent(
-            player_,
-            component::Sprite{
-                .uvScale = glm::vec2(1.f),
-                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kPlayer),
-                .angleOffset = -90.f,
-                .layer = renderer::Layer::Entities,
-            }
-        );
-        registry_.addComponent(player_, component::Velocity{});
-        registry_.addComponent(
-            player_,
-            component::MovementSettings{
-                .sprintSpeed = 2.f,
-            }
-        );
-        registry_.addComponent(
-            player_,
-            component::FieldOfView{
-                .innerRadius = 1.0f,
-                .outerRadius = 6.f,
-                .smoothnessDistance = 2.f,
-            }
-        );
-        registry_.addComponent(
-            player_,
-            component::PlayerFovSettings{
-                .baseAngle = 60.f,
-                .aimAngle = 10.f,
-                .lowStaminaAngle = 5.f,
-                .baseSmoothnessAngle = 40.f,
-                .aimSmoothnessAngle = 10.f,
-                .lowStaminaSmoothnessAngle = 20.f,
-                .baseDarkness = 0.6f,
-                .aimDarkness = 0.55f,
-                .lowStaminaThreshold = 0.4,
-                .transitionSpeed = 4.f,
-            }
-        );
-        registry_.addComponent(
-            player_,
-            component::Collider{
-                .type = component::ColliderType::Circle,
-                .radius = 0.5f,
-            }
-        );
-        registry_.addComponent(player_, component::Inventory{ 6 });
-        registry_.addComponent(
-            player_,
-            component::Health{
-                .max = 100.f,
-                .current = 100.f,
-            }
-        );
-        registry_.addComponent(
-            player_,
-            component::Stamina{
-                .max = 100.f,
-                .current = 100.f,
-                .regenRate = 10.f,
-                .sprintCostRate = 20.f,
-                .aimCostRate = 10.f,
-                .recoveryThresholdRatio = 0.2f,
-            }
-        );
-        registry_.addComponent(
-            player_,
-            component::PostProcessSettings{
-                .damageVignetteColor = glm::vec3(0.8f, 0.0f, 0.0f),
-                .damageInnerRadius = 0.1f,
-                .damageOuterRadius = 0.7f,
-                .maxDamageDesaturation = 0.5f,
-                .staminaInnerRadius = 0.1f,
-                .staminaOuterRadius = 0.3f,
-                .maxStaminaDesaturation = 0.8f,
-            }
-        );
-        registry_.addComponent(player_, component::PlayerState{});
-        registry_.addComponent(
-            player_,
-            component::PlayerCameraSettings{
-                .baseZoom = 1.f,
-                .aimZoom = 1.2f,
-                .sprintZoom = 0.95f,
-                .zoomSpeed = 0.5f,
-                .baseFollowSpeed = 5.f,
-                .aimFollowSpeed = 1.f,
-                .aimOffsetWeight = 0.3f,
-                .maxAimOffset = 0.5f,
-            }
-        );
-      }
-
-      {  // Camera
-        auto camera{ registry_.createEntity() };
-        registry_.addComponent(
-            camera,
-            component::Camera{
-                .orthographicSize = 6.f,
-                .zoom = 1.f,
-            }
-        );
-        registry_.addComponent(
-            camera,
-            component::EntityName{
-                .name = "Camera",
-            }
-        );
-        registry_.addComponent(camera, component::Transform{});
-        registry_.addComponent(
-            camera,
-            component::CameraShake{
-                .stiffness = 180.f,
-                .damping = 20.f,
-                .maxSpringOffset = 0.4f,
-                .traumaDecay = 1.f,
-                .maxTraumaOffset = 0.35f,
-                .traumaFrequency = 8.f,
-            }
-        );
-      }
-
-      {  // Container
-        auto container{ registry_.createEntity() };
-        registry_.addComponent(container, component::EntityName{ .name = "container" });
-        registry_.addComponent(
-            container,
-            component::Transform{
-                .scale = glm::vec2(0.5f),
-                .position = glm::vec2(1.f),
-            }
-        );
-        registry_.addComponent(
-            container,
-            component::Sprite{
-                .uvScale = glm::vec2(1.f),
-                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kContainer),
-                .layer = renderer::Layer::Entities,
-            }
-        );
-        registry_.addComponent(
-            container,
-            component::Collider{
-                .type = component::ColliderType::AABB,
-                .halfExtents = glm::vec2(0.5f),
-            }
-        );
-        registry_.addComponent(
-            container,
-            component::ParticleEmitter{ particle::preset::fire(
-                engineCtx_.materialManager->getHandle(material_name::kLit),
-                engineCtx_.textureManager->getHandle(texture_name::kWhite)
-            ) }
-        );
-        registry_.addComponent(container, component::Lamp{});
-        registry_.addComponent(container, component::FovMasked{});
-        registry_.addComponent(
-            container,
-            component::Interactable{
-                .radius = 0.8f,
-            }
-        );
-      }
-
-      {  // Enemy
-        auto enemy{ registry_.createEntity() };
-        registry_.addComponent(enemy, component::EntityName{ .name = "enemy" });
-        registry_.addComponent(enemy, component::Enemy{});
-        registry_.addComponent(
-            enemy,
-            component::Transform{
-                .scale = glm::vec2(0.8f),
-                .position = glm::vec2(-1.f),
-            }
-        );
-        registry_.addComponent(
-            enemy,
-            component::Sprite{
-                .uvScale = glm::vec2(1.f),
-                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kEnemy),
-                .layer = renderer::Layer::Entities,
-            }
-        );
-        registry_.addComponent(
-            enemy,
-            component::Collider{
-                .type = component::ColliderType::Circle,
-                .radius = 0.3f,
-            }
-        );
-        registry_.addComponent(enemy, component::FovMasked{});
-      }
-
-      {  // Container 2
-        auto container2{ registry_.createEntity() };
-        registry_.addComponent(container2, component::EntityName{ .name = "container_2" });
-        registry_.addComponent(
-            container2,
-            component::Transform{
-                .scale = glm::vec2(0.8f),
-                .position = glm::vec2(1.f, -1.f),
-                .rotation = 30.f,
-            }
-        );
-        registry_.addComponent(
-            container2,
-            component::Sprite{
-                .uvScale = glm::vec2(1.f),
-                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kContainer),
-                .layer = renderer::Layer::Entities,
-            }
-        );
-        registry_.addComponent(
-            container2,
-            component::Collider{
-                .type = component::ColliderType::OBB,
-                .halfExtents = glm::vec2(0.5f),
-            }
-        );
-      }
-
-      {  // Pistol
-        auto pistol{ registry_.createEntity() };
-        registry_.addComponent(pistol, component::EntityName{ .name = "pistol" });
-        registry_.addComponent(
-            pistol,
-            component::Transform{
-                .scale = glm::vec2(0.4f),
-                .position = glm::vec2(-1.f, 0.f),
-                .rotation = 50.f,
-            }
-        );
-        registry_.addComponent(
-            pistol,
-            component::Sprite{
-                .uvScale = glm::vec2(1.f),
-                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldPistol),
-                .angleOffset = -90.f,
-                .layer = renderer::Layer::Ground,
-            }
-        );
-        registry_.addComponent(
-                  pistol,
-                component::ItemPickup{
-                  .itemStack = {
-                    .itemId = "weapon_pistol",
-                    .count = 1,
-                  },
-                }
-              );
-        registry_.addComponent(
-            pistol,
-            component::Interactable{
-                .radius = 0.5f,
-            }
-        );
-      }
-
-      {  // Rifle
-        auto rifle{ registry_.createEntity() };
-        registry_.addComponent(rifle, component::EntityName{ .name = "rifle" });
-        registry_.addComponent(
-            rifle,
-            component::Transform{
-                .scale = glm::vec2(0.6f),
-                .position = glm::vec2(-1.f, 1.f),
-                .rotation = 0.f,
-            }
-        );
-        registry_.addComponent(
-            rifle,
-            component::Sprite{
-                .uvScale = glm::vec2(1.f),
-                .textureHandle = engineCtx_.textureManager->getHandle(texture_name::kWorldRifle),
-                .angleOffset = -90.f,
-                .layer = renderer::Layer::Ground,
-            }
-        );
-        registry_.addComponent(
-                  rifle,
-                component::ItemPickup{
-                  .itemStack = {
-                    .itemId = "weapon_rifle",
-                    .count = 1,
-                  },
-                }
-              );
-        registry_.addComponent(
-            rifle,
-            component::Interactable{
-                .radius = 0.5f,
-            }
-        );
-      }
-    }
-  }
 
 }  // namespace ls

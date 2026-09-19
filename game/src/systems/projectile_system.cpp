@@ -2,6 +2,7 @@
 
 #include "components/enemy.hpp"
 #include "components/projectile.hpp"
+#include "ls/asset/asset_types.hpp"
 #include "ls/components/particle_emitter.hpp"
 #include "ls/components/transform.hpp"
 #include "ls/core/update_context.hpp"
@@ -22,7 +23,8 @@ namespace ls::projectile_system {
       ctx.registry.addComponent(
           particleEmitter,
           component::ParticleEmitter{ particle::preset::bloodSplat(
-              ctx.materialManager.getHandle(material_name::kLit), ctx.textureManager.getHandle(texture_name::kWhite)
+              ctx.materialManager.getHandle(material_name::kLit),
+              ctx.assetManager.findHandleByName<asset::AssetType::Texture2D>(texture_name::kWhite)
           ) }
       );
       ctx.registry.addComponent(

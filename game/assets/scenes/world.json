@@ -15,7 +15,7 @@
           ],
           "layer": "Background",
           "materialHandle": "lit_material",
-          "textureHandle": "grass.jpg",
+          "textureHandle": 9966600617010373667,
           "uvScale": [
             2.5,
             2.5
@@ -59,20 +59,20 @@
           "materialHandle": "lit_material",
           "offset": [
             0.1199999749660492,
-            0.2099999636411667
+            0.20999997854232788
           ],
           "scale": [
             0.5,
             0.5
           ],
-          "textureHandle": "equipped_pistol.png"
+          "textureHandle": 15825922626680308047
         },
         "FieldOfView": {
-          "darkness": 0.6000001430511475,
+          "darkness": 0.5999999046325684,
           "fovAngle": 60.0,
           "innerRadius": 1.0,
           "outerRadius": 6.0,
-          "smoothnessAngle": 39.999996185302734,
+          "smoothnessAngle": 40.00000762939453,
           "smoothnessDistance": 2.0
         },
         "Health": {
@@ -166,7 +166,7 @@
           ],
           "layer": "Entities",
           "materialHandle": "lit_material",
-          "textureHandle": "player.png",
+          "textureHandle": 16202768057102275295,
           "uvScale": [
             1.0,
             1.0
@@ -183,17 +183,17 @@
         },
         "Transform": {
           "position": [
-            -0.7044055461883545,
-            0.5151651501655579
+            -1.0228657722473145,
+            0.02957422472536564
           ],
-          "rotation": -12.92770004272461,
+          "rotation": -0.8716727495193481,
           "scale": [
             0.5,
             0.5
           ]
         },
         "Velocity": {
-          "angular": -0.6070733070373535,
+          "angular": 0.0,
           "linear": [
             0.0,
             0.0
@@ -256,7 +256,7 @@
       "components": {
         "Camera": {
           "orthographicSize": 6.0,
-          "zoom": 0.998399555683136
+          "zoom": 1.0000029802322388
         },
         "CameraShake": {
           "damping": 20.0,
@@ -264,16 +264,16 @@
           "maxTraumaOffset": 0.3499999940395355,
           "offset": [
             -1.401298464324817e-45,
-            -1.401298464324817e-45
+            1.401298464324817e-45
           ],
           "stiffness": 180.0,
-          "timeAccumulator": 13.591998100280762,
+          "timeAccumulator": 26.27198600769043,
           "trauma": 0.0,
           "traumaDecay": 1.0,
           "traumaFrequency": 8.0,
           "velocity": [
             1.1210387714598537e-44,
-            1.1210387714598537e-44
+            -1.401298464324817e-44
           ]
         },
         "EntityName": {
@@ -281,8 +281,8 @@
         },
         "Transform": {
           "position": [
-            -0.6930850148200989,
-            0.515190839767456
+            -1.0228655338287354,
+            0.02957422100007534
           ],
           "rotation": 0.0,
           "scale": [
@@ -360,7 +360,7 @@
               0.10000000149011612,
               0.8999999761581421
             ],
-            "textureHandle": "white.png"
+            "textureHandle": 8519458612858578898
           },
           "isEmitting": true,
           "isPaused": false
@@ -375,7 +375,7 @@
           ],
           "layer": "Entities",
           "materialHandle": "lit_material",
-          "textureHandle": "container.png",
+          "textureHandle": 1037293016291067322,
           "uvScale": [
             1.0,
             1.0
@@ -425,7 +425,7 @@
           ],
           "layer": "Entities",
           "materialHandle": "lit_material",
-          "textureHandle": "enemy.png",
+          "textureHandle": 6073084855973257029,
           "uvScale": [
             1.0,
             1.0
@@ -433,8 +433,8 @@
         },
         "Transform": {
           "position": [
-            -1.0282436609268188,
-            -1.1836293935775757
+            -1.112627625465393,
+            -1.214476466178894
           ],
           "rotation": 0.0,
           "scale": [
@@ -473,7 +473,7 @@
           ],
           "layer": "Entities",
           "materialHandle": "lit_material",
-          "textureHandle": "container.png",
+          "textureHandle": 1037293016291067322,
           "uvScale": [
             1.0,
             1.0
@@ -517,7 +517,7 @@
           ],
           "layer": "Ground",
           "materialHandle": "lit_material",
-          "textureHandle": "world_rifle.png",
+          "textureHandle": 12049050999597289467,
           "uvScale": [
             1.0,
             1.0
@@ -536,6 +536,58 @@
         }
       },
       "name": "rifle"
+    },
+    {
+      "components": {
+        "Collider": {
+          "halfExtents": [
+            0.5,
+            0.5
+          ],
+          "isTrigger": false,
+          "offset": [
+            0.0,
+            0.0
+          ],
+          "radius": 1.0,
+          "type": "OBB"
+        },
+        "EntityName": {
+          "name": "box"
+        },
+        "FovMasked": {},
+        "PrefabInstance": {
+          "handle": "box"
+        },
+        "Sprite": {
+          "angleOffset": 0.0,
+          "color": [
+            0.7843137383460999,
+            0.7843137383460999,
+            1.0,
+            1.0
+          ],
+          "layer": "Entities",
+          "materialHandle": "default_lit_material",
+          "textureHandle": 1037293016291067322,
+          "uvScale": [
+            1.0,
+            1.0
+          ]
+        },
+        "Transform": {
+          "position": [
+            -0.023000000044703484,
+            1.0679999589920044
+          ],
+          "rotation": -49.5,
+          "scale": [
+            0.6000000238418579,
+            0.6000000238418579
+          ]
+        }
+      },
+      "name": "box"
     }
   ]
 }

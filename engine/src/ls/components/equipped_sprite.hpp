@@ -2,31 +2,31 @@
 
 #include <glm/glm.hpp>
 
-#include "ls/gfx/texture_handle.hpp"
+#include "ls/asset/asset_handle.hpp"
 #include "ls/reflection/reflection_macros.hpp"
 #include "ls/renderer/layer.hpp"
 #include "ls/renderer/material/material_handle.hpp"
 
 namespace ls::component {
 
-  COMPONENT()
+  COMPONENT(DisplayName("Equipped Sprite"))
   struct EquippedSprite {
-    PROPERTY()
+    PROPERTY(DisplayName("Texture"))
+    asset::TextureHandle textureHandle{ asset::kNullAsset };
+
+    PROPERTY(DisplayName("Material"))
     renderer::MaterialHandle materialHandle{ renderer::kNullMaterial };
 
-    PROPERTY()
-    gfx::TextureHandle textureHandle{ 0 };
-
-    PROPERTY()
+    PROPERTY(DisplayName("Scale"))
     glm::vec2 scale{ 1.f };
 
-    PROPERTY()
+    PROPERTY(DisplayName("Offset"))
     glm::vec2 offset{ 0.f };
 
-    PROPERTY()
+    PROPERTY(DisplayName("Angle Offset"), Step(0.5f))
     float angleOffset{ -90.f };
 
-    PROPERTY()
+    PROPERTY(DisplayName("Layer"))
     renderer::Layer layer{ renderer::Layer::Entities };
   };
 

@@ -32,7 +32,7 @@ namespace ls::asset {
 
       if (indexToRemove != lastIndex) {
         assets_[indexToRemove] = std::move(assets_[lastIndex]);
-        idToIndex_[assets_[lastIndex].id] = indexToRemove;
+        idToIndex_[assets_[indexToRemove].id] = indexToRemove;
       }
 
       assets_.pop_back();

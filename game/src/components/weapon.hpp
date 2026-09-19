@@ -96,10 +96,10 @@ namespace ls::component {
     PROPERTY(ReadOnly, Transient)
     float springAngularVelocity{ 0.f };
 
-    PROPERTY(DisplayName("Hip recoil config"))
+    PROPERTY(DisplayName("Hip Recoil Config"))
     RecoilConfig hipRecoil;
 
-    PROPERTY(DisplayName("Aim recoil config"))
+    PROPERTY(DisplayName("Aim Recoil Config"))
     RecoilConfig aimRecoil;
   };
 

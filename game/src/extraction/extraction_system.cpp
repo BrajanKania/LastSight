@@ -45,8 +45,8 @@ namespace ls::extraction_system {
       );
 
       auto cmd{ renderer::command::DrawSprite{
-          .materialHandle = equippedSprite.materialHandle,
           .textureHandle = equippedSprite.textureHandle,
+          .materialHandle = equippedSprite.materialHandle,
           .layer = equippedSprite.layer,
           .model = model,
       } };
@@ -72,8 +72,8 @@ namespace ls::extraction_system {
         model = glm::scale(model, glm::vec3(particle.scale.x, particle.scale.y, 1.f));
 
         auto cmd{ renderer::command::DrawSprite{
-            .materialHandle = emitter.config.materialHandle,
             .textureHandle = emitter.config.textureHandle,
+            .materialHandle = emitter.config.materialHandle,
             .layer = emitter.config.layer,
             .color = particle.color,
             .model = model,

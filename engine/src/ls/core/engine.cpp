@@ -8,9 +8,10 @@
 #include <string>
 
 #include "ls/actions/toggle_engine_mode.hpp"
+#include "ls/asset/asset_manager.hpp"
+#include "ls/asset/asset_system.hpp"
 #include "ls/components/entity_name.hpp"
 #include "ls/components/prefab_instance.hpp"
-#include "ls/core/asset_system.hpp"
 #include "ls/core/engine_mode.hpp"
 #include "ls/core/scene_manager.hpp"
 #include "ls/core/time_system.hpp"
@@ -57,6 +58,7 @@ namespace ls {
 
   Engine::Engine()
       : window_(1500, 900),
+        assetManager_(getAssetContext()),
         prefabManager_(getPrefabContext()),
         sceneManager_(getEngineContext(), window_.getWidth(), window_.getHeight()) {
     reflection_system::registerGeneratedTypes();
@@ -66,6 +68,10 @@ namespace ls {
     inputManager_.bindKey<action::ToggleEngineMode>(input::Key::Grave, input::KeyModifier::Ctrl);
 
     sceneManager_.onResize(window_.getWidth(), window_.getHeight());
+
+    assetManager_.loadFromDirectory(asset_system::gameAssetsDir(), true);
+    assetManager_.loadFromDirectoryAsEngineAsset(asset_system::engineAssetsDir(), true);
+    assetManager_.saveAllMetadata();
 
     loadTextures();
     loadMaterials();
@@ -78,13 +84,13 @@ namespace ls {
   Engine::~Engine() { ui_system::shutdown(); }
 
   void Engine::run() {
-    uint64_t lastTime{ ls::time_system::ms() };
+    std::uint64_t lastTime{ ls::time_system::ms() };
 
     while (!window_.shouldClose()) {
       render_system::bindFramebuffer(0);
       render_system::clearColorBuffer();
 
-      uint64_t currentTime{ ls::time_system::ms() };
+      std::uint64_t currentTime{ ls::time_system::ms() };
       float dt{ static_cast<float>(currentTime - lastTime) / 1000.f };
       dt = std::min(dt, 0.1f);
       lastTime = currentTime;
@@ -397,11 +403,11 @@ namespace ls {
   }
 
   void Engine::loadTextures() {
-    textureManager_.loadFromDir(asset_system::baseDir() / "engine/assets/textures");
-    textureManager_.loadFromDir(asset_system::assetsDir() / "textures");
+    textureManager_.clear();
+    textureManager_.loadAll(assetManager_);
   }
 
-  void Engine::loadPrefabs() { prefabManager_.loadFromDir(std::filesystem::path("assets/prefabs")); }
+  void Engine::loadPrefabs() { prefabManager_.loadFromDir(asset_system::gameAssetsDir() / "prefabs"); }
 
   void Engine::loadMaterials() {
     materialManager_.create(

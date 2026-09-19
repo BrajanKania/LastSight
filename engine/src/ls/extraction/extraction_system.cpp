@@ -29,8 +29,8 @@ namespace ls::extraction_system {
     }
 
     return renderer::command::DrawSprite{
-      .materialHandle = sprite.materialHandle,
       .textureHandle = sprite.textureHandle,
+      .materialHandle = sprite.materialHandle,
       .layer = sprite.layer,
       .color = sprite.color,
       .uvScale = sprite.uvScale,

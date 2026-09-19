@@ -8,6 +8,7 @@
 #include "ls/debug/console.hpp"
 #include "ls/debug/log_level.hpp"
 #include "ls/ecs/registry.hpp"
+#include "ls/serialization/serialization_context.hpp"
 #include "ls/serialization/serialization_system.hpp"
 
 namespace ls::serialization {
@@ -97,11 +98,7 @@ namespace ls::serialization {
           componentInstance = componentType.construct();
         } else {
           componentInstance = serialization_system::deserializeReflected(
-              componentType,
-              componentJson,
-              *engineCtx_.materialManager,
-              *engineCtx_.textureManager,
-              *engineCtx_.prefabManager
+              componentType, componentJson, serialization::SerializationContext{ engineCtx_ }
           );
           if (!componentInstance) {
             componentInstance = componentType.construct();
@@ -170,9 +167,8 @@ namespace ls::serialization {
 
         const char* componentName{ type.name() ? type.name() : "Unknown component" };
 
-        componentsJson[componentName] = serialization_system::serializeReflected(
-            componentAny, *engineCtx_.materialManager, *engineCtx_.textureManager, *engineCtx_.prefabManager
-        );
+        componentsJson[componentName] =
+            serialization_system::serializeReflected(componentAny, serialization::SerializationContext{ engineCtx_ });
       }
 
       entityJson["name"] = sceneCtx_.registry->getComponent<component::EntityName>(entity).name;

@@ -3,18 +3,18 @@
 #include <glm/ext/vector_float2.hpp>
 #include <glm/geometric.hpp>
 #include <glm/trigonometric.hpp>
-#include <random>
 
 #include "components/camera_shake.hpp"
 #include "components/weapon.hpp"
 #include "events/request_shoot.hpp"
 #include "factories/projectile_factory.hpp"
+#include "ls/asset/asset_types.hpp"
 #include "ls/components/equipped_sprite.hpp"
 #include "ls/components/particle_emitter.hpp"
 #include "ls/components/transform.hpp"
+#include "ls/core/random_system.hpp"
 #include "ls/core/update_context.hpp"
 #include "ls/ecs/types.hpp"
-#include "ls/gfx/texture_manager.hpp"
 #include "ls/renderer/material/material_names.hpp"
 #include "particles/gun_sparks.hpp"
 #include "scenes/texture_names.hpp"
@@ -24,22 +24,16 @@ namespace ls::combat_system {
 
   namespace {
 
-    float getRangeRandom(float min, float max) {
-      static std::mt19937 gen{ std::random_device{}() };
-      assert(min < max);
-      std::uniform_real_distribution<float> dist{ min, max };
-      return dist(gen);
-    }
-
     void shoot(const UpdateContext& ctx, const ecs::EntityId shooterEntity) {
       const auto& transform{ ctx.registry.getComponent<component::Transform>(shooterEntity) };
       auto& weapon{ ctx.registry.getComponent<component::Weapon>(shooterEntity) };
       const auto& recoil{ weapon.isAiming ? weapon.aimRecoil : weapon.hipRecoil };
 
-      weapon.springVelocity.y -= recoil.weaponImpulse * getRangeRandom(0.8f, 1.f);
-      weapon.springAngularVelocity += getRangeRandom(-recoil.weaponAngularImpulse, recoil.weaponAngularImpulse);
+      weapon.springVelocity.y -= recoil.weaponImpulse * random_system::getRangeRandom(0.8f, 1.f);
+      weapon.springAngularVelocity +=
+          random_system::getRangeRandom(-recoil.weaponAngularImpulse, recoil.weaponAngularImpulse);
 
-      float spreadAngle{ getRangeRandom(-recoil.baseSpread * 0.5f, recoil.baseSpread * 0.5f) };
+      float spreadAngle{ random_system::getRangeRandom(-recoil.baseSpread * 0.5f, recoil.baseSpread * 0.5f) };
       float totalAngleDeg{ transform.rotation + weapon.springRotation + spreadAngle };
       float totalAngleRad{ glm::radians(totalAngleDeg) };
 
@@ -54,8 +48,8 @@ namespace ls::combat_system {
       glm::vec2 muzzleWorldPos{ transform.position + rotatedMuzzleOffset };
 
       factory::ProjectileConfig config{
+        .textureHandle = ctx.assetManager.findHandleByName<asset::AssetType::Texture2D>(texture_name::kBullet),
         .materialHandle = ctx.materialManager.getHandle(material_name::kLit),
-        .textureHandle = ctx.textureManager.getHandle(texture_name::kBullet),
         .scale = weapon.bulletScale,
         .position = muzzleWorldPos,
         .direction = bulletDirection,
@@ -70,7 +64,8 @@ namespace ls::combat_system {
       ctx.registry.addComponent(
           particleEmitter,
           component::ParticleEmitter{ particle::preset::gunSparks(
-              ctx.materialManager.getHandle(material_name::kLit), ctx.textureManager.getHandle(texture_name::kWhite)
+              ctx.materialManager.getHandle(material_name::kLit),
+              ctx.assetManager.findHandleByName<asset::AssetType::Texture2D>(texture_name::kWhite)
           ) }
       );
       ctx.registry.addComponent(
