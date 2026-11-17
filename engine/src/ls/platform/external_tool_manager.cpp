@@ -3,10 +3,16 @@
 #include <filesystem>
 #include <thread>
 
+#include "ls/asset/asset_system.hpp"
+
 namespace ls::platform {
 
   void ExternalToolManager::openInEditor(const std::filesystem::path& path) {
-    if (!std::filesystem::exists(path))
+    if (path.empty())
+      return;
+
+    const std::filesystem::path absPath{ asset_system::toAbsolutePath(path) };
+    if (!std::filesystem::exists(absPath))
       return;
 
     std::thread([absPath = std::filesystem::absolute(path)]() {

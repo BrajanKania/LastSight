@@ -120,9 +120,9 @@ target_sources(Engine
     src/ls/systems/parallax_system.cpp
 
     # ui
-    src/ls/ui/panels/asset_browser_panel.cpp
     src/ls/ui/panels/console_panel.cpp
-    src/ls/ui/panels/entity_inspector_panel.cpp
+    src/ls/ui/panels/content_browser_panel.cpp
+    src/ls/ui/panels/inspector_panel.cpp
     src/ls/ui/panels/main_menu_bar_panel.cpp
     src/ls/ui/panels/render_pipeline_debug_panel.cpp
     src/ls/ui/panels/scene_browser_panel.cpp

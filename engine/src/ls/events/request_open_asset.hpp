@@ -1,11 +1,11 @@
 #pragma once
 
-#include <filesystem>
+#include "ls/asset/asset_handle.hpp"
 
 namespace ls::event {
 
   struct RequestOpenAsset {
-    std::filesystem::path path;
+    asset::DynamicAssetHandle handle{};
   };
 
 }  // namespace ls::event

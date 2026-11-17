@@ -27,6 +27,17 @@ namespace ls::asset {
     void saveMetadata(const AssetMetadata& metadata);
     void saveAllMetadata();
 
+    bool createFile(const std::filesystem::path& path);
+    bool createDirectories(const std::filesystem::path& path);
+    bool createAsset(const std::filesystem::path& path, const std::string& name, asset::AssetType type);
+
+    bool removeAsset(DynamicAssetHandle handle);
+    bool removePath(const std::filesystem::path& path);
+
+    bool movePath(const std::filesystem::path& oldPath, const std::filesystem::path& newPath);
+
+    bool convertAssetType(const std::filesystem::path& path, const AssetType newType);
+
     template <AssetType Type>
     AssetMetadata* getAssetMetadata(AssetHandle<Type> handle) {
       return registry_.getAssetMetadata(handle);
@@ -37,24 +48,26 @@ namespace ls::asset {
       return registry_.getAssetMetadata(handle);
     }
 
+    AssetMetadata* getAssetMetadata(DynamicAssetHandle handle) { return registry_.getAssetMetadata(handle); }
+
+    const AssetMetadata* getAssetMetadata(DynamicAssetHandle handle) const {
+      return registry_.getAssetMetadata(handle);
+    }
+
     const std::vector<AssetMetadata>& getAssetMetadataOfType(AssetType type) const {
       return registry_.getAssetMetadataOfType(type);
     }
 
-    template <AssetType Type>
-    AssetHandle<Type> findHandleByName(const std::string& name) const {
-      for (const auto& metadata : registry_.getAssetMetadataOfType(Type)) {
-        if (metadata.path.filename() == name)
-          return AssetHandle<Type>{ metadata.id };
-      }
-      return AssetHandle<Type>{ kNullAsset };
-    }
+    DynamicAssetHandle findAssetHandleByPath(const std::filesystem::path& path);
 
   private:
     bool loadAssetImpl(const std::filesystem::path& path, bool isEngineAsset);
     bool loadFromDirectoryImpl(const std::filesystem::path& path, bool recursive, bool isEngineDir);
 
-    AssetId generateAssetId();
+    bool moveFilePath(const std::filesystem::path& absOldPath, const std::filesystem::path& absNewPath);
+    bool moveMetadataPath(const std::filesystem::path& absOldPath, const std::filesystem::path& absNewPath);
+
+    AssetId generateAssetId() const;
     std::filesystem::path resolveMetadataPath(const std::filesystem::path& path, bool isEngineAsset) const;
 
     AssetContext ctx_{};

@@ -25,9 +25,9 @@
 #include "ls/events/toggle_panel.hpp"
 #include "ls/input/input_context.hpp"
 #include "ls/input/types.hpp"
-#include "ls/ui/panels/asset_browser_panel.hpp"
 #include "ls/ui/panels/console_panel.hpp"
-#include "ls/ui/panels/entity_inspector_panel.hpp"
+#include "ls/ui/panels/content_browser_panel.hpp"
+#include "ls/ui/panels/inspector_panel.hpp"
 #include "ls/ui/panels/main_menu_bar_panel.hpp"
 #include "ls/ui/panels/panel_names.hpp"
 #include "ls/ui/panels/render_pipeline_debug_panel.hpp"
@@ -47,11 +47,11 @@ namespace ls {
 
     uiManager_.addPanel<ui::MainMenuBarPanel>(ui::panel::kMainMenuBar);
     uiManager_.addPanel<ui::SceneBrowserPanel>(ui::panel::kSceneBrowser);
-    uiManager_.addPanel<ui::AssetBrowserPanel>(ui::panel::kAssetBrowser);
+    uiManager_.addPanel<ui::ContentBrowserPanel>(ui::panel::kContentBrowser);
     uiManager_.addPanel<ui::ConsolePanel>(ui::panel::kConsole);
     uiManager_.addPanel<ui::RenderPipelineDebugPanel>(ui::panel::kRenderPipelineDebug);
     uiManager_.addPanel<ui::SceneHierarchyPanel>(ui::panel::kSceneHierarchy);
-    uiManager_.addPanel<ui::EntityInspectorPanel>(ui::panel::kEntityInspector);
+    uiManager_.addPanel<ui::InspectorPanel>(ui::panel::kInspector);
     uiManager_.addPanel<ui::StatusBarPanel>(ui::panel::kStatusBar);
 
     uiManager_.addPanel<ui::ViewportPanel>(ui::panel::kViewport);
@@ -129,9 +129,9 @@ namespace ls {
       bool isEditMode{ event.newMode == EngineMode::Edit };
       uiManager_.getPanel(ui::panel::kMainMenuBar).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kSceneBrowser).setVisible(isEditMode);
-      uiManager_.getPanel(ui::panel::kAssetBrowser).setVisible(isEditMode);
+      uiManager_.getPanel(ui::panel::kContentBrowser).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kSceneHierarchy).setVisible(isEditMode);
-      uiManager_.getPanel(ui::panel::kEntityInspector).setVisible(isEditMode);
+      uiManager_.getPanel(ui::panel::kInspector).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kRenderPipelineDebug).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kConsole).setVisible(isEditMode);
       uiManager_.getPanel(ui::panel::kStatusBar).setVisible(isEditMode);
@@ -187,12 +187,12 @@ namespace ls {
       ImGui::DockBuilderDockWindow(ui::panel::kViewport, dockMain);
 
       ImGui::DockBuilderDockWindow(ui::panel::kSceneBrowser, dockBottom);
-      ImGui::DockBuilderDockWindow(ui::panel::kAssetBrowser, dockBottom);
+      ImGui::DockBuilderDockWindow(ui::panel::kContentBrowser, dockBottom);
       ImGui::DockBuilderDockWindow(ui::panel::kRenderPipelineDebug, dockBottom);
       ImGui::DockBuilderDockWindow(ui::panel::kConsole, dockBottom);
 
       ImGui::DockBuilderDockWindow(ui::panel::kSceneHierarchy, dockRightTop);
-      ImGui::DockBuilderDockWindow(ui::panel::kEntityInspector, dockRightBottom);
+      ImGui::DockBuilderDockWindow(ui::panel::kInspector, dockRightBottom);
 
       ImGui::DockBuilderFinish(dockspaceId);
     }

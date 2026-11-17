@@ -33,6 +33,7 @@ namespace ls::gfx {
       load(asset::TextureHandle{ metadata.id }, assetManager);
     }
   }
+
   const Texture2D* TextureManager::get(asset::TextureHandle handle) const {
     auto it{ assetIdToIdx_.find(handle.id) };
     if (it != assetIdToIdx_.end())

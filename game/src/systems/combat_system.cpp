@@ -48,7 +48,8 @@ namespace ls::combat_system {
       glm::vec2 muzzleWorldPos{ transform.position + rotatedMuzzleOffset };
 
       factory::ProjectileConfig config{
-        .textureHandle = ctx.assetManager.findHandleByName<asset::AssetType::Texture2D>(texture_name::kBullet),
+        .textureHandle =
+            ctx.assetManager.findAssetHandleByPath(texture_name::kBullet).as<asset::AssetType::Texture2D>(),
         .materialHandle = ctx.materialManager.getHandle(material_name::kLit),
         .scale = weapon.bulletScale,
         .position = muzzleWorldPos,
@@ -65,7 +66,7 @@ namespace ls::combat_system {
           particleEmitter,
           component::ParticleEmitter{ particle::preset::gunSparks(
               ctx.materialManager.getHandle(material_name::kLit),
-              ctx.assetManager.findHandleByName<asset::AssetType::Texture2D>(texture_name::kWhite)
+              ctx.assetManager.findAssetHandleByPath(texture_name::kWhite).as<asset::AssetType::Texture2D>()
           ) }
       );
       ctx.registry.addComponent(

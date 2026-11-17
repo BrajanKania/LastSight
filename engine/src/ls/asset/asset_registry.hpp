@@ -17,19 +17,22 @@ namespace ls::asset {
       assetBuffers_[static_cast<std::size_t>(metadata.type)].add(metadata);
     }
 
-    template <AssetType Type>
-    void unregisterAsset(AssetHandle<Type> handle) {
-      assetBuffers_[static_cast<std::size_t>(Type)].remove(handle.id);
+    void unregisterAsset(DynamicAssetHandle handle) {
+      if (!handle.isValid())
+        return;
+      assetBuffers_[static_cast<std::size_t>(handle.getType())].remove(handle.id);
     }
 
-    template <AssetType Type>
-    AssetMetadata* getAssetMetadata(AssetHandle<Type> handle) {
-      return assetBuffers_[static_cast<std::size_t>(Type)].get(handle.id);
+    AssetMetadata* getAssetMetadata(DynamicAssetHandle handle) {
+      if (!handle.isValid())
+        return nullptr;
+      return assetBuffers_[static_cast<std::size_t>(handle.getType())].get(handle.id);
     }
 
-    template <AssetType Type>
-    const AssetMetadata* getAssetMetadata(AssetHandle<Type> handle) const {
-      return assetBuffers_[static_cast<std::size_t>(Type)].get(handle.id);
+    const AssetMetadata* getAssetMetadata(DynamicAssetHandle handle) const {
+      if (!handle.isValid())
+        return nullptr;
+      return assetBuffers_[static_cast<std::size_t>(handle.getType())].get(handle.id);
     }
 
     const std::vector<AssetMetadata>& getAssetMetadataOfType(AssetType type) const {

@@ -108,7 +108,7 @@ namespace ls::ui {
             ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(entity)), flags, "%s", label.c_str());
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-              ctx.selectionCtx->selectedEntity = entity;
+              ctx.selectionCtx->selectEntity(entity);
             }
 
             if (ImGui::BeginPopupContextItem()) {
@@ -134,7 +134,7 @@ namespace ls::ui {
         }
 
         if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
-          ctx.selectionCtx->selectedEntity = ecs::kNullEntity;
+          ctx.selectionCtx->clear();
         }
 
         if (ImGui::BeginPopupContextWindow(

@@ -1,4 +1,4 @@
-#include "ls/ui/panels/entity_inspector_panel.hpp"
+#include "ls/ui/panels/inspector_panel.hpp"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -39,124 +39,202 @@
 
 namespace ls::ui {
 
-  void EntityInspectorPanel::render(const UIContext& ctx) {
-    assert(ctx.engineCtx.eventQueue != nullptr && "[EntityInspectorPanel] Requires a valid EventQueue!");
-    assert(ctx.selectionCtx != nullptr && "[EntityInspectorPanel] Requires a valid SelectionContext!");
-    assert(ctx.sceneCtx.registry != nullptr && "[EntityInspectorPanel] Requires a valid Registry!");
-    assert(ctx.engineCtx.prefabManager != nullptr && "[EntityInspectorPanel] Requires a valid PrefabManager!");
-    assert(ctx.engineCtx.materialManager != nullptr && "[EntityInspectorPanel] Requires a valid MaterialManager!");
-    assert(ctx.engineCtx.assetManager != nullptr && "[EntityInspectorPanel] Requires a valid AssetManager!");
+  void InspectorPanel::render(const UIContext& ctx) {
+    assert(ctx.selectionCtx != nullptr && "[InspectorPanel] Requires a valid SelectionContext!");
 
-    if (!ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
-      ctx.selectionCtx->selectedEntity = ecs::kNullEntity;
+    if (ctx.selectionCtx->isSelectedEntity() &&
+        !ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
+      ctx.selectionCtx->clear();
     }
 
-    renderAddComponentModal(ctx);
-    renderSaveAsPrefabModal(ctx);
-    renderLinkToPrefabModal(ctx);
-    renderSyncFromPrefabModal(ctx);
+    if (ctx.selectionCtx->isSelectedAsset() &&
+        ctx.engineCtx.assetManager->getAssetMetadata(ctx.selectionCtx->selectedAssetHandle) == nullptr) {
+      ctx.selectionCtx->clear();
+    }
 
-    const bool hasSelectedEntity{ ctx.selectionCtx->selectedEntity != ecs::kNullEntity };
+    {  // Render Modals
+      renderAddComponentModal(ctx);
+      renderSaveAsPrefabModal(ctx);
+      renderLinkToPrefabModal(ctx);
+      renderSyncFromPrefabModal(ctx);
+    }
 
     ImGuiWindowFlags flags{ ImGuiWindowFlags_MenuBar };
 
-    if (ImGui::Begin(ui::panel::kEntityInspector, &visible_, flags)) {
-      if (ImGui::BeginMenuBar()) {
-        if (ImGui::MenuItem("Add Component", nullptr, false, hasSelectedEntity)) {
-          shouldOpenAddModal_ = true;
-        }
-
-        bool isSelectedEntityPrefabInstance{
-          hasSelectedEntity &&
-          ctx.sceneCtx.registry->hasComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity) &&
-          ctx.sceneCtx.registry->getComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity)
-              .handle.isValid()
-        };
-
-        if (ImGui::BeginMenu("Prefab")) {
-          if (ImGui::MenuItem("Sync", nullptr, false, isSelectedEntityPrefabInstance)) {
-            shouldOpenSyncFromPrefabModal_ = true;
-          }
-          if (ImGui::MenuItem("Overwrite", nullptr, false, isSelectedEntityPrefabInstance)) {
-            auto prefabInstance{
-              ctx.sceneCtx.registry->getComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity)
-            };
-
-            ctx.engineCtx.eventQueue->publish(
-                event::RequestOverwriteEntityPrefab{
-                    .handle = prefabInstance.handle,
-                    .entity = ctx.selectionCtx->selectedEntity,
-                }
-            );
-          }
-          if (ImGui::MenuItem("Decouple", nullptr, false, isSelectedEntityPrefabInstance)) {
-            ctx.engineCtx.eventQueue->publish(
-                event::RequestDecoupleEntityFromPrefab{ .entity = ctx.selectionCtx->selectedEntity }
-            );
-          }
-          ImGui::Separator();
-          if (ImGui::MenuItem(
-                  "Link to Prefab",
-                  nullptr,
-                  isSelectedEntityPrefabInstance,
-                  hasSelectedEntity && !isSelectedEntityPrefabInstance
-              )) {
-            shouldOpenLinkToPrefabModal_ = true;
-          }
-          if (ImGui::MenuItem("Save as Prefab", nullptr, false, hasSelectedEntity)) {
-            shouldOpenSaveAsPrefabModal_ = true;
-          }
-          ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("View")) {
-          ImGui::MenuItem("Hide Read Only", nullptr, &hideReadOnly_);
-          ImGui::MenuItem("Hide Transient", nullptr, &hideTransient_);
-
-          ImGui::EndMenu();
-        }
-
-        ImGui::EndMenuBar();
-      }
-
-      {  // Filter
-        ImGui::SetNextItemWidth(-1.f);
-        ImGui::InputTextWithHint("##InputFilterBuffer", "Search components...", filterBuffer_, sizeof(filterBuffer_));
-        ImGui::Separator();
-      }
-
-      {  // Inspector
-        lowerFilterBuffer_ = filterBuffer_;
-        std::transform(
-            lowerFilterBuffer_.begin(), lowerFilterBuffer_.end(), lowerFilterBuffer_.begin(), [](unsigned char ch) {
-              return std::tolower(ch);
-            }
-        );
-
-        ImGui::BeginChild("InspectorRegion");
-
-        if (ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
-          inspectEntity(ctx, ctx.selectionCtx->selectedEntity);
-
-          if (ImGui::BeginPopupContextWindow(
-                  "InspectorBlankContext", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
-              )) {
-            if (ImGui::MenuItem("Add Component")) {
-              shouldOpenAddModal_ = true;
-            }
-            ImGui::EndPopup();
-          }
-        } else {
-          ImGui::Text("Select an entity from the list");
-        }
-
-        ImGui::EndChild();
+    if (ImGui::Begin(ui::panel::kInspector, &visible_, flags)) {
+      if (ctx.selectionCtx->isSelectedEntity()) {
+        renderEntityInspectorMenuBar(ctx);
+        renderEntityInspector(ctx);
+      } else if (ctx.selectionCtx->isSelectedAsset()) {
+        renderAssetInspectorMenuBar(ctx);
+        renderAssetInspector(ctx);
+      } else {
+        ImGui::TextDisabled("Select an entity or asset to inspect properties.");
       }
     }
     ImGui::End();
   }
 
-  void EntityInspectorPanel::inspectEntity(const UIContext& ctx, const ecs::EntityId entity) {
+  void InspectorPanel::renderEntityInspectorMenuBar(const UIContext& ctx) {
+    assert(
+        ctx.selectionCtx != nullptr &&
+        "[ui::InspectorPanel::renderEntityInspectorMenuBar] Requires a valid SelectionContext."
+    );
+    assert(
+        ctx.selectionCtx->isSelectedEntity() &&
+        "[ui::InspectorPanel::renderEntityInspectorMenuBar] No selected a valid entity."
+    );
+    assert(
+        ctx.engineCtx.eventQueue != nullptr &&
+        "[ui::InspectorPanel::renderEntityInspectorMenuBar] Requires a valid EventQueue."
+    );
+
+    if (ImGui::BeginMenuBar()) {
+      if (ImGui::MenuItem("Add Component", nullptr, false)) {
+        shouldOpenAddModal_ = true;
+      }
+
+      bool isSelectedEntityPrefabInstance{
+        ctx.sceneCtx.registry->hasComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity) &&
+        ctx.sceneCtx.registry->getComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity)
+            .handle.isValid()
+      };
+
+      if (ImGui::BeginMenu("Prefab")) {
+        if (ImGui::MenuItem("Sync", nullptr, false, isSelectedEntityPrefabInstance)) {
+          shouldOpenSyncFromPrefabModal_ = true;
+        }
+        if (ImGui::MenuItem("Overwrite", nullptr, false, isSelectedEntityPrefabInstance)) {
+          auto prefabInstance{
+            ctx.sceneCtx.registry->getComponent<component::PrefabInstance>(ctx.selectionCtx->selectedEntity)
+          };
+
+          ctx.engineCtx.eventQueue->publish(
+              event::RequestOverwriteEntityPrefab{
+                  .handle = prefabInstance.handle,
+                  .entity = ctx.selectionCtx->selectedEntity,
+              }
+          );
+        }
+        if (ImGui::MenuItem("Decouple", nullptr, false, isSelectedEntityPrefabInstance)) {
+          ctx.engineCtx.eventQueue->publish(
+              event::RequestDecoupleEntityFromPrefab{ .entity = ctx.selectionCtx->selectedEntity }
+          );
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem(
+                "Link to Prefab", nullptr, isSelectedEntityPrefabInstance, !isSelectedEntityPrefabInstance
+            )) {
+          shouldOpenLinkToPrefabModal_ = true;
+        }
+        if (ImGui::MenuItem("Save as Prefab", nullptr, false)) {
+          shouldOpenSaveAsPrefabModal_ = true;
+        }
+        ImGui::EndMenu();
+      }
+
+      if (ImGui::BeginMenu("View")) {
+        ImGui::MenuItem("Hide Read Only", nullptr, &hideReadOnly_);
+        ImGui::MenuItem("Hide Transient", nullptr, &hideTransient_);
+
+        ImGui::EndMenu();
+      }
+
+      ImGui::EndMenuBar();
+    }
+  }
+
+  void InspectorPanel::renderAssetInspectorMenuBar(const UIContext& ctx) {
+    assert(
+        ctx.selectionCtx != nullptr &&
+        "[ui::InspectorPanel::renderAssetInspectorMenuBar] Requires a valid SelectionContext."
+    );
+    assert(
+        ctx.selectionCtx->isSelectedAsset() &&
+        "[ui::InspectorPanel::renderAssetInspectorMenuBar] No selected a valid entity."
+    );
+    assert(
+        ctx.engineCtx.eventQueue != nullptr &&
+        "[ui::InspectorPanel::renderassetInspectorMenuBar] Requires a valid EventQueue!"
+    );
+
+    if (ImGui::BeginMenuBar()) {
+      if (ImGui::MenuItem("Delete")) {
+      }
+      ImGui::EndMenuBar();
+    }
+  }
+
+  void InspectorPanel::renderEntityInspector(const UIContext& ctx) {
+    assert(
+        ctx.sceneCtx.registry != nullptr && "[ui::InspectorPanel::renderEntityInspector] Requires a valid Registry."
+    );
+    assert(
+        ctx.engineCtx.prefabManager != nullptr &&
+        "[ui::InspectorPanel::renderEntityInspector] Requires a valid PrefabManager."
+    );
+    assert(
+        ctx.engineCtx.materialManager != nullptr &&
+        "[ui::InspectorPanel::renderEntityInspector] Requires a valid MaterialManager."
+    );
+    assert(
+        ctx.engineCtx.assetManager != nullptr &&
+        "[ui::InspectorPanel::renderEntityInspector] Requires a valid AssetManager."
+    );
+    assert(
+        ctx.selectionCtx != nullptr && "[ui::InspectorPanel::renderEntityInspector] Requires a valid SelectionContext."
+    );
+    assert(
+        ctx.selectionCtx->isSelectedEntity() &&
+        "[ui::InspectorPanel::renderEntityInspector] No selected a valid entity."
+    );
+
+    {  // Filter
+      ImGui::SetNextItemWidth(-1.f);
+      ImGui::InputTextWithHint("##InputFilterBuffer", "Search components...", filterBuffer_, sizeof(filterBuffer_));
+      ImGui::Separator();
+    }
+
+    {  // Inspector
+      lowerFilterBuffer_ = filterBuffer_;
+      std::transform(
+          lowerFilterBuffer_.begin(), lowerFilterBuffer_.end(), lowerFilterBuffer_.begin(), [](unsigned char ch) {
+            return std::tolower(ch);
+          }
+      );
+
+      ImGui::BeginChild("InspectorRegion");
+
+      if (ctx.sceneCtx.registry->isValidEntity(ctx.selectionCtx->selectedEntity)) {
+        inspectEntity(ctx, ctx.selectionCtx->selectedEntity);
+
+        if (ImGui::BeginPopupContextWindow(
+                "InspectorBlankContext", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems
+            )) {
+          if (ImGui::MenuItem("Add Component")) {
+            shouldOpenAddModal_ = true;
+          }
+          ImGui::EndPopup();
+        }
+      } else {
+        ImGui::Text("Select an entity from the list");
+      }
+
+      ImGui::EndChild();
+    }
+  }
+
+  void InspectorPanel::renderAssetInspector(const UIContext& ctx) {
+    {  // Filter
+      ImGui::SetNextItemWidth(-1.f);
+      ImGui::InputTextWithHint("##InputFilterBuffer", "Search components...", filterBuffer_, sizeof(filterBuffer_));
+      ImGui::Separator();
+    }
+  }
+
+  void InspectorPanel::inspectAsset(const UIContext& ctx) {}
+
+  void InspectorPanel::inspectEntity(const UIContext& ctx, const ecs::EntityId entity) {
     for (auto [typeId, type] : entt::resolve()) {
       const reflection_system::ComponentInfo* componentInfo{ type.custom() };
 
@@ -244,9 +322,7 @@ namespace ls::ui {
     }
   }
 
-  bool EntityInspectorPanel::inspectComponentProperty(
-      const EngineContext& ctx, entt::meta_any& owner, entt::meta_data data
-  ) {
+  bool InspectorPanel::inspectComponentProperty(const EngineContext& ctx, entt::meta_any& owner, entt::meta_data data) {
     const ls::reflection_system::PropertyInfo* propertyInfo{ data.custom() };
     const bool isReadOnly{ propertyInfo ? propertyInfo->readOnly : false };
     const bool isColor{ propertyInfo ? propertyInfo->color : false };
@@ -461,7 +537,7 @@ namespace ls::ui {
     return valueChanged && !isReadOnly;
   }
 
-  void EntityInspectorPanel::renderAddComponentModal(const UIContext& ctx) {
+  void InspectorPanel::renderAddComponentModal(const UIContext& ctx) {
     if (shouldOpenAddModal_) {
       ImGui::OpenPopup("Add Component");
       shouldOpenAddModal_ = false;
@@ -566,7 +642,7 @@ namespace ls::ui {
     }
   }
 
-  void EntityInspectorPanel::renderSaveAsPrefabModal(const UIContext& ctx) {
+  void InspectorPanel::renderSaveAsPrefabModal(const UIContext& ctx) {
     if (shouldOpenSaveAsPrefabModal_) {
       ImGui::OpenPopup("Save as Prefab");
       saveAsPrefabNameBuffer_[0] = '\0';
@@ -623,7 +699,7 @@ namespace ls::ui {
     }
   }
 
-  void EntityInspectorPanel::renderLinkToPrefabModal(const UIContext& ctx) {
+  void InspectorPanel::renderLinkToPrefabModal(const UIContext& ctx) {
     if (shouldOpenLinkToPrefabModal_) {
       ImGui::OpenPopup("Link Entity to Prefab");
       prefabSearchBuffer_[0] = '\0';
@@ -712,7 +788,7 @@ namespace ls::ui {
     }
   }
 
-  void EntityInspectorPanel::renderSyncFromPrefabModal(const UIContext& ctx) {
+  void InspectorPanel::renderSyncFromPrefabModal(const UIContext& ctx) {
     if (shouldOpenSyncFromPrefabModal_) {
       ImGui::OpenPopup("Sync Entity from Prefab");
       shouldOpenSyncFromPrefabModal_ = false;
@@ -824,7 +900,7 @@ namespace ls::ui {
     }
   }
 
-  bool EntityInspectorPanel::filterComponent(const std::string& componentName) const {
+  bool InspectorPanel::filterComponent(const std::string& componentName) const {
     if (lowerFilterBuffer_.empty())
       return true;
 
@@ -836,7 +912,7 @@ namespace ls::ui {
     return lowerName.find(lowerFilterBuffer_) != std::string::npos;
   }
 
-  bool EntityInspectorPanel::filterProperty(const reflection_system::PropertyInfo* propInfo) const {
+  bool InspectorPanel::filterProperty(const reflection_system::PropertyInfo* propInfo) const {
     if (!propInfo)
       return true;
 

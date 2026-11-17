@@ -27,17 +27,24 @@
 #include "ls/events/request_change_engine_mode.hpp"
 #include "ls/events/request_change_scene.hpp"
 #include "ls/events/request_change_ui_style.hpp"
+#include "ls/events/request_convert_asset_type.hpp"
+#include "ls/events/request_create_asset.hpp"
+#include "ls/events/request_create_directories.hpp"
 #include "ls/events/request_create_entity.hpp"
 #include "ls/events/request_create_entity_from_prefab.hpp"
+#include "ls/events/request_create_file.hpp"
 #include "ls/events/request_decouple_entity_from_prefab.hpp"
 #include "ls/events/request_destroy_entity.hpp"
 #include "ls/events/request_duplicate_entity.hpp"
 #include "ls/events/request_link_entity_to_prefab.hpp"
+#include "ls/events/request_move_path.hpp"
 #include "ls/events/request_open_asset.hpp"
 #include "ls/events/request_overwrite_entity_prefab.hpp"
 #include "ls/events/request_quit_engine.hpp"
 #include "ls/events/request_reload_textures.hpp"
+#include "ls/events/request_remove_asset.hpp"
 #include "ls/events/request_remove_component.hpp"
+#include "ls/events/request_remove_path.hpp"
 #include "ls/events/request_save_entity_as_prefab.hpp"
 #include "ls/events/request_save_scene.hpp"
 #include "ls/events/request_sync_component_from_prefab.hpp"
@@ -153,7 +160,10 @@ namespace ls {
     }
 
     for (const auto& event : eventQueue_.getEvents<event::RequestOpenAsset>()) {
-      externalToolManager_.openInEditor(event.path);
+      const auto* assetMetadata{ assetManager_.getAssetMetadata(event.handle) };
+      if (assetMetadata && !assetMetadata->path.empty()) {
+        externalToolManager_.openInEditor(assetMetadata->path);
+      }
     }
 
     const auto& sceneCtx{ sceneManager_.getActiveSceneContext() };
@@ -356,6 +366,125 @@ namespace ls {
               debug::LogLevel::Warning
           );
         }
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestCreateFile>()) {
+      if (assetManager_.createFile(event.path)) {
+        statusBar_.showMessage(
+            std::format("Created file: {}", event.path.generic_string()),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format("Failed to create file: {}", event.path.generic_string()),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Error
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestCreateDirectories>()) {
+      if (assetManager_.createDirectories(event.path)) {
+        statusBar_.showMessage(
+            std::format("Created directories: {}", event.path.generic_string()),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format("Failed to create directories: {}", event.path.generic_string()),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Error
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestCreateAsset>()) {
+      if (assetManager_.createAsset(event.path, event.name, event.type)) {
+        statusBar_.showMessage(
+            std::format("Created {} in location: {}", event.name, event.path.generic_string()),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format(
+                "Failed to create {} of type extension {} in location {}",
+                event.name,
+                asset_system::assetTypeExtension(event.type),
+                event.path.generic_string()
+            ),
+            debug::status_duration::kLong,
+            debug::LogLevel::Error
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestRemoveAsset>()) {
+      if (assetManager_.removeAsset(event.handle)) {
+        statusBar_.showMessage(
+            std::format("Removed asset: {}", event.handle.id), debug::status_duration::kMedium, debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format("Failed to remove asset: {}", event.handle.id),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Error
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestRemovePath>()) {
+      if (assetManager_.removePath(event.path)) {
+        statusBar_.showMessage(
+            std::format("Removed path: {}", event.path.generic_string()),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format("Failed to remove path: {}", event.path.generic_string()),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Error
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestMovePath>()) {
+      if (assetManager_.movePath(event.oldPath, event.newPath)) {
+        statusBar_.showMessage(
+            std::format("Moved {} to {}", event.oldPath.generic_string(), event.newPath.generic_string()),
+            debug::status_duration::kLong,
+            debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format("Failed to move {} to {}", event.oldPath.generic_string(), event.newPath.generic_string()),
+            debug::status_duration::kLong,
+            debug::LogLevel::Error
+        );
+      }
+    }
+
+    for (const auto& event : eventQueue_.getEvents<event::RequestConvertAssetType>()) {
+      if (assetManager_.convertAssetType(event.path, event.type)) {
+        statusBar_.showMessage(
+            std::format(
+                "Converted {} to {}", event.path.generic_string(), asset_system::assetTypeExtension(event.type)
+            ),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Info
+        );
+      } else {
+        statusBar_.showMessage(
+            std::format(
+                "Failed to convert {} to {}", event.path.generic_string(), asset_system::assetTypeExtension(event.type)
+            ),
+            debug::status_duration::kMedium,
+            debug::LogLevel::Error
+        );
       }
     }
   }

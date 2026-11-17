@@ -11,12 +11,20 @@
 
 namespace ls::ui {
 
-  class EntityInspectorPanel : public IUIPanel {
+  class InspectorPanel : public IUIPanel {
   public:
-    EntityInspectorPanel() = default;
+    InspectorPanel() = default;
     void render(const UIContext& ctx) override;
 
   private:
+    void renderEntityInspectorMenuBar(const UIContext& ctx);
+    void renderAssetInspectorMenuBar(const UIContext& ctx);
+
+    void renderEntityInspector(const UIContext& ctx);
+    void renderAssetInspector(const UIContext& ctx);
+
+    void inspectAsset(const UIContext& ctx);
+
     void inspectEntity(const UIContext& ctx, const ecs::EntityId entity);
     bool inspectComponentProperty(const EngineContext& ctx, entt::meta_any& owner, entt::meta_data data);
 

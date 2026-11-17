@@ -94,12 +94,12 @@ namespace ls {
           item::ItemDefinition{
               .id = "weapon_pistol",
               .materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit),
-              .iconTextureHandle =
-                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kWorldPistol),
-              .equippedTextureHandle =
-                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kEquippedPistol),
-              .worldTextureHandle =
-                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kWorldPistol),
+              .iconTextureHandle = engineCtx_.assetManager->findAssetHandleByPath(texture_name::kWorldPistol)
+                                       .as<asset::AssetType::Texture2D>(),
+              .equippedTextureHandle = engineCtx_.assetManager->findAssetHandleByPath(texture_name::kEquippedPistol)
+                                           .as<asset::AssetType::Texture2D>(),
+              .worldTextureHandle = engineCtx_.assetManager->findAssetHandleByPath(texture_name::kWorldPistol)
+                                        .as<asset::AssetType::Texture2D>(),
               .equippedScale = glm::vec2(0.5f),
               .equippedOffset = glm::vec2(0.f, 0.2f),
               .equippedAngleOffset = -90.f,
@@ -152,12 +152,12 @@ namespace ls {
           item::ItemDefinition{
               .id = "weapon_rifle",
               .materialHandle = engineCtx_.materialManager->getHandle(material_name::kLit),
-              .iconTextureHandle =
-                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kWorldRifle),
-              .equippedTextureHandle =
-                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kEquippedRifle),
-              .worldTextureHandle =
-                  engineCtx_.assetManager->findHandleByName<asset::AssetType::Texture2D>(texture_name::kWorldRifle),
+              .iconTextureHandle = engineCtx_.assetManager->findAssetHandleByPath(texture_name::kWorldRifle)
+                                       .as<asset::AssetType::Texture2D>(),
+              .equippedTextureHandle = engineCtx_.assetManager->findAssetHandleByPath(texture_name::kEquippedRifle)
+                                           .as<asset::AssetType::Texture2D>(),
+              .worldTextureHandle = engineCtx_.assetManager->findAssetHandleByPath(texture_name::kWorldRifle)
+                                        .as<asset::AssetType::Texture2D>(),
               .equippedScale = glm::vec2(1.2f),
               .equippedOffset = glm::vec2(0.08f, 0.3f),
               .equippedAngleOffset = -90.f,

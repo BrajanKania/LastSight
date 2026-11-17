@@ -19,7 +19,7 @@
 namespace ls::ui {
 
   void MainMenuBarPanel::render(const UIContext& ctx) {
-    assert(ctx.engineCtx.eventQueue != nullptr && "MainMenuBarPanel requires a valid EventQueue!");
+    assert(ctx.engineCtx.eventQueue != nullptr && "[ui::MainMenuBarPanel::render] Requires a valid EventQueue.");
 
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("Engine")) {
@@ -30,7 +30,7 @@ namespace ls::ui {
           ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Preferences") && ctx.editorPreferences != nullptr) {
+        if (ImGui::BeginMenu("Preferences", ctx.editorPreferences != nullptr)) {
           if (ImGui::BeginMenu("Style")) {
             const bool isDark{ ctx.editorPreferences->uiStyle == UIStyle::Dark };
             const bool isClassic{ ctx.editorPreferences->uiStyle == UIStyle::Classic };
@@ -114,10 +114,10 @@ namespace ls::ui {
           );
         }
 
-        if (ImGui::MenuItem(ui::panel::kAssetBrowser, nullptr, false, hasSceneManager)) {
+        if (ImGui::MenuItem(ui::panel::kContentBrowser, nullptr, false, hasSceneManager)) {
           ctx.engineCtx.eventQueue->publish(
               event::SetPanelVisibility{
-                  .name = ui::panel::kAssetBrowser,
+                  .name = ui::panel::kContentBrowser,
                   .visible = true,
               }
           );
@@ -135,10 +135,10 @@ namespace ls::ui {
         }
 
         const bool hasInspectorDeps{ hasRegistry && ctx.engineCtx.textureManager != nullptr };
-        if (ImGui::MenuItem(ui::panel::kEntityInspector, nullptr, false, hasInspectorDeps)) {
+        if (ImGui::MenuItem(ui::panel::kInspector, nullptr, false, hasInspectorDeps)) {
           ctx.engineCtx.eventQueue->publish(
               event::SetPanelVisibility{
-                  .name = ui::panel::kEntityInspector,
+                  .name = ui::panel::kInspector,
                   .visible = true,
               }
           );
@@ -160,7 +160,7 @@ namespace ls::ui {
         ImGui::EndMenu();
       }
 
-      if (ImGui::BeginMenu("Mode") && ctx.engineCtx.engineMode != nullptr) {
+      if (ImGui::BeginMenu("Mode", ctx.engineCtx.engineMode != nullptr)) {
         const bool isEditMode{ *ctx.engineCtx.engineMode == EngineMode::Edit };
         const bool isPlayMode{ *ctx.engineCtx.engineMode == EngineMode::Play };
 
